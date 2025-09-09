@@ -4,22 +4,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Animated, {
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -47,9 +47,25 @@ export default function SignupScreen() {
   };
 
   const handleSignup = async () => {
-    const { firstName, lastName, email, password, confirmPassword, restaurantName, phone } = formData;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      restaurantName,
+      phone,
+    } = formData;
 
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !restaurantName || !phone) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !restaurantName ||
+      !phone
+    ) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -73,7 +89,7 @@ export default function SignupScreen() {
     setTimeout(() => {
       setIsLoading(false);
       Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        { text: 'OK', onPress: () => router.replace('/(tabs)') },
       ]);
     }, 2000);
   };
@@ -97,13 +113,17 @@ export default function SignupScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Fixed Header */}
-        <View style={[styles.fixedHeader, { backgroundColor: colors.background }]}>
+        <View
+          style={[styles.fixedHeader, { backgroundColor: colors.background }]}
+        >
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
@@ -111,10 +131,14 @@ export default function SignupScreen() {
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <View style={styles.headerContent}>
-            <View style={[styles.logoIcon, { backgroundColor: colors.primary }]}>
+            <View
+              style={[styles.logoIcon, { backgroundColor: colors.primary }]}
+            >
               <Ionicons name="leaf" size={24} color="white" />
             </View>
-            <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Create Account
+            </Text>
           </View>
           <View style={styles.headerSpacer} />
         </View>
@@ -123,19 +147,75 @@ export default function SignupScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-        {/* Subtitle */}
-        <View style={styles.subtitleContainer}>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Join Green Seasons and start ordering fresh produce
-          </Text>
-        </View>
+          {/* Subtitle */}
+          <View style={styles.subtitleContainer}>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              Join Green Seasons and start ordering fresh produce
+            </Text>
+          </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          {/* Name Fields */}
-          <View style={styles.row}>
-            <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
-              <Text style={[styles.label, { color: colors.text }]}>First Name</Text>
+          {/* Form */}
+          <View style={styles.form}>
+            {/* Name Fields */}
+            <View style={styles.row}>
+              <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  First Name
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.textTertiary,
+                      color: colors.text,
+                    },
+                  ]}
+                  placeholder="John"
+                  placeholderTextColor={colors.textTertiary}
+                  value={formData.firstName}
+                  onChangeText={value => handleInputChange('firstName', value)}
+                  autoCapitalize="words"
+                  onFocus={() => {
+                    inputFocus.value = withTiming(1, { duration: 200 });
+                  }}
+                  onBlur={() => {
+                    inputFocus.value = withTiming(0, { duration: 200 });
+                  }}
+                />
+              </Animated.View>
+
+              <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  Last Name
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.textTertiary,
+                      color: colors.text,
+                    },
+                  ]}
+                  placeholder="Doe"
+                  placeholderTextColor={colors.textTertiary}
+                  value={formData.lastName}
+                  onChangeText={value => handleInputChange('lastName', value)}
+                  autoCapitalize="words"
+                  onFocus={() => {
+                    inputFocus.value = withTiming(1, { duration: 200 });
+                  }}
+                  onBlur={() => {
+                    inputFocus.value = withTiming(0, { duration: 200 });
+                  }}
+                />
+              </Animated.View>
+            </View>
+
+            {/* Email */}
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -145,10 +225,42 @@ export default function SignupScreen() {
                     color: colors.text,
                   },
                 ]}
-                placeholder="John"
+                placeholder="john@restaurant.com"
                 placeholderTextColor={colors.textTertiary}
-                value={formData.firstName}
-                onChangeText={(value) => handleInputChange('firstName', value)}
+                value={formData.email}
+                onChangeText={value => handleInputChange('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onFocus={() => {
+                  inputFocus.value = withTiming(1, { duration: 200 });
+                }}
+                onBlur={() => {
+                  inputFocus.value = withTiming(0, { duration: 200 });
+                }}
+              />
+            </Animated.View>
+
+            {/* Restaurant Name */}
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                Restaurant Name
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.textTertiary,
+                    color: colors.text,
+                  },
+                ]}
+                placeholder="The Green Bistro"
+                placeholderTextColor={colors.textTertiary}
+                value={formData.restaurantName}
+                onChangeText={value =>
+                  handleInputChange('restaurantName', value)
+                }
                 autoCapitalize="words"
                 onFocus={() => {
                   inputFocus.value = withTiming(1, { duration: 200 });
@@ -159,8 +271,11 @@ export default function SignupScreen() {
               />
             </Animated.View>
 
-            <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
-              <Text style={[styles.label, { color: colors.text }]}>Last Name</Text>
+            {/* Phone */}
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                Phone Number
+              </Text>
               <TextInput
                 style={[
                   styles.input,
@@ -170,11 +285,11 @@ export default function SignupScreen() {
                     color: colors.text,
                   },
                 ]}
-                placeholder="Doe"
+                placeholder="+1 (555) 123-4567"
                 placeholderTextColor={colors.textTertiary}
-                value={formData.lastName}
-                onChangeText={(value) => handleInputChange('lastName', value)}
-                autoCapitalize="words"
+                value={formData.phone}
+                onChangeText={value => handleInputChange('phone', value)}
+                keyboardType="phone-pad"
                 onFocus={() => {
                   inputFocus.value = withTiming(1, { duration: 200 });
                 }}
@@ -182,199 +297,124 @@ export default function SignupScreen() {
                   inputFocus.value = withTiming(0, { duration: 200 });
                 }}
               />
+            </Animated.View>
+
+            {/* Password */}
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                Password
+              </Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[
+                    styles.passwordInput,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.textTertiary,
+                      color: colors.text,
+                    },
+                  ]}
+                  placeholder="Create a password"
+                  placeholderTextColor={colors.textTertiary}
+                  value={formData.password}
+                  onChangeText={value => handleInputChange('password', value)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onFocus={() => {
+                    inputFocus.value = withTiming(1, { duration: 200 });
+                  }}
+                  onBlur={() => {
+                    inputFocus.value = withTiming(0, { duration: 200 });
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={20}
+                    color={colors.textTertiary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+
+            {/* Confirm Password */}
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                Confirm Password
+              </Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[
+                    styles.passwordInput,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.textTertiary,
+                      color: colors.text,
+                    },
+                  ]}
+                  placeholder="Confirm your password"
+                  placeholderTextColor={colors.textTertiary}
+                  value={formData.confirmPassword}
+                  onChangeText={value =>
+                    handleInputChange('confirmPassword', value)
+                  }
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onFocus={() => {
+                    inputFocus.value = withTiming(1, { duration: 200 });
+                  }}
+                  onBlur={() => {
+                    inputFocus.value = withTiming(0, { duration: 200 });
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off' : 'eye'}
+                    size={20}
+                    color={colors.textTertiary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+
+            <Animated.View style={buttonAnimatedStyle}>
+              <TouchableOpacity
+                style={[
+                  styles.signupButton,
+                  {
+                    backgroundColor: colors.primary,
+                    opacity: isLoading ? 0.7 : 1,
+                  },
+                ]}
+                onPress={handleSignup}
+                disabled={isLoading}
+              >
+                <Text style={styles.signupButtonText}>
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                </Text>
+              </TouchableOpacity>
             </Animated.View>
           </View>
 
-          {/* Email */}
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.textTertiary,
-                  color: colors.text,
-                },
-              ]}
-              placeholder="john@restaurant.com"
-              placeholderTextColor={colors.textTertiary}
-              value={formData.email}
-              onChangeText={(value) => handleInputChange('email', value)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              onFocus={() => {
-                inputFocus.value = withTiming(1, { duration: 200 });
-              }}
-              onBlur={() => {
-                inputFocus.value = withTiming(0, { duration: 200 });
-              }}
-            />
-          </Animated.View>
-
-          {/* Restaurant Name */}
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Restaurant Name</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.textTertiary,
-                  color: colors.text,
-                },
-              ]}
-              placeholder="The Green Bistro"
-              placeholderTextColor={colors.textTertiary}
-              value={formData.restaurantName}
-              onChangeText={(value) => handleInputChange('restaurantName', value)}
-              autoCapitalize="words"
-              onFocus={() => {
-                inputFocus.value = withTiming(1, { duration: 200 });
-              }}
-              onBlur={() => {
-                inputFocus.value = withTiming(0, { duration: 200 });
-              }}
-            />
-          </Animated.View>
-
-          {/* Phone */}
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Phone Number</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.textTertiary,
-                  color: colors.text,
-                },
-              ]}
-              placeholder="+1 (555) 123-4567"
-              placeholderTextColor={colors.textTertiary}
-              value={formData.phone}
-              onChangeText={(value) => handleInputChange('phone', value)}
-              keyboardType="phone-pad"
-              onFocus={() => {
-                inputFocus.value = withTiming(1, { duration: 200 });
-              }}
-              onBlur={() => {
-                inputFocus.value = withTiming(0, { duration: 200 });
-              }}
-            />
-          </Animated.View>
-
-          {/* Password */}
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Password</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={[
-                  styles.passwordInput,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
-                    color: colors.text,
-                  },
-                ]}
-                placeholder="Create a password"
-                placeholderTextColor={colors.textTertiary}
-                value={formData.password}
-                onChangeText={(value) => handleInputChange('password', value)}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => {
-                  inputFocus.value = withTiming(1, { duration: 200 });
-                }}
-                onBlur={() => {
-                  inputFocus.value = withTiming(0, { duration: 200 });
-                }}
-              />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Ionicons
-                  name={showPassword ? 'eye-off' : 'eye'}
-                  size={20}
-                  color={colors.textTertiary}
-                />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-
-          {/* Confirm Password */}
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Confirm Password</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={[
-                  styles.passwordInput,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
-                    color: colors.text,
-                  },
-                ]}
-                placeholder="Confirm your password"
-                placeholderTextColor={colors.textTertiary}
-                value={formData.confirmPassword}
-                onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => {
-                  inputFocus.value = withTiming(1, { duration: 200 });
-                }}
-                onBlur={() => {
-                  inputFocus.value = withTiming(0, { duration: 200 });
-                }}
-              />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <Ionicons
-                  name={showConfirmPassword ? 'eye-off' : 'eye'}
-                  size={20}
-                  color={colors.textTertiary}
-                />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-
-          <Animated.View style={buttonAnimatedStyle}>
-            <TouchableOpacity
-              style={[
-                styles.signupButton,
-                {
-                  backgroundColor: colors.primary,
-                  opacity: isLoading ? 0.7 : 1,
-                },
-              ]}
-              onPress={handleSignup}
-              disabled={isLoading}
-            >
-              <Text style={styles.signupButtonText}>
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+              Already have an account?{' '}
+            </Text>
+            <TouchableOpacity onPress={handleLoginPress}>
+              <Text style={[styles.loginLink, { color: colors.primary }]}>
+                Sign In
               </Text>
             </TouchableOpacity>
-          </Animated.View>
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-            Already have an account?{' '}
-          </Text>
-          <TouchableOpacity onPress={handleLoginPress}>
-            <Text style={[styles.loginLink, { color: colors.primary }]}>
-              Sign In
-            </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

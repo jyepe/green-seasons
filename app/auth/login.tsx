@@ -72,7 +72,9 @@ export default function LoginScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -81,63 +83,42 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
-            <Ionicons name="leaf" size={32} color="white" />
-          </View>
-          <Text style={[styles.title, { color: colors.text }]}>Green Seasons</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Fresh produce for your restaurant
-          </Text>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-            <TextInput
+          {/* Header */}
+          <View style={styles.header}>
+            <View
               style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.textTertiary,
-                  color: colors.text,
-                },
+                styles.logoContainer,
+                { backgroundColor: colors.primary },
               ]}
-              placeholder="Enter your email"
-              placeholderTextColor={colors.textTertiary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              onFocus={() => {
-                inputFocus.value = withTiming(1, { duration: 200 });
-              }}
-              onBlur={() => {
-                inputFocus.value = withTiming(0, { duration: 200 });
-              }}
-            />
-          </Animated.View>
+            >
+              <Ionicons name="leaf" size={32} color="white" />
+            </View>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Green Seasons
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              Fresh produce for your restaurant
+            </Text>
+          </View>
 
-          <Animated.View style={inputAnimatedStyle}>
-            <Text style={[styles.label, { color: colors.text }]}>Password</Text>
-            <View style={styles.passwordContainer}>
+          {/* Form */}
+          <View style={styles.form}>
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
               <TextInput
                 style={[
-                  styles.passwordInput,
+                  styles.input,
                   {
                     backgroundColor: colors.surface,
                     borderColor: colors.textTertiary,
                     color: colors.text,
                   },
                 ]}
-                placeholder="Enter your password"
+                placeholder="Enter your email"
                 placeholderTextColor={colors.textTertiary}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
                 onFocus={() => {
@@ -147,55 +128,87 @@ export default function LoginScreen() {
                   inputFocus.value = withTiming(0, { duration: 200 });
                 }}
               />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Ionicons
-                  name={showPassword ? 'eye-off' : 'eye'}
-                  size={20}
-                  color={colors.textTertiary}
+            </Animated.View>
+
+            <Animated.View style={inputAnimatedStyle}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                Password
+              </Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[
+                    styles.passwordInput,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.textTertiary,
+                      color: colors.text,
+                    },
+                  ]}
+                  placeholder="Enter your password"
+                  placeholderTextColor={colors.textTertiary}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onFocus={() => {
+                    inputFocus.value = withTiming(1, { duration: 200 });
+                  }}
+                  onBlur={() => {
+                    inputFocus.value = withTiming(0, { duration: 200 });
+                  }}
                 />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={20}
+                    color={colors.textTertiary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
 
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
-              Forgot Password?
-            </Text>
-          </TouchableOpacity>
-
-          <Animated.View style={buttonAnimatedStyle}>
-            <TouchableOpacity
-              style={[
-                styles.loginButton,
-                {
-                  backgroundColor: colors.primary,
-                  opacity: isLoading ? 0.7 : 1,
-                },
-              ]}
-              onPress={handleLogin}
-              disabled={isLoading}
-            >
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text
+                style={[styles.forgotPasswordText, { color: colors.primary }]}
+              >
+                Forgot Password?
               </Text>
             </TouchableOpacity>
-          </Animated.View>
-        </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-            Don&apos;t have an account?{' '}
-          </Text>
-          <TouchableOpacity onPress={handleSignupPress}>
-            <Text style={[styles.signupLink, { color: colors.primary }]}>
-              Sign Up
+            <Animated.View style={buttonAnimatedStyle}>
+              <TouchableOpacity
+                style={[
+                  styles.loginButton,
+                  {
+                    backgroundColor: colors.primary,
+                    opacity: isLoading ? 0.7 : 1,
+                  },
+                ]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.loginButtonText}>
+                  {isLoading ? 'Signing In...' : 'Sign In'}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+              Don&apos;t have an account?{' '}
             </Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity onPress={handleSignupPress}>
+              <Text style={[styles.signupLink, { color: colors.primary }]}>
+                Sign Up
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

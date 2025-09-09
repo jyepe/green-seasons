@@ -2,7 +2,14 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function ProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,9 +89,11 @@ export default function ProductsScreen() {
   ];
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'all' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -92,7 +101,9 @@ export default function ProductsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.title, { color: colors.text }]}>Fresh Produce</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Fresh Produce
+        </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Order the freshest ingredients for your restaurant
         </Text>
@@ -100,7 +111,15 @@ export default function ProductsScreen() {
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.textTertiary }]}>
+        <View
+          style={[
+            styles.searchBar,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.textTertiary,
+            },
+          ]}
+        >
           <Ionicons name="search" size={20} color={colors.textTertiary} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
@@ -119,29 +138,37 @@ export default function ProductsScreen() {
         style={styles.categoriesContainer}
         contentContainerStyle={styles.categoriesContent}
       >
-        {categories.map((category) => (
+        {categories.map(category => (
           <TouchableOpacity
             key={category.id}
             style={[
               styles.categoryButton,
               {
-                backgroundColor: selectedCategory === category.id ? colors.primary : colors.surface,
+                backgroundColor:
+                  selectedCategory === category.id
+                    ? colors.primary
+                    : colors.surface,
                 borderColor: colors.textTertiary,
-              }
+              },
             ]}
             onPress={() => setSelectedCategory(category.id)}
           >
             <Ionicons
               name={category.icon as any}
               size={20}
-              color={selectedCategory === category.id ? 'white' : colors.textTertiary}
+              color={
+                selectedCategory === category.id ? 'white' : colors.textTertiary
+              }
             />
             <Text
               style={[
                 styles.categoryText,
                 {
-                  color: selectedCategory === category.id ? 'white' : colors.textSecondary,
-                }
+                  color:
+                    selectedCategory === category.id
+                      ? 'white'
+                      : colors.textSecondary,
+                },
               ]}
             >
               {category.name}
@@ -153,7 +180,7 @@ export default function ProductsScreen() {
       {/* Products Grid */}
       <ScrollView style={styles.productsContainer}>
         <View style={styles.productsGrid}>
-          {filteredProducts.map((product) => (
+          {filteredProducts.map(product => (
             <TouchableOpacity
               key={product.id}
               style={[styles.productCard, { backgroundColor: colors.surface }]}
@@ -168,20 +195,40 @@ export default function ProductsScreen() {
                 )}
               </View>
               <View style={styles.productInfo}>
-                <Text style={[styles.productName, { color: colors.text }]}>{product.name}</Text>
-                <Text style={[styles.productDescription, { color: colors.textSecondary }]}>
+                <Text style={[styles.productName, { color: colors.text }]}>
+                  {product.name}
+                </Text>
+                <Text
+                  style={[
+                    styles.productDescription,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   {product.description}
                 </Text>
                 <View style={styles.productPriceContainer}>
-                  <Text style={[styles.productPrice, { color: colors.primary }]}>{product.price}</Text>
-                  <Text style={[styles.productUnit, { color: colors.textSecondary }]}>{product.unit}</Text>
+                  <Text
+                    style={[styles.productPrice, { color: colors.primary }]}
+                  >
+                    {product.price}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.productUnit,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    {product.unit}
+                  </Text>
                 </View>
                 <TouchableOpacity
                   style={[
                     styles.addButton,
                     {
-                      backgroundColor: product.inStock ? colors.primary : colors.textTertiary,
-                    }
+                      backgroundColor: product.inStock
+                        ? colors.primary
+                        : colors.textTertiary,
+                    },
                   ]}
                   disabled={!product.inStock}
                 >
