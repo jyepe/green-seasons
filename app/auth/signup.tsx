@@ -162,7 +162,7 @@ export default function SignupScreen() {
       Alert.alert(
         'Success',
         'Account created successfully! Please check your email to verify your account.',
-        [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
+        [{ text: 'OK', onPress: () => router.replace('/auth/login') }]
       );
     } catch (error: any) {
       Alert.alert(
