@@ -35,6 +35,7 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const colorScheme = useColorScheme();
   const router = useRouter();
 
@@ -45,29 +46,101 @@ export default function SignupScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleFieldBlur = (field: string) => {
+    const error = validateField(
+      field,
+      formData[field as keyof typeof formData]
+    );
+    setErrors(prev => ({ ...prev, [field]: error }));
+
+    // Special case for confirm password - also validate when password changes
+    if (field === 'password') {
+      const confirmPasswordError = validateField(
+        'confirmPassword',
+        formData.confirmPassword
+      );
+      setErrors(prev => ({ ...prev, confirmPassword: confirmPasswordError }));
+    }
+  };
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'firstName':
+        if (!value.trim()) return 'First name is required';
+        if (value.trim().length < 2)
+          return 'First name must be at least 2 characters';
+        return '';
+
+      case 'lastName':
+        if (!value.trim()) return 'Last name is required';
+        if (value.trim().length < 2)
+          return 'Last name must be at least 2 characters';
+        return '';
+
+      case 'email':
+        if (!value.trim()) return 'Email is required';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value))
+          return 'Please enter a valid email address';
+        return '';
+
+      case 'phone':
+        if (!value.trim()) return 'Phone number is required';
+        // Remove all non-digit characters
+        const cleanPhone = value.replace(/\D/g, '');
+        if (cleanPhone.length !== 10) {
+          return 'Phone number must be exactly 10 digits';
+        }
+        return '';
+
+      case 'password':
+        if (!value) return 'Password is required';
+        if (value.length < 6) return 'Password must be at least 6 characters';
+        if (value.length > 50)
+          return 'Password must be less than 50 characters';
+        return '';
+
+      case 'confirmPassword':
+        if (!value) return 'Please confirm your password';
+        if (value !== formData.password) return 'Passwords do not match';
+        return '';
+
+      default:
+        return '';
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach(field => {
+      const error = validateField(
+        field,
+        formData[field as keyof typeof formData]
+      );
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const isFormValid = (): boolean => {
+    return Object.keys(formData).every(field => {
+      const error = validateField(
+        field,
+        formData[field as keyof typeof formData]
+      );
+      return !error;
+    });
+  };
+
   const handleSignup = async () => {
-    const { firstName, lastName, email, password, confirmPassword, phone } =
-      formData;
-
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !password ||
-      !confirmPassword ||
-      !phone
-    ) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    if (!validateForm()) {
       return;
     }
 
@@ -151,14 +224,16 @@ export default function SignupScreen() {
             <View style={styles.row}>
               <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
                 <Text style={[styles.label, { color: colors.text }]}>
-                  First Name
+                  First Name *
                 </Text>
                 <TextInput
                   style={[
                     styles.input,
                     {
                       backgroundColor: colors.surface,
-                      borderColor: colors.textTertiary,
+                      borderColor: errors.firstName
+                        ? colors.error
+                        : colors.textTertiary,
                       color: colors.text,
                     },
                   ]}
@@ -172,20 +247,28 @@ export default function SignupScreen() {
                   }}
                   onBlur={() => {
                     inputFocus.value = withTiming(0, { duration: 200 });
+                    handleFieldBlur('firstName');
                   }}
                 />
+                {errors.firstName && (
+                  <Text style={[styles.errorText, { color: colors.error }]}>
+                    {errors.firstName}
+                  </Text>
+                )}
               </Animated.View>
 
               <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
                 <Text style={[styles.label, { color: colors.text }]}>
-                  Last Name
+                  Last Name *
                 </Text>
                 <TextInput
                   style={[
                     styles.input,
                     {
                       backgroundColor: colors.surface,
-                      borderColor: colors.textTertiary,
+                      borderColor: errors.lastName
+                        ? colors.error
+                        : colors.textTertiary,
                       color: colors.text,
                     },
                   ]}
@@ -199,20 +282,30 @@ export default function SignupScreen() {
                   }}
                   onBlur={() => {
                     inputFocus.value = withTiming(0, { duration: 200 });
+                    handleFieldBlur('lastName');
                   }}
                 />
+                {errors.lastName && (
+                  <Text style={[styles.errorText, { color: colors.error }]}>
+                    {errors.lastName}
+                  </Text>
+                )}
               </Animated.View>
             </View>
 
             {/* Email */}
             <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+              <Text style={[styles.label, { color: colors.text }]}>
+                Email *
+              </Text>
               <TextInput
                 style={[
                   styles.input,
                   {
                     backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
+                    borderColor: errors.email
+                      ? colors.error
+                      : colors.textTertiary,
                     color: colors.text,
                   },
                 ]}
@@ -228,25 +321,33 @@ export default function SignupScreen() {
                 }}
                 onBlur={() => {
                   inputFocus.value = withTiming(0, { duration: 200 });
+                  handleFieldBlur('email');
                 }}
               />
+              {errors.email && (
+                <Text style={[styles.errorText, { color: colors.error }]}>
+                  {errors.email}
+                </Text>
+              )}
             </Animated.View>
 
             {/* Phone */}
             <Animated.View style={inputAnimatedStyle}>
               <Text style={[styles.label, { color: colors.text }]}>
-                Phone Number
+                Phone Number *
               </Text>
               <TextInput
                 style={[
                   styles.input,
                   {
                     backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
+                    borderColor: errors.phone
+                      ? colors.error
+                      : colors.textTertiary,
                     color: colors.text,
                   },
                 ]}
-                placeholder="+1 (555) 123-4567"
+                placeholder="(555) 123-4567"
                 placeholderTextColor={colors.textTertiary}
                 value={formData.phone}
                 onChangeText={value => handleInputChange('phone', value)}
@@ -256,14 +357,24 @@ export default function SignupScreen() {
                 }}
                 onBlur={() => {
                   inputFocus.value = withTiming(0, { duration: 200 });
+                  handleFieldBlur('phone');
                 }}
               />
+              {errors.phone ? (
+                <Text style={[styles.errorText, { color: colors.error }]}>
+                  {errors.phone}
+                </Text>
+              ) : (
+                <Text style={[styles.helpText, { color: colors.textTertiary }]}>
+                  Enter 10 digits (e.g., 5551234567)
+                </Text>
+              )}
             </Animated.View>
 
             {/* Password */}
             <Animated.View style={inputAnimatedStyle}>
               <Text style={[styles.label, { color: colors.text }]}>
-                Password
+                Password *
               </Text>
               <View style={styles.passwordContainer}>
                 <TextInput
@@ -271,7 +382,9 @@ export default function SignupScreen() {
                     styles.passwordInput,
                     {
                       backgroundColor: colors.surface,
-                      borderColor: colors.textTertiary,
+                      borderColor: errors.password
+                        ? colors.error
+                        : colors.textTertiary,
                       color: colors.text,
                     },
                   ]}
@@ -287,6 +400,7 @@ export default function SignupScreen() {
                   }}
                   onBlur={() => {
                     inputFocus.value = withTiming(0, { duration: 200 });
+                    handleFieldBlur('password');
                   }}
                 />
                 <TouchableOpacity
@@ -300,12 +414,21 @@ export default function SignupScreen() {
                   />
                 </TouchableOpacity>
               </View>
+              {errors.password ? (
+                <Text style={[styles.errorText, { color: colors.error }]}>
+                  {errors.password}
+                </Text>
+              ) : (
+                <Text style={[styles.helpText, { color: colors.textTertiary }]}>
+                  Must be at least 6 characters
+                </Text>
+              )}
             </Animated.View>
 
             {/* Confirm Password */}
             <Animated.View style={inputAnimatedStyle}>
               <Text style={[styles.label, { color: colors.text }]}>
-                Confirm Password
+                Confirm Password *
               </Text>
               <View style={styles.passwordContainer}>
                 <TextInput
@@ -313,7 +436,9 @@ export default function SignupScreen() {
                     styles.passwordInput,
                     {
                       backgroundColor: colors.surface,
-                      borderColor: colors.textTertiary,
+                      borderColor: errors.confirmPassword
+                        ? colors.error
+                        : colors.textTertiary,
                       color: colors.text,
                     },
                   ]}
@@ -331,6 +456,7 @@ export default function SignupScreen() {
                   }}
                   onBlur={() => {
                     inputFocus.value = withTiming(0, { duration: 200 });
+                    handleFieldBlur('confirmPassword');
                   }}
                 />
                 <TouchableOpacity
@@ -344,6 +470,11 @@ export default function SignupScreen() {
                   />
                 </TouchableOpacity>
               </View>
+              {errors.confirmPassword && (
+                <Text style={[styles.errorText, { color: colors.error }]}>
+                  {errors.confirmPassword}
+                </Text>
+              )}
             </Animated.View>
 
             <Animated.View style={buttonAnimatedStyle}>
@@ -351,12 +482,15 @@ export default function SignupScreen() {
                 style={[
                   styles.signupButton,
                   {
-                    backgroundColor: colors.primary,
+                    backgroundColor:
+                      isFormValid() && !isLoading
+                        ? colors.primary
+                        : colors.textTertiary,
                     opacity: isLoading ? 0.7 : 1,
                   },
                 ]}
                 onPress={handleSignup}
-                disabled={isLoading}
+                disabled={isLoading || !isFormValid()}
               >
                 <Text style={styles.signupButtonText}>
                   {isLoading ? 'Creating Account...' : 'Create Account'}
@@ -492,6 +626,18 @@ const styles = StyleSheet.create({
     right: 16,
     top: 14,
     padding: 4,
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+    fontFamily: 'Inter_400Regular',
+  },
+  helpText: {
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+    fontFamily: 'Inter_400Regular',
   },
   signupButton: {
     height: 48,
