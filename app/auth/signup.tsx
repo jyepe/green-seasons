@@ -21,6 +21,7 @@ import Animated, {
     withSpring,
     withTiming,
 } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
@@ -35,7 +36,6 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
   const colorScheme = useColorScheme();
   const router = useRouter();
 
@@ -61,11 +61,6 @@ export default function SignupScreen() {
 
     if (password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
-
-    if (!acceptTerms) {
-      Alert.alert('Error', 'Please accept the terms and conditions');
       return;
     }
 
@@ -102,28 +97,34 @@ export default function SignupScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Fixed Header */}
+        <View style={[styles.fixedHeader, { backgroundColor: colors.background }]}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <View style={styles.logoContainer}>
+          <View style={styles.headerContent}>
             <View style={[styles.logoIcon, { backgroundColor: colors.primary }]}>
               <Ionicons name="leaf" size={24} color="white" />
             </View>
             <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
           </View>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+        {/* Subtitle */}
+        <View style={styles.subtitleContainer}>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Join Green Seasons and start ordering fresh produce
           </Text>
@@ -344,34 +345,6 @@ export default function SignupScreen() {
             </View>
           </Animated.View>
 
-          {/* Terms and Conditions */}
-          <TouchableOpacity
-            style={styles.termsContainer}
-            onPress={() => setAcceptTerms(!acceptTerms)}
-          >
-            <View style={[
-              styles.checkbox,
-              {
-                backgroundColor: acceptTerms ? colors.primary : colors.surface,
-                borderColor: colors.textTertiary,
-              }
-            ]}>
-              {acceptTerms && (
-                <Ionicons name="checkmark" size={16} color="white" />
-              )}
-            </View>
-            <Text style={[styles.termsText, { color: colors.textSecondary }]}>
-              I agree to the{' '}
-              <Text style={[styles.termsLink, { color: colors.primary }]}>
-                Terms and Conditions
-              </Text>
-              {' '}and{' '}
-              <Text style={[styles.termsLink, { color: colors.primary }]}>
-                Privacy Policy
-              </Text>
-            </Text>
-          </TouchableOpacity>
-
           <Animated.View style={buttonAnimatedStyle}>
             <TouchableOpacity
               style={[
@@ -402,8 +375,9 @@ export default function SignupScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -411,14 +385,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
   },
-  header: {
-    marginBottom: 32,
+  fixedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   backButton: {
     width: 40,
@@ -426,32 +408,39 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
   },
-  logoContainer: {
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'center',
+  },
+  headerSpacer: {
+    width: 40,
   },
   logoIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginRight: 12,
     shadowColor: '#2E7D32',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  subtitleContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: '700',
-    marginBottom: 8,
     fontFamily: 'Inter_700Bold',
   },
   subtitle: {
@@ -502,31 +491,6 @@ const styles = StyleSheet.create({
     right: 16,
     top: 14,
     padding: 4,
-  },
-  termsContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 32,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    marginTop: 2,
-  },
-  termsText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: 'Inter_400Regular',
-  },
-  termsLink: {
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
   signupButton: {
     height: 48,
