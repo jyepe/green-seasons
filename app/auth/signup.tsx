@@ -22,6 +22,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { signUpUser } from '@/lib/supabase';
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
@@ -149,13 +150,28 @@ export default function SignupScreen() {
       buttonScale.value = withSpring(1);
     });
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await signUpUser({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+      });
+
+      Alert.alert(
+        'Success',
+        'Account created successfully! Please check your email to verify your account.',
+        [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
+      );
+    } catch (error: any) {
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to create account. Please try again.'
+      );
+    } finally {
       setIsLoading(false);
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') },
-      ]);
-    }, 2000);
+    }
   };
 
   const handleLoginPress = () => {
