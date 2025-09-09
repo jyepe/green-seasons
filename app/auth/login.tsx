@@ -90,11 +90,11 @@ export default function LoginScreen() {
             r={Math.max(width, height) * 0.75}
             gradientUnits="userSpaceOnUse"
           >
-            <Stop offset="0%" stopColor="#A8E6CF" stopOpacity="0.5" />
-            <Stop offset="25%" stopColor="#A8E6CF" stopOpacity="0.3" />
-            <Stop offset="45%" stopColor="#A8E6CF" stopOpacity="0.15" />
-            <Stop offset="60%" stopColor="#A8E6CF" stopOpacity="0.05" />
-            <Stop offset="75%" stopColor="#A8E6CF" stopOpacity="0" />
+            <Stop offset="0%" stopColor="#7FD8B5" stopOpacity="0.7" />
+            <Stop offset="25%" stopColor="#7FD8B5" stopOpacity="0.45" />
+            <Stop offset="45%" stopColor="#7FD8B5" stopOpacity="0.25" />
+            <Stop offset="60%" stopColor="#7FD8B5" stopOpacity="0.1" />
+            <Stop offset="75%" stopColor="#7FD8B5" stopOpacity="0" />
           </RadialGradient>
           {/* Bottom-right gradient */}
           <RadialGradient
@@ -104,11 +104,11 @@ export default function LoginScreen() {
             r={Math.max(width, height) * 0.75}
             gradientUnits="userSpaceOnUse"
           >
-            <Stop offset="0%" stopColor="#FFD3B6" stopOpacity="0.5" />
-            <Stop offset="25%" stopColor="#FFD3B6" stopOpacity="0.3" />
-            <Stop offset="45%" stopColor="#FFD3B6" stopOpacity="0.15" />
-            <Stop offset="60%" stopColor="#FFD3B6" stopOpacity="0.05" />
-            <Stop offset="75%" stopColor="#FFD3B6" stopOpacity="0" />
+            <Stop offset="0%" stopColor="#FFBE88" stopOpacity="0.7" />
+            <Stop offset="25%" stopColor="#FFBE88" stopOpacity="0.45" />
+            <Stop offset="45%" stopColor="#FFBE88" stopOpacity="0.25" />
+            <Stop offset="60%" stopColor="#FFBE88" stopOpacity="0.1" />
+            <Stop offset="75%" stopColor="#FFBE88" stopOpacity="0" />
           </RadialGradient>
         </Defs>
         <Rect x="0" y="0" width={width} height={height} fill="#F9F9F9" />
