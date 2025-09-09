@@ -87,7 +87,7 @@ export default function LoginScreen() {
             id="gradient1"
             cx="0"
             cy="0"
-            r={Math.max(width, height) * 0.75}
+            r={Math.max(width, height) * 0.55}
             gradientUnits="userSpaceOnUse"
           >
             <Stop offset="0%" stopColor="#7FD8B5" stopOpacity="0.7" />
@@ -101,7 +101,7 @@ export default function LoginScreen() {
             id="gradient2"
             cx={width}
             cy={height}
-            r={Math.max(width, height) * 0.75}
+            r={Math.max(width, height) * 0.55}
             gradientUnits="userSpaceOnUse"
           >
             <Stop offset="0%" stopColor="#FFBE88" stopOpacity="0.7" />
