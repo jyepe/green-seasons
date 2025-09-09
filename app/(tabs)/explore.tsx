@@ -1,110 +1,353 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+export default function ProductsScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
 
-export default function TabTwoScreen() {
+  const categories = [
+    { id: 'all', name: 'All', icon: 'grid-outline' },
+    { id: 'vegetables', name: 'Vegetables', icon: 'leaf-outline' },
+    { id: 'fruits', name: 'Fruits', icon: 'nutrition-outline' },
+    { id: 'herbs', name: 'Herbs', icon: 'flower-outline' },
+    { id: 'organic', name: 'Organic', icon: 'checkmark-circle-outline' },
+  ];
+
+  const products = [
+    {
+      id: '1',
+      name: 'Fresh Mixed Greens',
+      category: 'vegetables',
+      price: '$12.99',
+      unit: 'per lb',
+      image: '🥬',
+      description: 'Fresh, crisp mixed greens perfect for salads',
+      inStock: true,
+    },
+    {
+      id: '2',
+      name: 'Organic Tomatoes',
+      category: 'vegetables',
+      price: '$8.99',
+      unit: 'per lb',
+      image: '🍅',
+      description: 'Juicy, organic tomatoes from local farms',
+      inStock: true,
+    },
+    {
+      id: '3',
+      name: 'Fresh Basil',
+      category: 'herbs',
+      price: '$4.99',
+      unit: 'per bunch',
+      image: '🌿',
+      description: 'Aromatic fresh basil for your dishes',
+      inStock: true,
+    },
+    {
+      id: '4',
+      name: 'Organic Carrots',
+      category: 'vegetables',
+      price: '$6.99',
+      unit: 'per lb',
+      image: '🥕',
+      description: 'Sweet, crunchy organic carrots',
+      inStock: false,
+    },
+    {
+      id: '5',
+      name: 'Fresh Strawberries',
+      category: 'fruits',
+      price: '$15.99',
+      unit: 'per lb',
+      image: '🍓',
+      description: 'Sweet, ripe strawberries',
+      inStock: true,
+    },
+    {
+      id: '6',
+      name: 'Organic Spinach',
+      category: 'vegetables',
+      price: '$7.99',
+      unit: 'per lb',
+      image: '🥬',
+      description: 'Nutrient-rich organic spinach',
+      inStock: true,
+    },
+  ];
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Fresh Produce</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Order the freshest ingredients for your restaurant
+        </Text>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.textTertiary }]}>
+          <Ionicons name="search" size={20} color={colors.textTertiary} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search products..."
+            placeholderTextColor={colors.textTertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </View>
+
+      {/* Categories */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriesContainer}
+        contentContainerStyle={styles.categoriesContent}
+      >
+        {categories.map((category) => (
+          <TouchableOpacity
+            key={category.id}
+            style={[
+              styles.categoryButton,
+              {
+                backgroundColor: selectedCategory === category.id ? colors.primary : colors.surface,
+                borderColor: colors.textTertiary,
+              }
+            ]}
+            onPress={() => setSelectedCategory(category.id)}
+          >
+            <Ionicons
+              name={category.icon as any}
+              size={20}
+              color={selectedCategory === category.id ? 'white' : colors.textTertiary}
+            />
+            <Text
+              style={[
+                styles.categoryText,
+                {
+                  color: selectedCategory === category.id ? 'white' : colors.textSecondary,
+                }
+              ]}
+            >
+              {category.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Products Grid */}
+      <ScrollView style={styles.productsContainer}>
+        <View style={styles.productsGrid}>
+          {filteredProducts.map((product) => (
+            <TouchableOpacity
+              key={product.id}
+              style={[styles.productCard, { backgroundColor: colors.surface }]}
+              disabled={!product.inStock}
+            >
+              <View style={styles.productImage}>
+                <Text style={styles.productEmoji}>{product.image}</Text>
+                {!product.inStock && (
+                  <View style={styles.outOfStockOverlay}>
+                    <Text style={styles.outOfStockText}>Out of Stock</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.productInfo}>
+                <Text style={[styles.productName, { color: colors.text }]}>{product.name}</Text>
+                <Text style={[styles.productDescription, { color: colors.textSecondary }]}>
+                  {product.description}
+                </Text>
+                <View style={styles.productPriceContainer}>
+                  <Text style={[styles.productPrice, { color: colors.primary }]}>{product.price}</Text>
+                  <Text style={[styles.productUnit, { color: colors.textSecondary }]}>{product.unit}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.addButton,
+                    {
+                      backgroundColor: product.inStock ? colors.primary : colors.textTertiary,
+                    }
+                  ]}
+                  disabled={!product.inStock}
+                >
+                  <Ionicons name="add" size={20} color="white" />
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
   },
-  titleContainer: {
+  header: {
+    padding: 20,
+    marginBottom: 16,
+    borderRadius: 16,
+    margin: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  searchBar: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  categoriesContainer: {
+    marginBottom: 20,
+  },
+  categoriesContent: {
+    paddingHorizontal: 16,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginRight: 12,
+  },
+  categoryText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  productsContainer: {
+    flex: 1,
+  },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+  },
+  productCard: {
+    width: '48%',
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  productImage: {
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    position: 'relative',
+  },
+  productEmoji: {
+    fontSize: 48,
+  },
+  outOfStockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  outOfStockText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  productInfo: {
+    padding: 12,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 4,
+  },
+  productDescription: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    marginBottom: 8,
+    lineHeight: 16,
+  },
+  productPriceContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 12,
+  },
+  productPrice: {
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+  },
+  productUnit: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    marginLeft: 4,
+  },
+  addButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
   },
 });
