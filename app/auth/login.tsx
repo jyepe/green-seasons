@@ -1,7 +1,5 @@
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -31,7 +29,6 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const colorScheme = useColorScheme();
   const router = useRouter();
 
   const buttonScale = useSharedValue(1);
@@ -73,269 +70,193 @@ export default function LoginScreen() {
     ],
   }));
 
-  const colors = Colors[colorScheme ?? 'light'];
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View pointerEvents="none" style={styles.backgroundDecorations}>
-          <View
-            style={[
-              styles.blob,
-              {
-                backgroundColor: colors.primary,
-                opacity: 0.12,
-                top: -80,
-                left: -60,
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.blob,
-              {
-                backgroundColor: colors.accent,
-                opacity: 0.12,
-                bottom: -90,
-                right: -70,
-              },
-            ]}
-          />
-        </View>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+    <LinearGradient colors={['#E8F5E8', '#FFF8E1']} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <BlurView intensity={50} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={styles.logoBlurWrapper}>
-              <View
-                style={[
-                  styles.logoContainer,
-                  { backgroundColor: colors.primary },
-                ]}
-              >
-                <Ionicons name="leaf" size={36} color="white" />
-              </View>
-            </BlurView>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Green <Text style={{ color: colors.accent }}>Seasons</Text>
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Fresh produce for your restaurant
-            </Text>
-          </View>
-
-          {/* Form */}
-          <BlurView
-            intensity={80}
-            tint={colorScheme === 'dark' ? 'dark' : 'light'}
-            style={[
-              styles.formCard,
-              colorScheme === 'dark' ? styles.formCardDark : styles.formCardLight,
-            ]}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-          <View style={styles.form}>
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-              <View
-                style={[
-                  styles.inputRow,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="mail"
-                  size={18}
-                  color={colors.textTertiary}
-                  style={styles.leftIcon}
-                />
-                <TextInput
-                  style={[styles.inputField, { color: colors.text }]}
-                  placeholder="Enter your email"
-                  placeholderTextColor={colors.textTertiary}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onFocus={() => {
-                    inputFocus.value = withTiming(1, { duration: 200 });
-                  }}
-                  onBlur={() => {
-                    inputFocus.value = withTiming(0, { duration: 200 });
-                  }}
-                />
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <Ionicons name="leaf" size={36} color="#4CAF50" />
               </View>
-            </Animated.View>
-
-            
-
-
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>Password</Text>
-              <View
-                style={[
-                  styles.inputRow,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="lock-closed"
-                  size={18}
-                  color={colors.textTertiary}
-                  style={styles.leftIcon}
-                />
-                <TextInput
-                  style={[styles.inputField, { color: colors.text }]}
-                  placeholder="Enter your password"
-                  placeholderTextColor={colors.textTertiary}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onFocus={() => {
-                    inputFocus.value = withTiming(1, { duration: 200 });
-                  }}
-                  onBlur={() => {
-                    inputFocus.value = withTiming(0, { duration: 200 });
-                  }}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButtonInline}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off' : 'eye'}
-                    size={20}
-                    color={colors.textTertiary}
-                  />
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
-
-            <View style={styles.inlineActions}>
-              <TouchableOpacity
-                style={styles.rememberRow}
-                onPress={() => setRememberMe(prev => !prev)}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    {
-                      borderColor: rememberMe
-                        ? colors.primary
-                        : colors.textTertiary,
-                      backgroundColor: rememberMe
-                        ? colors.primary
-                        : 'transparent',
-                    },
-                  ]}
-                >
-                  {rememberMe && (
-                    <Ionicons name="checkmark" size={14} color="#fff" />
-                  )}
-                </View>
-                <Text style={[styles.rememberText, { color: colors.text }]}>
-                  Remember me
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.forgotPassword}>
-                <Text
-                  style={[styles.forgotPasswordText, { color: colors.primary }]}
-                >
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <Animated.View style={buttonAnimatedStyle}>
-              <TouchableOpacity
-                style={[
-                  styles.loginButton,
-                  {
-                    backgroundColor: colors.primary,
-                    opacity: isLoading ? 0.7 : 1,
-                  },
-                ]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                <Text style={styles.loginButtonText}>
-                  {isLoading ? 'Signing In...' : 'Sign In'}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-
-            <View style={styles.dividerRow}>
-              <View style={styles.divider} />
-              <Text style={[styles.dividerText, { color: colors.textTertiary }]}>or</Text>
-              <View style={styles.divider} />
-            </View>
-
-            <View style={styles.socialRow}>
-              <TouchableOpacity
-                style={[
-                  styles.socialButton,
-                  {
-                    borderColor: colors.textTertiary,
-                    backgroundColor: colors.surface,
-                  },
-                ]}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="logo-google" size={18} color={colors.text} />
-                <Text style={[styles.socialText, { color: colors.text }]}>Google</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.socialButton,
-                  {
-                    borderColor: colors.textTertiary,
-                    backgroundColor: colors.surface,
-                  },
-                ]}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="logo-apple" size={18} color={colors.text} />
-                <Text style={[styles.socialText, { color: colors.text }]}>Apple</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          </BlurView>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-              Don&apos;t have an account?{' '}
-            </Text>
-            <TouchableOpacity onPress={handleSignupPress}>
-              <Text style={[styles.signupLink, { color: colors.primary }]}>
-                Sign Up
+              <Text style={styles.title}>
+                <Text style={styles.titleGreen}>Green</Text>{' '}
+                <Text style={styles.titleOrange}>Seasons</Text>
               </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              <Text style={styles.subtitle}>
+                Fresh produce for your restaurant
+              </Text>
+            </View>
+
+            {/* Form */}
+            <View style={styles.formCard}>
+              <View style={styles.form}>
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={styles.label}>Email</Text>
+                  <View style={styles.inputRow}>
+                    <Ionicons
+                      name="mail"
+                      size={18}
+                      color="#9E9E9E"
+                      style={styles.leftIcon}
+                    />
+                    <TextInput
+                      style={styles.inputField}
+                      placeholder="Enter your email"
+                      placeholderTextColor="#9E9E9E"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                      }}
+                    />
+                  </View>
+                </Animated.View>
+
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={styles.label}>Password</Text>
+                  <View style={styles.inputRow}>
+                    <Ionicons
+                      name="lock-closed"
+                      size={18}
+                      color="#9E9E9E"
+                      style={styles.leftIcon}
+                    />
+                    <TextInput
+                      style={styles.inputField}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#9E9E9E"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                      }}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButtonInline}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Ionicons
+                        name={showPassword ? 'eye-off' : 'eye'}
+                        size={20}
+                        color="#9E9E9E"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+
+                <View style={styles.inlineActions}>
+                  <TouchableOpacity
+                    style={styles.rememberRow}
+                    onPress={() => setRememberMe(prev => !prev)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        {
+                          borderColor: rememberMe ? '#4CAF50' : '#9E9E9E',
+                          backgroundColor: rememberMe
+                            ? '#4CAF50'
+                            : 'transparent',
+                        },
+                      ]}
+                    >
+                      {rememberMe && (
+                        <Ionicons name="checkmark" size={14} color="#fff" />
+                      )}
+                    </View>
+                    <Text style={styles.rememberText}>Remember me</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.forgotPassword}>
+                    <Text style={styles.forgotPasswordText}>
+                      Forgot Password?
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Animated.View style={buttonAnimatedStyle}>
+                  <TouchableOpacity
+                    style={[
+                      styles.loginButton,
+                      {
+                        opacity: isLoading ? 0.7 : 1,
+                      },
+                    ]}
+                    onPress={handleLogin}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.loginButtonText}>
+                      {isLoading ? 'Signing In...' : 'Sign In'}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+
+                <View style={styles.dividerRow}>
+                  <View style={styles.divider} />
+                  <Text style={styles.dividerText}>OR</Text>
+                  <View style={styles.divider} />
+                </View>
+
+                <View style={styles.socialRow}>
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="logo-google" size={18} color="#333" />
+                    <Text style={styles.socialText}>Google</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="logo-apple" size={18} color="#333" />
+                    <Text style={styles.socialText}>Apple</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Don&apos;t have an account?{' '}
+              </Text>
+              <TouchableOpacity onPress={handleSignupPress}>
+                <Text style={styles.signupLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   keyboardAvoidingView: {
@@ -347,43 +268,26 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 40,
   },
-  backgroundDecorations: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  blob: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 200,
-  },
   header: {
     alignItems: 'center',
     marginBottom: 32,
-  },
-  logoBlurWrapper: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    marginBottom: 16,
   },
   logoContainer: {
     width: 80,
     height: 80,
     borderRadius: 20,
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 0,
-    shadowColor: '#2E7D32',
+    marginBottom: 16,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   title: {
     fontSize: 32,
@@ -391,59 +295,59 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Inter_700Bold',
   },
+  titleGreen: {
+    color: '#4CAF50',
+  },
+  titleOrange: {
+    color: '#FF9800',
+  },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
+    color: '#666',
   },
   formCard: {
+    backgroundColor: 'white',
     borderRadius: 20,
-    overflow: 'hidden',
-    padding: 16,
+    padding: 24,
     marginBottom: 24,
-  },
-  formCardLight: {
-    backgroundColor: 'rgba(0,0,0,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
-  },
-  formCardDark: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
   form: {
-    marginBottom: 32,
+    marginBottom: 0,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     fontFamily: 'Inter_600SemiBold',
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    marginBottom: 20,
-    fontFamily: 'Inter_400Regular',
+    color: '#333',
   },
   inputRow: {
     height: 52,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 12,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E0E0E0',
   },
   inputField: {
     flex: 1,
     fontSize: 16,
     paddingVertical: 10,
     fontFamily: 'Inter_400Regular',
+    color: '#333',
   },
   leftIcon: {
     marginRight: 10,
@@ -493,6 +397,7 @@ const styles = StyleSheet.create({
   rememberText: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
+    color: '#333',
   },
   forgotPassword: {
     alignSelf: 'auto',
@@ -502,20 +407,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+    color: '#4CAF50',
   },
   loginButton: {
     height: 48,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#2E7D32',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    backgroundColor: '#4CAF50',
+    marginBottom: 20,
   },
   loginButtonText: {
     color: 'white',
@@ -526,20 +426,20 @@ const styles = StyleSheet.create({
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
     marginBottom: 16,
     gap: 8,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: '#E0E0E0',
   },
   dividerText: {
     fontSize: 12,
     fontFamily: 'Inter_400Regular',
     textTransform: 'uppercase',
     letterSpacing: 1,
+    color: '#666',
   },
   socialRow: {
     flexDirection: 'row',
@@ -550,6 +450,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -558,6 +460,7 @@ const styles = StyleSheet.create({
   socialText: {
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
+    color: '#333',
   },
   footer: {
     flexDirection: 'row',
@@ -567,10 +470,12 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
+    color: '#666',
   },
   signupLink: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+    color: '#4CAF50',
   },
 });
