@@ -133,55 +133,72 @@ export default function LoginScreen() {
 
           {/* Form */}
           <BlurView
-            intensity={60}
+            intensity={80}
             tint={colorScheme === 'dark' ? 'dark' : 'light'}
-            style={styles.formCard}
+            style={[
+              styles.formCard,
+              colorScheme === 'dark' ? styles.formCardDark : styles.formCardLight,
+            ]}
           >
           <View style={styles.form}>
             <Animated.View style={inputAnimatedStyle}>
               <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-              <TextInput
+              <View
                 style={[
-                  styles.input,
+                  styles.inputRow,
                   {
                     backgroundColor: colors.surface,
                     borderColor: colors.textTertiary,
-                    color: colors.text,
                   },
                 ]}
-                placeholder="Enter your email"
-                placeholderTextColor={colors.textTertiary}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => {
-                  inputFocus.value = withTiming(1, { duration: 200 });
-                }}
-                onBlur={() => {
-                  inputFocus.value = withTiming(0, { duration: 200 });
-                }}
-              />
+              >
+                <Ionicons
+                  name="mail"
+                  size={18}
+                  color={colors.textTertiary}
+                  style={styles.leftIcon}
+                />
+                <TextInput
+                  style={[styles.inputField, { color: colors.text }]}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.textTertiary}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onFocus={() => {
+                    inputFocus.value = withTiming(1, { duration: 200 });
+                  }}
+                  onBlur={() => {
+                    inputFocus.value = withTiming(0, { duration: 200 });
+                  }}
+                />
+              </View>
             </Animated.View>
 
             
 
 
             <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Password
-              </Text>
-              <View style={styles.passwordContainer}>
+              <Text style={[styles.label, { color: colors.text }]}>Password</Text>
+              <View
+                style={[
+                  styles.inputRow,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.textTertiary,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed"
+                  size={18}
+                  color={colors.textTertiary}
+                  style={styles.leftIcon}
+                />
                 <TextInput
-                  style={[
-                    styles.passwordInput,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.textTertiary,
-                      color: colors.text,
-                    },
-                  ]}
+                  style={[styles.inputField, { color: colors.text }]}
                   placeholder="Enter your password"
                   placeholderTextColor={colors.textTertiary}
                   value={password}
@@ -197,7 +214,7 @@ export default function LoginScreen() {
                   }}
                 />
                 <TouchableOpacity
-                  style={styles.eyeButton}
+                  style={styles.eyeButtonInline}
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   <Ionicons
@@ -385,6 +402,16 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
+  formCardLight: {
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  formCardDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
   form: {
     marginBottom: 32,
   },
@@ -402,6 +429,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     fontFamily: 'Inter_400Regular',
+  },
+  inputRow: {
+    height: 52,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 10,
+    fontFamily: 'Inter_400Regular',
+  },
+  leftIcon: {
+    marginRight: 10,
   },
   passwordContainer: {
     position: 'relative',
@@ -421,6 +466,10 @@ const styles = StyleSheet.create({
     right: 16,
     top: 14,
     padding: 4,
+  },
+  eyeButtonInline: {
+    padding: 6,
+    marginLeft: 6,
   },
   inlineActions: {
     flexDirection: 'row',
