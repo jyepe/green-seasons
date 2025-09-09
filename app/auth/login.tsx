@@ -28,7 +28,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const router = useRouter();
 
   const buttonScale = useSharedValue(1);
@@ -71,7 +70,7 @@ export default function LoginScreen() {
   }));
 
   return (
-    <LinearGradient colors={['#E8F5E8', '#FFF8E1']} style={styles.container}>
+    <LinearGradient colors={['#D4EDDA', '#FFF3CD']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
@@ -164,29 +163,7 @@ export default function LoginScreen() {
                   </View>
                 </Animated.View>
 
-                <View style={styles.inlineActions}>
-                  <TouchableOpacity
-                    style={styles.rememberRow}
-                    onPress={() => setRememberMe(prev => !prev)}
-                  >
-                    <View
-                      style={[
-                        styles.checkbox,
-                        {
-                          borderColor: rememberMe ? '#4CAF50' : '#9E9E9E',
-                          backgroundColor: rememberMe
-                            ? '#4CAF50'
-                            : 'transparent',
-                        },
-                      ]}
-                    >
-                      {rememberMe && (
-                        <Ionicons name="checkmark" size={14} color="#fff" />
-                      )}
-                    </View>
-                    <Text style={styles.rememberText}>Remember me</Text>
-                  </TouchableOpacity>
-
+                <View style={styles.forgotPasswordContainer}>
                   <TouchableOpacity style={styles.forgotPassword}>
                     <Text style={styles.forgotPasswordText}>
                       Forgot Password?
@@ -375,33 +352,12 @@ const styles = StyleSheet.create({
     padding: 6,
     marginLeft: 6,
   },
-  inlineActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
     marginBottom: 24,
   },
-  rememberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  rememberText: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: '#333',
-  },
   forgotPassword: {
-    alignSelf: 'auto',
-    marginBottom: 0,
+    padding: 4,
   },
   forgotPasswordText: {
     fontSize: 14,
