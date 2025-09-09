@@ -30,7 +30,6 @@ export default function SignupScreen() {
     email: '',
     password: '',
     confirmPassword: '',
-    restaurantName: '',
     phone: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -47,15 +46,8 @@ export default function SignupScreen() {
   };
 
   const handleSignup = async () => {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-      restaurantName,
-      phone,
-    } = formData;
+    const { firstName, lastName, email, password, confirmPassword, phone } =
+      formData;
 
     if (
       !firstName ||
@@ -63,7 +55,6 @@ export default function SignupScreen() {
       !email ||
       !password ||
       !confirmPassword ||
-      !restaurantName ||
       !phone
     ) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -232,36 +223,6 @@ export default function SignupScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
-                onFocus={() => {
-                  inputFocus.value = withTiming(1, { duration: 200 });
-                }}
-                onBlur={() => {
-                  inputFocus.value = withTiming(0, { duration: 200 });
-                }}
-              />
-            </Animated.View>
-
-            {/* Restaurant Name */}
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Restaurant Name
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.textTertiary,
-                    color: colors.text,
-                  },
-                ]}
-                placeholder="The Green Bistro"
-                placeholderTextColor={colors.textTertiary}
-                value={formData.restaurantName}
-                onChangeText={value =>
-                  handleInputChange('restaurantName', value)
-                }
-                autoCapitalize="words"
                 onFocus={() => {
                   inputFocus.value = withTiming(1, { duration: 200 });
                 }}
