@@ -1,5 +1,4 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -41,7 +40,6 @@ export default function SignupScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const colorScheme = useColorScheme();
   const router = useRouter();
 
   const buttonScale = useSharedValue(1);
@@ -194,7 +192,7 @@ export default function SignupScreen() {
     ],
   }));
 
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors.light;
 
   return (
     <View style={styles.container}>
