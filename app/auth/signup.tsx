@@ -233,7 +233,13 @@ export default function SignupScreen() {
             <Stop offset="75%" stopColor="#FFBE88" stopOpacity="0" />
           </RadialGradient>
         </Defs>
-        <Rect x="0" y="0" width={width} height={height} fill="#F9F9F9" />
+        <Rect
+          x="0"
+          y="0"
+          width={width}
+          height={height}
+          fill={Colors.light.background}
+        />
         <Rect
           x="0"
           y="0"
