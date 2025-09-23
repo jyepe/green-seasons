@@ -261,26 +261,7 @@ export default function SignupScreen() {
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          {/* Fixed Header */}
-          <View style={styles.fixedHeader}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <View style={styles.headerContent}>
-              <View
-                style={[styles.logoIcon, { backgroundColor: colors.primary }]}
-              >
-                <Ionicons name="leaf" size={24} color="white" />
-              </View>
-              <Text style={[styles.title, { color: colors.text }]}>
-                Create Account
-              </Text>
-            </View>
-            <View style={styles.headerSpacer} />
-          </View>
+          {/* Removed fixed header and back button per request */}
 
           <ScrollView
             contentContainerStyle={styles.scrollContent}
