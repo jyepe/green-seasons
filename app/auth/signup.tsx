@@ -1,10 +1,10 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -23,6 +24,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signUpUser } from '@/lib/supabase';
+
+const { width, height } = Dimensions.get('window');
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
@@ -37,7 +40,6 @@ export default function SignupScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const colorScheme = useColorScheme();
   const router = useRouter();
 
   const buttonScale = useSharedValue(1);
@@ -190,351 +192,436 @@ export default function SignupScreen() {
     ],
   }));
 
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors.light;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <View style={styles.container}>
+      {/* Background with radial gradients */}
+      <Svg
+        width={width}
+        height={height}
+        style={styles.svgBackground}
+        pointerEvents="none"
       >
-        {/* Fixed Header */}
-        <View
-          style={[styles.fixedHeader, { backgroundColor: colors.background }]}
-        >
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
+        <Defs>
+          {/* Top-left gradient */}
+          <RadialGradient
+            id="gradient1"
+            cx="0"
+            cy="0"
+            r={Math.max(width, height) * 0.55}
+            gradientUnits="userSpaceOnUse"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <View style={styles.headerContent}>
-            <View
-              style={[styles.logoIcon, { backgroundColor: colors.primary }]}
-            >
-              <Ionicons name="leaf" size={24} color="white" />
-            </View>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Create Account
-            </Text>
-          </View>
-          <View style={styles.headerSpacer} />
-        </View>
+            <Stop offset="0%" stopColor="#7FD8B5" stopOpacity="0.7" />
+            <Stop offset="25%" stopColor="#7FD8B5" stopOpacity="0.45" />
+            <Stop offset="45%" stopColor="#7FD8B5" stopOpacity="0.25" />
+            <Stop offset="60%" stopColor="#7FD8B5" stopOpacity="0.1" />
+            <Stop offset="75%" stopColor="#7FD8B5" stopOpacity="0" />
+          </RadialGradient>
+          {/* Bottom-right gradient */}
+          <RadialGradient
+            id="gradient2"
+            cx={width}
+            cy={height}
+            r={Math.max(width, height) * 0.55}
+            gradientUnits="userSpaceOnUse"
+          >
+            <Stop offset="0%" stopColor="#FFBE88" stopOpacity="0.7" />
+            <Stop offset="25%" stopColor="#FFBE88" stopOpacity="0.45" />
+            <Stop offset="45%" stopColor="#FFBE88" stopOpacity="0.25" />
+            <Stop offset="60%" stopColor="#FFBE88" stopOpacity="0.1" />
+            <Stop offset="75%" stopColor="#FFBE88" stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Rect
+          x="0"
+          y="0"
+          width={width}
+          height={height}
+          fill={Colors.light.background}
+        />
+        <Rect
+          x="0"
+          y="0"
+          width={width}
+          height={height}
+          fill="url(#gradient1)"
+        />
+        <Rect
+          x="0"
+          y="0"
+          width={width}
+          height={height}
+          fill="url(#gradient2)"
+        />
+      </Svg>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          {/* Subtitle */}
-          <View style={styles.subtitleContainer}>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Join Green Seasons and start ordering fresh produce
-            </Text>
+          {/* Fixed Header */}
+          <View style={styles.fixedHeader}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <View style={styles.headerContent}>
+              <View
+                style={[styles.logoIcon, { backgroundColor: colors.primary }]}
+              >
+                <Ionicons name="leaf" size={24} color="white" />
+              </View>
+              <Text style={[styles.title, { color: colors.text }]}>
+                Create Account
+              </Text>
+            </View>
+            <View style={styles.headerSpacer} />
           </View>
 
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Name Fields */}
-            <View style={styles.row}>
-              <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  First Name *
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: errors.firstName
-                        ? colors.error
-                        : colors.textTertiary,
-                      color: colors.text,
-                    },
-                  ]}
-                  placeholder="John"
-                  placeholderTextColor={colors.textTertiary}
-                  value={formData.firstName}
-                  onChangeText={value => handleInputChange('firstName', value)}
-                  autoCapitalize="words"
-                  onFocus={() => {
-                    inputFocus.value = withTiming(1, { duration: 200 });
-                  }}
-                  onBlur={() => {
-                    inputFocus.value = withTiming(0, { duration: 200 });
-                    handleFieldBlur('firstName');
-                  }}
-                />
-                {errors.firstName && (
-                  <Text style={[styles.errorText, { color: colors.error }]}>
-                    {errors.firstName}
-                  </Text>
-                )}
-              </Animated.View>
-
-              <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Last Name *
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: errors.lastName
-                        ? colors.error
-                        : colors.textTertiary,
-                      color: colors.text,
-                    },
-                  ]}
-                  placeholder="Doe"
-                  placeholderTextColor={colors.textTertiary}
-                  value={formData.lastName}
-                  onChangeText={value => handleInputChange('lastName', value)}
-                  autoCapitalize="words"
-                  onFocus={() => {
-                    inputFocus.value = withTiming(1, { duration: 200 });
-                  }}
-                  onBlur={() => {
-                    inputFocus.value = withTiming(0, { duration: 200 });
-                    handleFieldBlur('lastName');
-                  }}
-                />
-                {errors.lastName && (
-                  <Text style={[styles.errorText, { color: colors.error }]}>
-                    {errors.lastName}
-                  </Text>
-                )}
-              </Animated.View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Subtitle */}
+            <View style={styles.subtitleContainer}>
+              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                Join Green Seasons and start ordering fresh produce
+              </Text>
             </View>
 
-            {/* Email */}
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Email *
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: errors.email
-                      ? colors.error
-                      : colors.textTertiary,
-                    color: colors.text,
-                  },
-                ]}
-                placeholder="john@restaurant.com"
-                placeholderTextColor={colors.textTertiary}
-                value={formData.email}
-                onChangeText={value => handleInputChange('email', value)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => {
-                  inputFocus.value = withTiming(1, { duration: 200 });
-                }}
-                onBlur={() => {
-                  inputFocus.value = withTiming(0, { duration: 200 });
-                  handleFieldBlur('email');
-                }}
-              />
-              {errors.email && (
-                <Text style={[styles.errorText, { color: colors.error }]}>
-                  {errors.email}
-                </Text>
-              )}
-            </Animated.View>
+            {/* Form */}
+            <View style={styles.formCard}>
+              <View style={styles.form}>
+                {/* Name Fields */}
+                <View style={styles.row}>
+                  <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
+                    <Text style={[styles.label, { color: colors.text }]}>
+                      First Name *
+                    </Text>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        {
+                          backgroundColor: colors.surface,
+                          borderColor: errors.firstName
+                            ? colors.error
+                            : colors.textTertiary,
+                          color: colors.text,
+                        },
+                      ]}
+                      placeholder="John"
+                      placeholderTextColor={colors.textTertiary}
+                      value={formData.firstName}
+                      onChangeText={value =>
+                        handleInputChange('firstName', value)
+                      }
+                      autoCapitalize="words"
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                        handleFieldBlur('firstName');
+                      }}
+                    />
+                    {errors.firstName && (
+                      <Text style={[styles.errorText, { color: colors.error }]}>
+                        {errors.firstName}
+                      </Text>
+                    )}
+                  </Animated.View>
 
-            {/* Phone */}
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Phone Number *
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: errors.phone
-                      ? colors.error
-                      : colors.textTertiary,
-                    color: colors.text,
-                  },
-                ]}
-                placeholder="(555) 123-4567"
-                placeholderTextColor={colors.textTertiary}
-                value={formData.phone}
-                onChangeText={value => handleInputChange('phone', value)}
-                keyboardType="phone-pad"
-                onFocus={() => {
-                  inputFocus.value = withTiming(1, { duration: 200 });
-                }}
-                onBlur={() => {
-                  inputFocus.value = withTiming(0, { duration: 200 });
-                  handleFieldBlur('phone');
-                }}
-              />
-              {errors.phone ? (
-                <Text style={[styles.errorText, { color: colors.error }]}>
-                  {errors.phone}
-                </Text>
-              ) : (
-                <Text style={[styles.helpText, { color: colors.textTertiary }]}>
-                  Enter 10 digits (e.g., 5551234567)
-                </Text>
-              )}
-            </Animated.View>
+                  <Animated.View style={[inputAnimatedStyle, styles.halfWidth]}>
+                    <Text style={[styles.label, { color: colors.text }]}>
+                      Last Name *
+                    </Text>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        {
+                          backgroundColor: colors.surface,
+                          borderColor: errors.lastName
+                            ? colors.error
+                            : colors.textTertiary,
+                          color: colors.text,
+                        },
+                      ]}
+                      placeholder="Doe"
+                      placeholderTextColor={colors.textTertiary}
+                      value={formData.lastName}
+                      onChangeText={value =>
+                        handleInputChange('lastName', value)
+                      }
+                      autoCapitalize="words"
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                        handleFieldBlur('lastName');
+                      }}
+                    />
+                    {errors.lastName && (
+                      <Text style={[styles.errorText, { color: colors.error }]}>
+                        {errors.lastName}
+                      </Text>
+                    )}
+                  </Animated.View>
+                </View>
 
-            {/* Password */}
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Password *
-              </Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.passwordInput,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: errors.password
-                        ? colors.error
-                        : colors.textTertiary,
-                      color: colors.text,
-                    },
-                  ]}
-                  placeholder="Create a password"
-                  placeholderTextColor={colors.textTertiary}
-                  value={formData.password}
-                  onChangeText={value => handleInputChange('password', value)}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onFocus={() => {
-                    inputFocus.value = withTiming(1, { duration: 200 });
-                  }}
-                  onBlur={() => {
-                    inputFocus.value = withTiming(0, { duration: 200 });
-                    handleFieldBlur('password');
-                  }}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off' : 'eye'}
-                    size={20}
-                    color={colors.textTertiary}
+                {/* Email */}
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    Email *
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: errors.email
+                          ? colors.error
+                          : colors.textTertiary,
+                        color: colors.text,
+                      },
+                    ]}
+                    placeholder="john@restaurant.com"
+                    placeholderTextColor={colors.textTertiary}
+                    value={formData.email}
+                    onChangeText={value => handleInputChange('email', value)}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    onFocus={() => {
+                      inputFocus.value = withTiming(1, { duration: 200 });
+                    }}
+                    onBlur={() => {
+                      inputFocus.value = withTiming(0, { duration: 200 });
+                      handleFieldBlur('email');
+                    }}
                   />
-                </TouchableOpacity>
-              </View>
-              {errors.password ? (
-                <Text style={[styles.errorText, { color: colors.error }]}>
-                  {errors.password}
-                </Text>
-              ) : (
-                <Text style={[styles.helpText, { color: colors.textTertiary }]}>
-                  Must be at least 6 characters
-                </Text>
-              )}
-            </Animated.View>
+                  {errors.email && (
+                    <Text style={[styles.errorText, { color: colors.error }]}>
+                      {errors.email}
+                    </Text>
+                  )}
+                </Animated.View>
 
-            {/* Confirm Password */}
-            <Animated.View style={inputAnimatedStyle}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Confirm Password *
-              </Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.passwordInput,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: errors.confirmPassword
-                        ? colors.error
-                        : colors.textTertiary,
-                      color: colors.text,
-                    },
-                  ]}
-                  placeholder="Confirm your password"
-                  placeholderTextColor={colors.textTertiary}
-                  value={formData.confirmPassword}
-                  onChangeText={value =>
-                    handleInputChange('confirmPassword', value)
-                  }
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onFocus={() => {
-                    inputFocus.value = withTiming(1, { duration: 200 });
-                  }}
-                  onBlur={() => {
-                    inputFocus.value = withTiming(0, { duration: 200 });
-                    handleFieldBlur('confirmPassword');
-                  }}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <Ionicons
-                    name={showConfirmPassword ? 'eye-off' : 'eye'}
-                    size={20}
-                    color={colors.textTertiary}
+                {/* Phone */}
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    Phone Number *
+                  </Text>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: errors.phone
+                          ? colors.error
+                          : colors.textTertiary,
+                        color: colors.text,
+                      },
+                    ]}
+                    placeholder="(555) 123-4567"
+                    placeholderTextColor={colors.textTertiary}
+                    value={formData.phone}
+                    onChangeText={value => handleInputChange('phone', value)}
+                    keyboardType="phone-pad"
+                    onFocus={() => {
+                      inputFocus.value = withTiming(1, { duration: 200 });
+                    }}
+                    onBlur={() => {
+                      inputFocus.value = withTiming(0, { duration: 200 });
+                      handleFieldBlur('phone');
+                    }}
                   />
-                </TouchableOpacity>
-              </View>
-              {errors.confirmPassword && (
-                <Text style={[styles.errorText, { color: colors.error }]}>
-                  {errors.confirmPassword}
-                </Text>
-              )}
-            </Animated.View>
+                  {errors.phone ? (
+                    <Text style={[styles.errorText, { color: colors.error }]}>
+                      {errors.phone}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={[styles.helpText, { color: colors.textTertiary }]}
+                    >
+                      Enter 10 digits (e.g., 5551234567)
+                    </Text>
+                  )}
+                </Animated.View>
 
-            <Animated.View style={buttonAnimatedStyle}>
-              <TouchableOpacity
-                style={[
-                  styles.signupButton,
-                  {
-                    backgroundColor:
-                      isFormValid() && !isLoading
-                        ? colors.primary
-                        : colors.textTertiary,
-                    opacity: isLoading ? 0.7 : 1,
-                  },
-                ]}
-                onPress={handleSignup}
-                disabled={isLoading || !isFormValid()}
+                {/* Password */}
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    Password *
+                  </Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={[
+                        styles.passwordInput,
+                        {
+                          backgroundColor: colors.surface,
+                          borderColor: errors.password
+                            ? colors.error
+                            : colors.textTertiary,
+                          color: colors.text,
+                        },
+                      ]}
+                      placeholder="Create a password"
+                      placeholderTextColor={colors.textTertiary}
+                      value={formData.password}
+                      onChangeText={value =>
+                        handleInputChange('password', value)
+                      }
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                        handleFieldBlur('password');
+                      }}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Ionicons
+                        name={showPassword ? 'eye-off' : 'eye'}
+                        size={20}
+                        color={colors.textTertiary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {errors.password ? (
+                    <Text style={[styles.errorText, { color: colors.error }]}>
+                      {errors.password}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={[styles.helpText, { color: colors.textTertiary }]}
+                    >
+                      Must be at least 6 characters
+                    </Text>
+                  )}
+                </Animated.View>
+
+                {/* Confirm Password */}
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={[styles.label, { color: colors.text }]}>
+                    Confirm Password *
+                  </Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={[
+                        styles.passwordInput,
+                        {
+                          backgroundColor: colors.surface,
+                          borderColor: errors.confirmPassword
+                            ? colors.error
+                            : colors.textTertiary,
+                          color: colors.text,
+                        },
+                      ]}
+                      placeholder="Confirm your password"
+                      placeholderTextColor={colors.textTertiary}
+                      value={formData.confirmPassword}
+                      onChangeText={value =>
+                        handleInputChange('confirmPassword', value)
+                      }
+                      secureTextEntry={!showConfirmPassword}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                        handleFieldBlur('confirmPassword');
+                      }}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      <Ionicons
+                        name={showConfirmPassword ? 'eye-off' : 'eye'}
+                        size={20}
+                        color={colors.textTertiary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {errors.confirmPassword && (
+                    <Text style={[styles.errorText, { color: colors.error }]}>
+                      {errors.confirmPassword}
+                    </Text>
+                  )}
+                </Animated.View>
+
+                <Animated.View style={buttonAnimatedStyle}>
+                  <TouchableOpacity
+                    style={[
+                      styles.signupButton,
+                      {
+                        backgroundColor:
+                          isFormValid() && !isLoading
+                            ? colors.primary
+                            : colors.textTertiary,
+                        opacity: isLoading ? 0.7 : 1,
+                      },
+                    ]}
+                    onPress={handleSignup}
+                    disabled={isLoading || !isFormValid()}
+                  >
+                    <Text style={styles.signupButtonText}>
+                      {isLoading ? 'Creating Account...' : 'Create Account'}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text
+                style={[styles.footerText, { color: colors.textSecondary }]}
               >
-                <Text style={styles.signupButtonText}>
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                Already have an account?{' '}
+              </Text>
+              <TouchableOpacity onPress={handleLoginPress}>
+                <Text style={[styles.loginLink, { color: colors.primary }]}>
+                  Sign In
                 </Text>
               </TouchableOpacity>
-            </Animated.View>
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-              Already have an account?{' '}
-            </Text>
-            <TouchableOpacity onPress={handleLoginPress}>
-              <Text style={[styles.loginLink, { color: colors.primary }]}>
-                Sign In
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F9F9F9',
+  },
+  svgBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 0,
+  },
+  safeArea: {
+    flex: 1,
+    zIndex: 1,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -599,8 +686,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
-  form: {
+  formCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  form: {
+    marginBottom: 0,
   },
   row: {
     flexDirection: 'row',
