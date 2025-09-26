@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -59,128 +60,156 @@ export default function HomeScreen() {
   ];
 
   return (
-    <ScrollView
+    <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.surface }]}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-            Good morning!
-          </Text>
-          <Text style={[styles.restaurantName, { color: colors.text }]}>
-            The Green Bistro
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={[styles.profileButton, { backgroundColor: colors.primary }]}
-        >
-          <Ionicons name="person" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          Quick Actions
-        </Text>
-        <View style={styles.actionsGrid}>
-          {quickActions.map((action, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.actionCard, { backgroundColor: colors.surface }]}
-            >
-              <View
-                style={[styles.actionIcon, { backgroundColor: colors.primary }]}
-              >
-                <Ionicons name={action.icon as any} size={24} color="white" />
-              </View>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>
-                {action.title}
-              </Text>
-              <Text
-                style={[styles.actionSubtitle, { color: colors.textSecondary }]}
-              >
-                {action.subtitle}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Recent Orders */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Recent Orders
-          </Text>
-          <TouchableOpacity>
-            <Text style={[styles.seeAllText, { color: colors.primary }]}>
-              See All
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header */}
+        <View style={[styles.header, { backgroundColor: colors.surface }]}>
+          <View>
+            <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+              Good morning!
             </Text>
+            <Text style={[styles.restaurantName, { color: colors.text }]}>
+              The Green Bistro
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.profileButton, { backgroundColor: colors.primary }]}
+          >
+            <Ionicons name="person" size={24} color="white" />
           </TouchableOpacity>
         </View>
-        {recentOrders.map(order => (
-          <View
-            key={order.id}
-            style={[styles.orderCard, { backgroundColor: colors.surface }]}
-          >
-            <View style={styles.orderInfo}>
-              <Text style={[styles.orderDate, { color: colors.textSecondary }]}>
-                {order.date}
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Quick Actions
+          </Text>
+          <View style={styles.actionsGrid}>
+            {quickActions.map((action, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.actionCard, { backgroundColor: colors.surface }]}
+              >
+                <View
+                  style={[
+                    styles.actionIcon,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  <Ionicons name={action.icon as any} size={24} color="white" />
+                </View>
+                <Text style={[styles.actionTitle, { color: colors.text }]}>
+                  {action.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.actionSubtitle,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {action.subtitle}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Recent Orders */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Recent Orders
+            </Text>
+            <TouchableOpacity>
+              <Text style={[styles.seeAllText, { color: colors.primary }]}>
+                See All
               </Text>
-              <Text style={[styles.orderItems, { color: colors.text }]}>
-                {order.items}
+            </TouchableOpacity>
+          </View>
+          {recentOrders.map(order => (
+            <View
+              key={order.id}
+              style={[styles.orderCard, { backgroundColor: colors.surface }]}
+            >
+              <View style={styles.orderInfo}>
+                <Text
+                  style={[styles.orderDate, { color: colors.textSecondary }]}
+                >
+                  {order.date}
+                </Text>
+                <Text style={[styles.orderItems, { color: colors.text }]}>
+                  {order.items}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: colors.success },
+                ]}
+              >
+                <Text style={styles.statusText}>{order.status}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Stats */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            This Month
+          </Text>
+          <View style={styles.statsGrid}>
+            <View
+              style={[styles.statCard, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                12
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Orders
               </Text>
             </View>
             <View
-              style={[styles.statusBadge, { backgroundColor: colors.success }]}
+              style={[styles.statCard, { backgroundColor: colors.surface }]}
             >
-              <Text style={styles.statusText}>{order.status}</Text>
+              <Text style={[styles.statNumber, { color: colors.accent }]}>
+                $2,450
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Spent
+              </Text>
+            </View>
+            <View
+              style={[styles.statCard, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.statNumber, { color: colors.success }]}>
+                98%
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                On Time
+              </Text>
             </View>
           </View>
-        ))}
-      </View>
-
-      {/* Stats */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          This Month
-        </Text>
-        <View style={styles.statsGrid}>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>
-              12
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Orders
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statNumber, { color: colors.accent }]}>
-              $2,450
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Spent
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statNumber, { color: colors.success }]}>
-              98%
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              On Time
-            </Text>
-          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
