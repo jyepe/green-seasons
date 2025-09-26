@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Alert,
   Dimensions,
@@ -42,11 +42,45 @@ export default function SignupScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
+  // Refs for form fields
+  const firstNameRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
+
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNextField = (currentField: string) => {
+    switch (currentField) {
+      case 'firstName':
+        lastNameRef.current?.focus();
+        break;
+      case 'lastName':
+        emailRef.current?.focus();
+        break;
+      case 'email':
+        phoneRef.current?.focus();
+        break;
+      case 'phone':
+        passwordRef.current?.focus();
+        break;
+      case 'password':
+        confirmPasswordRef.current?.focus();
+        break;
+      case 'confirmPassword':
+        // Last field - submit form
+        handleSignup();
+        break;
+      default:
+        break;
+    }
   };
 
   const handleFieldBlur = (field: string) => {
@@ -284,6 +318,7 @@ export default function SignupScreen() {
                       First Name *
                     </Text>
                     <TextInput
+                      ref={firstNameRef}
                       style={[
                         styles.input,
                         {
@@ -301,6 +336,8 @@ export default function SignupScreen() {
                         handleInputChange('firstName', value)
                       }
                       autoCapitalize="words"
+                      returnKeyType="next"
+                      onSubmitEditing={() => handleNextField('firstName')}
                       onFocus={() => {
                         inputFocus.value = withTiming(1, { duration: 200 });
                       }}
@@ -321,6 +358,7 @@ export default function SignupScreen() {
                       Last Name *
                     </Text>
                     <TextInput
+                      ref={lastNameRef}
                       style={[
                         styles.input,
                         {
@@ -338,6 +376,8 @@ export default function SignupScreen() {
                         handleInputChange('lastName', value)
                       }
                       autoCapitalize="words"
+                      returnKeyType="next"
+                      onSubmitEditing={() => handleNextField('lastName')}
                       onFocus={() => {
                         inputFocus.value = withTiming(1, { duration: 200 });
                       }}
@@ -360,6 +400,7 @@ export default function SignupScreen() {
                     Email *
                   </Text>
                   <TextInput
+                    ref={emailRef}
                     style={[
                       styles.input,
                       {
@@ -377,6 +418,8 @@ export default function SignupScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
+                    returnKeyType="next"
+                    onSubmitEditing={() => handleNextField('email')}
                     onFocus={() => {
                       inputFocus.value = withTiming(1, { duration: 200 });
                     }}
@@ -398,6 +441,7 @@ export default function SignupScreen() {
                     Phone Number *
                   </Text>
                   <TextInput
+                    ref={phoneRef}
                     style={[
                       styles.input,
                       {
@@ -413,6 +457,8 @@ export default function SignupScreen() {
                     value={formData.phone}
                     onChangeText={value => handleInputChange('phone', value)}
                     keyboardType="phone-pad"
+                    returnKeyType="next"
+                    onSubmitEditing={() => handleNextField('phone')}
                     onFocus={() => {
                       inputFocus.value = withTiming(1, { duration: 200 });
                     }}
@@ -441,6 +487,7 @@ export default function SignupScreen() {
                   </Text>
                   <View style={styles.passwordContainer}>
                     <TextInput
+                      ref={passwordRef}
                       style={[
                         styles.passwordInput,
                         {
@@ -460,6 +507,8 @@ export default function SignupScreen() {
                       secureTextEntry={!showPassword}
                       autoCapitalize="none"
                       autoCorrect={false}
+                      returnKeyType="next"
+                      onSubmitEditing={() => handleNextField('password')}
                       onFocus={() => {
                         inputFocus.value = withTiming(1, { duration: 200 });
                       }}
@@ -499,6 +548,7 @@ export default function SignupScreen() {
                   </Text>
                   <View style={styles.passwordContainer}>
                     <TextInput
+                      ref={confirmPasswordRef}
                       style={[
                         styles.passwordInput,
                         {
@@ -518,6 +568,8 @@ export default function SignupScreen() {
                       secureTextEntry={!showConfirmPassword}
                       autoCapitalize="none"
                       autoCorrect={false}
+                      returnKeyType="done"
+                      onSubmitEditing={() => handleNextField('confirmPassword')}
                       onFocus={() => {
                         inputFocus.value = withTiming(1, { duration: 200 });
                       }}
