@@ -23,7 +23,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signUpUser } from '@/lib/supabase';
+import { signUpUser, getCurrentUserInfo } from '@/lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -195,16 +195,36 @@ export default function SignupScreen() {
         phone: formData.phone,
       });
 
+      // Fetch user info after successful signup
+      try {
+        const userInfo = await getCurrentUserInfo();
+        // User info fetched successfully
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.log('User info fetched:', userInfo);
+        }
+      } catch (userInfoError) {
+        // This is expected if the user needs to verify their email first
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            'Could not fetch user info immediately after signup:',
+            userInfoError
+          );
+        }
+      }
+
       Alert.alert(
         'Success',
         'Account created successfully! Please check your email to verify your account.',
         [{ text: 'OK', onPress: () => router.replace('/auth/login') }]
       );
-    } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.message || 'Failed to create account. Please try again.'
-      );
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to create account. Please try again.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }

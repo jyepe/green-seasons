@@ -23,6 +23,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { signInUser, getCurrentUserInfo } from '@/lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -48,12 +49,31 @@ export default function LoginScreen() {
       buttonScale.value = withSpring(1);
     });
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // For now, just navigate to main app
+    try {
+      // Sign in user
+      await signInUser({
+        email,
+        password,
+      });
+
+      // Fetch user info after successful login
+      const userInfo = await getCurrentUserInfo();
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('User info fetched:', userInfo);
+      }
+
+      // Navigate to main app
       router.replace('/(tabs)');
-    }, 1500);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to sign in. Please check your credentials and try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignupPress = () => {

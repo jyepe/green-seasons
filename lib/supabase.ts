@@ -10,6 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   // Fail fast during dev to surface missing config
   // Do not throw in production builds to avoid app crash on splash
   if (__DEV__) {
+    // eslint-disable-next-line no-console
     console.warn(
       'Supabase env not set. Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in app.json under expo.extra'
     );
@@ -36,6 +37,16 @@ export type SignUpParams = {
   phone?: string;
 };
 
+export type UserInfo = {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export async function signUpUser(params: SignUpParams) {
   const { email, password, firstName, lastName, phone } = params;
   const { data, error } = await supabase.auth.signUp({
@@ -52,5 +63,43 @@ export async function signUpUser(params: SignUpParams) {
   });
 
   if (error) throw error;
+  return data;
+}
+
+export type SignInParams = {
+  email: string;
+  password: string;
+};
+
+export async function signInUser(params: SignInParams) {
+  const { email, password } = params;
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getCurrentUserInfo(): Promise<UserInfo | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase.from('me').select('*').single();
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching user info:', error);
+    }
+    throw error;
+  }
+
   return data;
 }
