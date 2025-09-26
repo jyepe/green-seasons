@@ -38,13 +38,13 @@ export type SignUpParams = {
 
 export async function signUpUser(params: SignUpParams) {
   const { email, password, firstName, lastName, phone } = params;
-  const full_name = `${firstName} ${lastName}`;
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        full_name,
+        firstName,
+        lastName,
         phone,
       },
       emailRedirectTo: undefined,
