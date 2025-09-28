@@ -21,6 +21,7 @@ export const Colors = {
     text: '#111827',
     textSecondary: '#6B7280',
     textTertiary: '#9CA3AF',
+    border: '#E5E7EB',
 
     // Status colors
     success: '#16A34A',
@@ -51,6 +52,7 @@ export const Colors = {
     text: '#F9FAFB',
     textSecondary: '#D1D5DB',
     textTertiary: '#9CA3AF',
+    border: '#374151',
 
     // Status colors
     success: '#22C55E',

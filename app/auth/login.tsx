@@ -61,7 +61,9 @@ export default function LoginScreen() {
       // Invalidate user info cache to trigger refetch
       invalidateUserInfo();
 
-      // Navigate to main app
+      // Check if user has a restaurant - redirect to onboarding if not
+      // Note: We'll check this after the user info is refetched
+      // For now, navigate to main app - the check will happen in the main layout
       router.replace('/(tabs)');
     } catch (error: unknown) {
       const errorMessage =

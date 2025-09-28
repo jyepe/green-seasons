@@ -43,6 +43,7 @@ export type UserInfo = {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  owned_restaurant_id?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -107,4 +108,42 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
 export async function signOutUser() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+}
+
+export type Restaurant = {
+  id: string;
+  name: string;
+  owner_id: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  postal_code: string;
+  country: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateRestaurantParams = {
+  name: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  postal_code: string;
+  country?: string;
+};
+
+export async function createRestaurant(
+  params: CreateRestaurantParams
+): Promise<Restaurant> {
+  const { data, error } = await supabase.rpc('create_my_restaurant', {
+    p_name: params.name,
+    p_address_line1: params.address_line1,
+    p_address_line2: params.address_line2 || '',
+    p_city: params.city,
+    p_postal_code: params.postal_code,
+    p_country: params.country || 'US',
+  });
+
+  if (error) throw error;
+  return data;
 }
