@@ -23,8 +23,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signInUser } from '@/lib/supabase';
-import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
+import { signInUser, getCurrentUserInfo } from '@/lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,7 +33,6 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const invalidateUserInfo = useInvalidateUserInfo();
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
@@ -58,13 +56,16 @@ export default function LoginScreen() {
         password,
       });
 
-      // Invalidate user info cache to trigger refetch
-      invalidateUserInfo();
+      // Get user info immediately to check restaurant ownership
+      const userInfo = await getCurrentUserInfo();
 
-      // Check if user has a restaurant - redirect to onboarding if not
-      // Note: We'll check this after the user info is refetched
-      // For now, navigate to main app - the check will happen in the main layout
-      router.replace('/(tabs)');
+      if (userInfo && !userInfo.owned_restaurant_id) {
+        // User doesn't have a restaurant - go to onboarding
+        router.replace('/onboarding/restaurant');
+      } else {
+        // User has a restaurant - go to main app
+        router.replace('/(tabs)');
+      }
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
