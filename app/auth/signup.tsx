@@ -23,7 +23,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signUpUser, getCurrentUserInfo } from '@/lib/supabase';
+import { signUpUser } from '@/lib/supabase';
+import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ export default function SignupScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
+  const invalidateUserInfo = useInvalidateUserInfo();
 
   // Refs for form fields
   const firstNameRef = useRef<TextInput>(null);
@@ -195,24 +197,8 @@ export default function SignupScreen() {
         phone: formData.phone,
       });
 
-      // Fetch user info after successful signup
-      try {
-        const userInfo = await getCurrentUserInfo();
-        // User info fetched successfully
-        if (__DEV__) {
-          // eslint-disable-next-line no-console
-          console.log('User info fetched:', userInfo);
-        }
-      } catch (userInfoError) {
-        // This is expected if the user needs to verify their email first
-        if (__DEV__) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            'Could not fetch user info immediately after signup:',
-            userInfoError
-          );
-        }
-      }
+      // Invalidate user info cache to trigger refetch when user logs in
+      invalidateUserInfo();
 
       Alert.alert(
         'Success',

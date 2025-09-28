@@ -103,3 +103,8 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
 
   return data;
 }
+
+export async function signOutUser() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+}

@@ -23,7 +23,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signInUser, getCurrentUserInfo } from '@/lib/supabase';
+import { signInUser } from '@/lib/supabase';
+import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +34,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const invalidateUserInfo = useInvalidateUserInfo();
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
@@ -56,12 +58,8 @@ export default function LoginScreen() {
         password,
       });
 
-      // Fetch user info after successful login
-      const userInfo = await getCurrentUserInfo();
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.log('User info fetched:', userInfo);
-      }
+      // Invalidate user info cache to trigger refetch
+      invalidateUserInfo();
 
       // Navigate to main app
       router.replace('/(tabs)');
