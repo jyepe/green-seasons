@@ -219,8 +219,7 @@ export default function RestaurantOnboardingScreen() {
               Create Your Restaurant
             </Text>
             <Text style={[styles.subtitle, { color: colors.text }]}>
-              Let&apos;s set up your restaurant profile to get started with
-              ordering fresh produce.
+              Set up your restaurant profile to start ordering fresh produce
             </Text>
           </View>
 
@@ -442,8 +441,8 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
+    marginTop: 40,
+    marginBottom: 32,
   },
   iconContainer: {
     width: 80,
