@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Alert,
   Dimensions,
@@ -45,6 +45,13 @@ export default function RestaurantOnboardingScreen() {
   const invalidateUserInfo = useInvalidateUserInfo();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+
+  // Refs for keyboard navigation
+  const nameRef = useRef<TextInput>(null);
+  const addressLine1Ref = useRef<TextInput>(null);
+  const addressLine2Ref = useRef<TextInput>(null);
+  const cityRef = useRef<TextInput>(null);
+  const postalCodeRef = useRef<TextInput>(null);
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
@@ -108,6 +115,27 @@ export default function RestaurantOnboardingScreen() {
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleNextField = (currentField: string) => {
+    switch (currentField) {
+      case 'name':
+        addressLine1Ref.current?.focus();
+        break;
+      case 'address_line1':
+        addressLine2Ref.current?.focus();
+        break;
+      case 'address_line2':
+        cityRef.current?.focus();
+        break;
+      case 'city':
+        postalCodeRef.current?.focus();
+        break;
+      case 'postal_code':
+        // Last field - submit the form
+        handleCreateRestaurant();
+        break;
     }
   };
 
@@ -229,6 +257,7 @@ export default function RestaurantOnboardingScreen() {
                 Restaurant Name *
               </Text>
               <TextInput
+                ref={nameRef}
                 style={[
                   styles.input,
                   {
@@ -249,6 +278,8 @@ export default function RestaurantOnboardingScreen() {
                 }}
                 autoCapitalize="words"
                 autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => handleNextField('name')}
               />
               {errors.name && (
                 <Text style={[styles.errorText, { color: colors.error }]}>
@@ -262,6 +293,7 @@ export default function RestaurantOnboardingScreen() {
                 Address Line 1 *
               </Text>
               <TextInput
+                ref={addressLine1Ref}
                 style={[
                   styles.input,
                   {
@@ -286,6 +318,8 @@ export default function RestaurantOnboardingScreen() {
                 }}
                 autoCapitalize="words"
                 autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => handleNextField('address_line1')}
               />
               {errors.address_line1 && (
                 <Text style={[styles.errorText, { color: colors.error }]}>
@@ -299,6 +333,7 @@ export default function RestaurantOnboardingScreen() {
                 Address Line 2
               </Text>
               <TextInput
+                ref={addressLine2Ref}
                 style={[
                   styles.input,
                   {
@@ -321,6 +356,8 @@ export default function RestaurantOnboardingScreen() {
                 }}
                 autoCapitalize="words"
                 autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => handleNextField('address_line2')}
               />
             </View>
 
@@ -330,6 +367,7 @@ export default function RestaurantOnboardingScreen() {
                   City *
                 </Text>
                 <TextInput
+                  ref={cityRef}
                   style={[
                     styles.input,
                     {
@@ -350,6 +388,8 @@ export default function RestaurantOnboardingScreen() {
                   }}
                   autoCapitalize="words"
                   autoCorrect={false}
+                  returnKeyType="next"
+                  onSubmitEditing={() => handleNextField('city')}
                 />
                 {errors.city && (
                   <Text style={[styles.errorText, { color: colors.error }]}>
@@ -363,6 +403,7 @@ export default function RestaurantOnboardingScreen() {
                   Postal Code *
                 </Text>
                 <TextInput
+                  ref={postalCodeRef}
                   style={[
                     styles.input,
                     {
@@ -387,6 +428,8 @@ export default function RestaurantOnboardingScreen() {
                   }}
                   keyboardType="numeric"
                   maxLength={10}
+                  returnKeyType="done"
+                  onSubmitEditing={() => handleNextField('postal_code')}
                 />
                 {errors.postal_code && (
                   <Text style={[styles.errorText, { color: colors.error }]}>
