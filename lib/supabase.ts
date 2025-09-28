@@ -40,12 +40,11 @@ export type SignUpParams = {
 export type UserInfo = {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   phone?: string;
+  role?: string;
   owned_restaurant_id?: string;
-  created_at?: string;
-  updated_at?: string;
 };
 
 export async function signUpUser(params: SignUpParams) {
@@ -145,5 +144,25 @@ export async function createRestaurant(
   });
 
   if (error) throw error;
+  return data;
+}
+
+export async function getRestaurantById(
+  restaurantId: string
+): Promise<Restaurant | null> {
+  const { data, error } = await supabase
+    .from('restaurants')
+    .select('*')
+    .eq('id', restaurantId)
+    .single();
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching restaurant:', error);
+    }
+    return null;
+  }
+
   return data;
 }
