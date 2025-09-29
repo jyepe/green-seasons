@@ -166,3 +166,33 @@ export async function getRestaurantById(
 
   return data;
 }
+
+export type Order = {
+  id: string;
+  restaurant_id: string;
+  user_id: string;
+  status: 'pending' | 'in_transit' | 'delivered';
+  total_amount: number;
+  order_date: string;
+  delivery_date: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function getOrdersForUser(userId: string): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('created_by', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching orders:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}

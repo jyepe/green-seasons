@@ -2,6 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
+import { useOrders } from '@/hooks/useOrders';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -18,13 +19,60 @@ export default function HomeScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { data: userInfo } = useUserInfo();
   const { data: restaurant } = useRestaurant(userInfo?.owned_restaurant_id);
+  const { data: orders = [], isLoading: ordersLoading } = useOrders(
+    userInfo?.id
+  );
 
-  // Mock data for restaurant owner dashboard
-  const summaryData = {
-    totalOrders: 8,
-    pendingOrders: 5,
-    thisMonth: 0.0,
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
+
+  // Helper function to format currency
+  const formatCurrency = (amount: number) => {
+    return `$${amount.toFixed(2)}`;
+  };
+
+  // Helper function to get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return '#F59E0B'; // warning/yellow
+      case 'in_transit':
+        return '#3B82F6'; // info/blue
+      case 'delivered':
+        return '#16A34A'; // success/green
+      default:
+        return colors.success;
+    }
+  };
+
+  // Calculate stats from orders
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(order =>
+    ['pending', 'in_transit'].includes(order.status)
+  ).length;
+
+  // Calculate this month's total
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const thisMonthTotal = orders
+    .filter(order => {
+      const orderDate = new Date(order.created_at);
+      return (
+        orderDate.getMonth() === currentMonth &&
+        orderDate.getFullYear() === currentYear
+      );
+    })
+    .reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+  // Get recent orders (first 5)
+  const recentOrders = orders.slice(0, 5);
 
   const quickActions = [
     {
@@ -40,60 +88,6 @@ export default function HomeScreen() {
       title: 'Track Orders',
     },
   ];
-
-  const recentOrders = [
-    {
-      id: '1e7aeaac',
-      orderDate: '8/5/2025',
-      deliveryDate: '8/5/2025',
-      items: 'Celery, Jalapeño, Beet, Malanga, Basil, Paprika, Yuca (Cassava)',
-      price: '$30.83',
-      status: 'pending',
-    },
-    {
-      id: 'f423e74a',
-      orderDate: '7/27/2025',
-      deliveryDate: '7/28/2025',
-      items: 'Garlic',
-      price: '$14.38',
-      status: 'pending',
-    },
-    {
-      id: '05b1b54c',
-      orderDate: '7/26/2025',
-      deliveryDate: '7/30/2025',
-      items: 'Paprika',
-      price: '$13.30',
-      status: 'pending',
-    },
-    {
-      id: '0276d730',
-      orderDate: '7/26/2025',
-      deliveryDate: '7/30/2025',
-      items: 'Jalapeño',
-      price: '$11.68',
-      status: 'pending',
-    },
-    {
-      id: '741690a3',
-      orderDate: '7/26/2025',
-      deliveryDate: '7/28/2025',
-      items: 'Ripe Plantain',
-      price: '$11.14',
-      status: 'active',
-    },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '#F59E0B'; // warning/yellow
-      case 'active':
-        return '#3B82F6'; // info/blue
-      default:
-        return colors.success;
-    }
-  };
 
   return (
     <SafeAreaView
@@ -125,7 +119,7 @@ export default function HomeScreen() {
                 Total Orders
               </Text>
               <Text style={[styles.summaryValue, { color: colors.text }]}>
-                {summaryData.totalOrders}
+                {ordersLoading ? '...' : totalOrders}
               </Text>
             </View>
             <View
@@ -145,7 +139,7 @@ export default function HomeScreen() {
                 Pending Orders
               </Text>
               <Text style={[styles.summaryValue, { color: colors.text }]}>
-                {summaryData.pendingOrders}
+                {ordersLoading ? '...' : pendingOrders}
               </Text>
             </View>
             <View
@@ -165,7 +159,7 @@ export default function HomeScreen() {
                 This Month
               </Text>
               <Text style={[styles.summaryValue, { color: colors.text }]}>
-                ${summaryData.thisMonth.toFixed(2)}
+                {ordersLoading ? '...' : formatCurrency(thisMonthTotal)}
               </Text>
             </View>
             <View
@@ -214,57 +208,94 @@ export default function HomeScreen() {
             Your latest produce orders
           </Text>
 
-          {recentOrders.map((order, index) => (
-            <View key={order.id} style={styles.orderItem}>
-              <View
-                style={[
-                  styles.orderStatusIndicator,
-                  { backgroundColor: colors.success },
-                ]}
+          {ordersLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text
+                style={[styles.loadingText, { color: colors.textSecondary }]}
+              >
+                Loading orders...
+              </Text>
+            </View>
+          ) : recentOrders.length === 0 ? (
+            <View style={styles.emptyStateContainer}>
+              <Ionicons
+                name="cube-outline"
+                size={48}
+                color={colors.textTertiary}
               />
-              <View style={styles.orderContent}>
-                <View style={styles.orderHeader}>
-                  <Text style={[styles.orderId, { color: colors.text }]}>
-                    Order #{order.id}
+              <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
+                No Orders Yet
+              </Text>
+              <Text
+                style={[
+                  styles.emptyStateSubtitle,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Start ordering fresh produce for your restaurant
+              </Text>
+            </View>
+          ) : (
+            recentOrders.map(order => (
+              <View key={order.id} style={styles.orderItem}>
+                <View
+                  style={[
+                    styles.orderStatusIndicator,
+                    { backgroundColor: getStatusColor(order.status) },
+                  ]}
+                />
+                <View style={styles.orderContent}>
+                  <View style={styles.orderHeader}>
+                    <Text style={[styles.orderId, { color: colors.text }]}>
+                      Order #{order.id.slice(0, 8)}
+                    </Text>
+                    <Text style={[styles.orderPrice, { color: colors.text }]}>
+                      {formatCurrency(order.total_amount)}
+                    </Text>
+                  </View>
+                  <View style={styles.orderDates}>
+                    <Text
+                      style={[
+                        styles.orderDate,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Date: {formatDate(order.order_date)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.orderDate,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Delivery: {formatDate(order.delivery_date)}
+                    </Text>
+                  </View>
+                  <Text style={[styles.orderItems, { color: colors.text }]}>
+                    Order #{order.id.slice(0, 8)}
                   </Text>
-                  <Text style={[styles.orderPrice, { color: colors.text }]}>
-                    {order.price}
-                  </Text>
-                </View>
-                <View style={styles.orderDates}>
-                  <Text
-                    style={[styles.orderDate, { color: colors.textSecondary }]}
-                  >
-                    Date: {order.orderDate}
-                  </Text>
-                  <Text
-                    style={[styles.orderDate, { color: colors.textSecondary }]}
-                  >
-                    Delivery: {order.deliveryDate}
-                  </Text>
-                </View>
-                <Text style={[styles.orderItems, { color: colors.text }]}>
-                  Items: {order.items}
-                </Text>
-                <View style={styles.orderFooter}>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusColor(order.status) },
-                    ]}
-                  >
-                    <Text style={styles.statusText}>{order.status}</Text>
+                  <View style={styles.orderFooter}>
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        { backgroundColor: getStatusColor(order.status) },
+                      ]}
+                    >
+                      <Text style={styles.statusText}>{order.status}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
 
-          <TouchableOpacity style={styles.viewAllButton}>
-            <Text style={[styles.viewAllText, { color: colors.primary }]}>
-              View All Orders ({summaryData.totalOrders})
-            </Text>
-          </TouchableOpacity>
+          {!ordersLoading && orders.length > 0 && (
+            <TouchableOpacity style={styles.viewAllButton}>
+              <Text style={[styles.viewAllText, { color: colors.primary }]}>
+                View All Orders ({totalOrders})
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -446,5 +477,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  emptyStateContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
