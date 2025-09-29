@@ -34,7 +34,7 @@ export function UserProfile() {
     <View style={styles.container}>
       <Text style={styles.title}>User Profile</Text>
       <Text style={styles.infoText}>
-        Name: {userInfo.firstName} {userInfo.lastName}
+        Name: {userInfo.first_name} {userInfo.last_name}
       </Text>
       <Text style={styles.infoText}>Email: {userInfo.email}</Text>
       {userInfo.phone && (
