@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -90,9 +91,13 @@ export default function ProductsScreen() {
                   { backgroundColor: colors.surface },
                 ]}
               >
-                <View style={styles.productImage}>
+                <View style={styles.productImageContainer}>
                   {item.image_url ? (
-                    <Text style={styles.productEmoji}>🛒</Text>
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={styles.productImage}
+                      resizeMode="cover"
+                    />
                   ) : (
                     <Text style={styles.productEmoji}>📦</Text>
                   )}
@@ -215,12 +220,17 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
-  productImage: {
+  productImageContainer: {
     height: 120,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
     position: 'relative',
+    overflow: 'hidden',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
   },
   productEmoji: {
     fontSize: 48,
