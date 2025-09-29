@@ -112,6 +112,11 @@ export default function HomeScreen() {
           <View
             style={[styles.summaryCard, { backgroundColor: colors.surface }]}
           >
+            <View
+              style={[styles.summaryIcon, { backgroundColor: colors.success }]}
+            >
+              <Ionicons name="cube-outline" size={24} color="white" />
+            </View>
             <View style={styles.summaryContent}>
               <Text
                 style={[styles.summaryTitle, { color: colors.textSecondary }]}
@@ -122,16 +127,16 @@ export default function HomeScreen() {
                 {ordersLoading ? '...' : totalOrders}
               </Text>
             </View>
-            <View
-              style={[styles.summaryIcon, { backgroundColor: colors.success }]}
-            >
-              <Ionicons name="cube-outline" size={24} color="white" />
-            </View>
           </View>
 
           <View
             style={[styles.summaryCard, { backgroundColor: colors.surface }]}
           >
+            <View
+              style={[styles.summaryIcon, { backgroundColor: colors.warning }]}
+            >
+              <Ionicons name="time-outline" size={24} color="white" />
+            </View>
             <View style={styles.summaryContent}>
               <Text
                 style={[styles.summaryTitle, { color: colors.textSecondary }]}
@@ -142,16 +147,16 @@ export default function HomeScreen() {
                 {ordersLoading ? '...' : pendingOrders}
               </Text>
             </View>
-            <View
-              style={[styles.summaryIcon, { backgroundColor: colors.warning }]}
-            >
-              <Ionicons name="time-outline" size={24} color="white" />
-            </View>
           </View>
 
           <View
             style={[styles.summaryCard, { backgroundColor: colors.surface }]}
           >
+            <View
+              style={[styles.summaryIcon, { backgroundColor: colors.info }]}
+            >
+              <Ionicons name="trending-up-outline" size={24} color="white" />
+            </View>
             <View style={styles.summaryContent}>
               <Text
                 style={[styles.summaryTitle, { color: colors.textSecondary }]}
@@ -161,11 +166,6 @@ export default function HomeScreen() {
               <Text style={[styles.summaryValue, { color: colors.text }]}>
                 {ordersLoading ? '...' : formatCurrency(thisMonthTotal)}
               </Text>
-            </View>
-            <View
-              style={[styles.summaryIcon, { backgroundColor: colors.info }]}
-            >
-              <Ionicons name="trending-up-outline" size={24} color="white" />
             </View>
           </View>
         </View>
@@ -337,9 +337,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderRadius: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -350,17 +350,20 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   summaryContent: {
-    flex: 1,
+    alignItems: 'center',
+    marginTop: 8,
   },
   summaryTitle: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     marginBottom: 4,
+    textAlign: 'center',
   },
   summaryValue: {
     fontSize: 24,
     fontWeight: '700',
     fontFamily: 'Inter_700Bold',
+    textAlign: 'center',
   },
   summaryIcon: {
     width: 40,
