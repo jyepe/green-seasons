@@ -196,3 +196,29 @@ export async function getOrdersForUser(userId: string): Promise<Order[]> {
 
   return data || [];
 }
+
+export type Item = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  unit: string;
+  image_url: string | null;
+};
+
+export async function getItems(): Promise<Item[]> {
+  const { data, error } = await supabase
+    .from('items')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching items:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}

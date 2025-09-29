@@ -1,8 +1,10 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useItems } from '@/hooks/useItems';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,89 +16,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { data: items, isLoading, error } = useItems();
 
-  const categories = [
-    { id: 'all', name: 'All', icon: 'grid-outline' },
-    { id: 'vegetables', name: 'Vegetables', icon: 'leaf-outline' },
-    { id: 'fruits', name: 'Fruits', icon: 'nutrition-outline' },
-    { id: 'herbs', name: 'Herbs', icon: 'flower-outline' },
-    { id: 'organic', name: 'Organic', icon: 'checkmark-circle-outline' },
-  ];
-
-  const products = [
-    {
-      id: '1',
-      name: 'Fresh Mixed Greens',
-      category: 'vegetables',
-      price: '$12.99',
-      unit: 'per lb',
-      image: '🥬',
-      description: 'Fresh, crisp mixed greens perfect for salads',
-      inStock: true,
-    },
-    {
-      id: '2',
-      name: 'Organic Tomatoes',
-      category: 'vegetables',
-      price: '$8.99',
-      unit: 'per lb',
-      image: '🍅',
-      description: 'Juicy, organic tomatoes from local farms',
-      inStock: true,
-    },
-    {
-      id: '3',
-      name: 'Fresh Basil',
-      category: 'herbs',
-      price: '$4.99',
-      unit: 'per bunch',
-      image: '🌿',
-      description: 'Aromatic fresh basil for your dishes',
-      inStock: true,
-    },
-    {
-      id: '4',
-      name: 'Organic Carrots',
-      category: 'vegetables',
-      price: '$6.99',
-      unit: 'per lb',
-      image: '🥕',
-      description: 'Sweet, crunchy organic carrots',
-      inStock: false,
-    },
-    {
-      id: '5',
-      name: 'Fresh Strawberries',
-      category: 'fruits',
-      price: '$15.99',
-      unit: 'per lb',
-      image: '🍓',
-      description: 'Sweet, ripe strawberries',
-      inStock: true,
-    },
-    {
-      id: '6',
-      name: 'Organic Spinach',
-      category: 'vegetables',
-      price: '$7.99',
-      unit: 'per lb',
-      image: '🥬',
-      description: 'Nutrient-rich organic spinach',
-      inStock: true,
-    },
-  ];
-
-  const filteredProducts = products.filter(product => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === 'all' || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts =
+    items?.filter(item => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.description &&
+          item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesSearch;
+    }) || [];
 
   return (
     <SafeAreaView
@@ -134,113 +65,82 @@ export default function ProductsScreen() {
         </View>
       </View>
 
-      {/* Categories */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}
-      >
-        {categories.map(category => (
-          <TouchableOpacity
-            key={category.id}
-            style={[
-              styles.categoryButton,
-              {
-                backgroundColor:
-                  selectedCategory === category.id
-                    ? colors.primary
-                    : colors.surface,
-                borderColor: colors.textTertiary,
-              },
-            ]}
-            onPress={() => setSelectedCategory(category.id)}
-          >
-            <Ionicons
-              name={category.icon as any}
-              size={20}
-              color={
-                selectedCategory === category.id ? 'white' : colors.textTertiary
-              }
-            />
-            <Text
-              style={[
-                styles.categoryText,
-                {
-                  color:
-                    selectedCategory === category.id
-                      ? 'white'
-                      : colors.textSecondary,
-                },
-              ]}
-            >
-              {category.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
       {/* Products Grid */}
       <ScrollView style={styles.productsContainer}>
-        <View style={styles.productsGrid}>
-          {filteredProducts.map(product => (
-            <TouchableOpacity
-              key={product.id}
-              style={[styles.productCard, { backgroundColor: colors.surface }]}
-              disabled={!product.inStock}
-            >
-              <View style={styles.productImage}>
-                <Text style={styles.productEmoji}>{product.image}</Text>
-                {!product.inStock && (
-                  <View style={styles.outOfStockOverlay}>
-                    <Text style={styles.outOfStockText}>Out of Stock</Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.productInfo}>
-                <Text style={[styles.productName, { color: colors.text }]}>
-                  {product.name}
-                </Text>
-                <Text
-                  style={[
-                    styles.productDescription,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  {product.description}
-                </Text>
-                <View style={styles.productPriceContainer}>
-                  <Text
-                    style={[styles.productPrice, { color: colors.primary }]}
-                  >
-                    {product.price}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Loading products...
+            </Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: colors.text }]}>
+              Failed to load products. Please try again.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.productsGrid}>
+            {filteredProducts.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.productCard,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.productImage}>
+                  {item.image_url ? (
+                    <Text style={styles.productEmoji}>🛒</Text>
+                  ) : (
+                    <Text style={styles.productEmoji}>📦</Text>
+                  )}
+                </View>
+                <View style={styles.productInfo}>
+                  <Text style={[styles.productName, { color: colors.text }]}>
+                    {item.name}
                   </Text>
-                  <Text
+                  {item.description && (
+                    <Text
+                      style={[
+                        styles.productDescription,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {item.description}
+                    </Text>
+                  )}
+                  <View style={styles.productPriceContainer}>
+                    <Text
+                      style={[styles.productPrice, { color: colors.primary }]}
+                    >
+                      ${item.price.toFixed(2)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.productUnit,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {item.unit}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
                     style={[
-                      styles.productUnit,
-                      { color: colors.textSecondary },
+                      styles.addButton,
+                      {
+                        backgroundColor: colors.primary,
+                      },
                     ]}
                   >
-                    {product.unit}
-                  </Text>
+                    <Ionicons name="add" size={20} color="white" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  style={[
-                    styles.addButton,
-                    {
-                      backgroundColor: product.inStock
-                        ? colors.primary
-                        : colors.textTertiary,
-                    },
-                  ]}
-                  disabled={!product.inStock}
-                >
-                  <Ionicons name="add" size={20} color="white" />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -291,27 +191,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-  },
-  categoriesContainer: {
-    marginBottom: 20,
-  },
-  categoriesContent: {
-    paddingHorizontal: 16,
-  },
-  categoryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 12,
-  },
-  categoryText: {
-    marginLeft: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
   productsContainer: {
     flex: 1,
@@ -399,5 +278,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'flex-end',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
   },
 });
