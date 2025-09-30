@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useItems } from '@/hooks/useItems';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -15,8 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: items, isLoading, error } = useItems();
@@ -29,6 +32,26 @@ export default function ProductsScreen() {
           item.description.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesSearch;
     }) || [];
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
+  const paginatedProducts = filteredProducts.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
+  );
+
+  const hasPrevious = safePage > 1;
+  const hasNext = safePage < totalPages;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <SafeAreaView
@@ -81,70 +104,126 @@ export default function ProductsScreen() {
               Failed to load products. Please try again.
             </Text>
           </View>
-        ) : (
-          <View style={styles.productsGrid}>
-            {filteredProducts.map(item => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.productCard,
-                  { backgroundColor: colors.surface },
-                ]}
-              >
-                <View style={styles.productImageContainer}>
-                  {item.image_url ? (
-                    <Image
-                      source={{ uri: item.image_url }}
-                      style={styles.productImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Text style={styles.productEmoji}>📦</Text>
-                  )}
-                </View>
-                <View style={styles.productInfo}>
-                  <Text style={[styles.productName, { color: colors.text }]}>
-                    {item.name}
-                  </Text>
-                  {item.description && (
-                    <Text
-                      style={[
-                        styles.productDescription,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      {item.description}
-                    </Text>
-                  )}
-                  <View style={styles.productPriceContainer}>
-                    <Text
-                      style={[styles.productPrice, { color: colors.primary }]}
-                    >
-                      ${item.price.toFixed(2)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.productUnit,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      {item.unit}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    style={[
-                      styles.addButton,
-                      {
-                        backgroundColor: colors.primary,
-                      },
-                    ]}
-                  >
-                    <Ionicons name="add" size={20} color="white" />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            ))}
+        ) : filteredProducts.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text
+              style={[
+                styles.emptyStateText,
+                { color: colors.textSecondary },
+              ]}
+            >
+              No products found. Try a different search.
+            </Text>
           </View>
+        ) : (
+          <>
+            <View style={styles.productsGrid}>
+              {paginatedProducts.map(item => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.productCard,
+                    { backgroundColor: colors.surface },
+                  ]}
+                >
+                  <View style={styles.productImageContainer}>
+                    {item.image_url ? (
+                      <Image
+                        source={{ uri: item.image_url }}
+                        style={styles.productImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Text style={styles.productEmoji}>{'📦'}</Text>
+                    )}
+                  </View>
+                  <View style={styles.productInfo}>
+                    <Text style={[styles.productName, { color: colors.text }]}
+                    >
+                      {item.name}
+                    </Text>
+                    {item.description && (
+                      <Text
+                        style={[
+                          styles.productDescription,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        {item.description}
+                      </Text>
+                    )}
+                    <View style={styles.productPriceContainer}>
+                      <Text
+                        style={[styles.productPrice, { color: colors.primary }]}
+                      >
+                        ${item.price.toFixed(2)}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.productUnit,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        {item.unit}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[
+                        styles.addButton,
+                        {
+                          backgroundColor: colors.primary,
+                        },
+                      ]}
+                    >
+                      <Ionicons name="add" size={20} color="white" />
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View
+              style={[
+                styles.paginationContainer,
+                { borderColor: colors.textTertiary },
+              ]}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.paginationButton,
+                  { backgroundColor: colors.surface },
+                  !hasPrevious && styles.paginationButtonDisabled,
+                ]}
+                onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={!hasPrevious}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={18}
+                  color={!hasPrevious ? colors.textTertiary : colors.text}
+                />
+              </TouchableOpacity>
+              <Text
+                style={[styles.paginationLabel, { color: colors.textSecondary }]}
+              >
+                Page {safePage} of {totalPages}
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.paginationButton,
+                  { backgroundColor: colors.surface },
+                  !hasNext && styles.paginationButtonDisabled,
+                ]}
+                onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={!hasNext}
+              >
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={!hasNext ? colors.textTertiary : colors.text}
+                />
+              </TouchableOpacity>
+            </View>
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -288,6 +367,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'flex-end',
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginHorizontal: 16,
+    marginBottom: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  paginationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paginationButtonDisabled: {
+    opacity: 0.4,
+  },
+  paginationLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
