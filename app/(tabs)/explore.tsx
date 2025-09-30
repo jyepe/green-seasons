@@ -33,7 +33,10 @@ export default function ProductsScreen() {
       return matchesSearch;
     }) || [];
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  );
   const safePage = Math.min(Math.max(currentPage, 1), totalPages);
   const paginatedProducts = filteredProducts.slice(
     (safePage - 1) * ITEMS_PER_PAGE,
@@ -90,7 +93,10 @@ export default function ProductsScreen() {
       </View>
 
       {/* Products Grid */}
-      <ScrollView style={styles.productsContainer}>
+      <ScrollView
+        style={styles.productsContainer}
+        contentContainerStyle={styles.productsContent}
+      >
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -116,116 +122,117 @@ export default function ProductsScreen() {
             </Text>
           </View>
         ) : (
-          <>
-            <View style={styles.productsGrid}>
-              {paginatedProducts.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.productCard,
-                    { backgroundColor: colors.surface },
-                  ]}
-                >
-                  <View style={styles.productImageContainer}>
-                    {item.image_url ? (
-                      <Image
-                        source={{ uri: item.image_url }}
-                        style={styles.productImage}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <Text style={styles.productEmoji}>{'📦'}</Text>
-                    )}
-                  </View>
-                  <View style={styles.productInfo}>
-                    <Text style={[styles.productName, { color: colors.text }]}
-                    >
-                      {item.name}
-                    </Text>
-                    {item.description && (
-                      <Text
-                        style={[
-                          styles.productDescription,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        {item.description}
-                      </Text>
-                    )}
-                    <View style={styles.productPriceContainer}>
-                      <Text
-                        style={[styles.productPrice, { color: colors.primary }]}
-                      >
-                        ${item.price.toFixed(2)}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.productUnit,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        {item.unit}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
+          <View style={styles.productsGrid}>
+            {paginatedProducts.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.productCard,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.productImageContainer}>
+                  {item.image_url ? (
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={styles.productImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={styles.productEmoji}>{'??'}</Text>
+                  )}
+                </View>
+                <View style={styles.productInfo}>
+                  <Text style={[styles.productName, { color: colors.text }]}
+                  >
+                    {item.name}
+                  </Text>
+                  {item.description && (
+                    <Text
                       style={[
-                        styles.addButton,
-                        {
-                          backgroundColor: colors.primary,
-                        },
+                        styles.productDescription,
+                        { color: colors.textSecondary },
                       ]}
                     >
-                      <Ionicons name="add" size={20} color="white" />
-                    </TouchableOpacity>
+                      {item.description}
+                    </Text>
+                  )}
+                  <View style={styles.productPriceContainer}>
+                    <Text
+                      style={[styles.productPrice, { color: colors.primary }]}
+                    >
+                      ${item.price.toFixed(2)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.productUnit,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {item.unit}
+                    </Text>
                   </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View
-              style={[
-                styles.paginationContainer,
-                { borderColor: colors.textTertiary },
-              ]}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.paginationButton,
-                  { backgroundColor: colors.surface },
-                  !hasPrevious && styles.paginationButtonDisabled,
-                ]}
-                onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={!hasPrevious}
-              >
-                <Ionicons
-                  name="chevron-back"
-                  size={18}
-                  color={!hasPrevious ? colors.textTertiary : colors.text}
-                />
+                  <TouchableOpacity
+                    style={[
+                      styles.addButton,
+                      {
+                        backgroundColor: colors.primary,
+                      },
+                    ]}
+                  >
+                    <Ionicons name="add" size={20} color="white" />
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
-              <Text
-                style={[styles.paginationLabel, { color: colors.textSecondary }]}
-              >
-                Page {safePage} of {totalPages}
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.paginationButton,
-                  { backgroundColor: colors.surface },
-                  !hasNext && styles.paginationButtonDisabled,
-                ]}
-                onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={!hasNext}
-              >
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={!hasNext ? colors.textTertiary : colors.text}
-                />
-              </TouchableOpacity>
-            </View>
-          </>
+            ))}
+          </View>
         )}
       </ScrollView>
+
+      {!isLoading && !error && filteredProducts.length > 0 && (
+        <View
+          style={[
+            styles.paginationContainer,
+            { borderColor: colors.textTertiary },
+          ]}
+        >
+          <TouchableOpacity
+            style={[
+              styles.paginationButton,
+              { backgroundColor: colors.surface },
+              !hasPrevious && styles.paginationButtonDisabled,
+            ]}
+            onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={!hasPrevious}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={18}
+              color={!hasPrevious ? colors.textTertiary : colors.text}
+            />
+          </TouchableOpacity>
+          <Text
+            style={[styles.paginationLabel, { color: colors.textSecondary }]}
+          >
+            Page {safePage} of {totalPages}
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.paginationButton,
+              { backgroundColor: colors.surface },
+              !hasNext && styles.paginationButtonDisabled,
+            ]}
+            onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={!hasNext}
+          >
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={!hasNext ? colors.textTertiary : colors.text}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -278,6 +285,9 @@ const styles = StyleSheet.create({
   },
   productsContainer: {
     flex: 1,
+  },
+  productsContent: {
+    paddingBottom: 24,
   },
   productsGrid: {
     flexDirection: 'row',
