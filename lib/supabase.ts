@@ -248,3 +248,30 @@ export async function getCartWithItems(): Promise<CartItem[]> {
 
   return data || [];
 }
+
+export type AddToCartParams = {
+  itemId: string;
+  quantityDelta?: number;
+};
+
+export async function addToCart(params: AddToCartParams): Promise<{
+  id: string;
+  cart_id: string;
+  item_id: string;
+  quantity: number;
+} | null> {
+  const { data, error } = await supabase.rpc('fn_add_to_cart', {
+    p_item_id: params.itemId,
+    p_quantity_delta: params.quantityDelta ?? 1,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error adding to cart:', error);
+    }
+    throw error;
+  }
+
+  return data;
+}

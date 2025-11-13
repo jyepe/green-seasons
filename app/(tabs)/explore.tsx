@@ -1,5 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAddToCart } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
@@ -23,6 +24,7 @@ export default function ProductsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: items, isLoading, error } = useItems();
+  const addToCartMutation = useAddToCart();
 
   const filteredProducts =
     items?.filter(item => {
@@ -55,6 +57,18 @@ export default function ProductsScreen() {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  const handleAddToCart = async (itemId: string) => {
+    try {
+      await addToCartMutation.mutateAsync({
+        itemId,
+        quantityDelta: 1,
+      });
+    } catch (error) {
+      // Error is already logged in the supabase function
+      // Could show a toast/alert here if needed
+    }
+  };
 
   return (
     <SafeAreaView
@@ -174,9 +188,16 @@ export default function ProductsScreen() {
                       {
                         backgroundColor: colors.primary,
                       },
+                      addToCartMutation.isPending && styles.addButtonDisabled,
                     ]}
+                    onPress={() => handleAddToCart(item.id)}
+                    disabled={addToCartMutation.isPending}
                   >
-                    <Ionicons name="add" size={20} color="white" />
+                    {addToCartMutation.isPending ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <Ionicons name="add" size={20} color="white" />
+                    )}
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -375,6 +396,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'flex-end',
+  },
+  addButtonDisabled: {
+    opacity: 0.6,
   },
   paginationContainer: {
     flexDirection: 'row',
