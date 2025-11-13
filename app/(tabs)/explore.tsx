@@ -113,10 +113,7 @@ export default function ProductsScreen() {
         ) : filteredProducts.length === 0 ? (
           <View style={styles.emptyState}>
             <Text
-              style={[
-                styles.emptyStateText,
-                { color: colors.textSecondary },
-              ]}
+              style={[styles.emptyStateText, { color: colors.textSecondary }]}
             >
               No products found. Try a different search.
             </Text>
@@ -143,8 +140,7 @@ export default function ProductsScreen() {
                   )}
                 </View>
                 <View style={styles.productInfo}>
-                  <Text style={[styles.productName, { color: colors.text }]}
-                  >
+                  <Text style={[styles.productName, { color: colors.text }]}>
                     {item.name}
                   </Text>
                   {item.description && (
@@ -222,7 +218,9 @@ export default function ProductsScreen() {
               { backgroundColor: colors.surface },
               !hasNext && styles.paginationButtonDisabled,
             ]}
-            onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            onPress={() =>
+              setCurrentPage(prev => Math.min(prev + 1, totalPages))
+            }
             disabled={!hasNext}
           >
             <Ionicons
