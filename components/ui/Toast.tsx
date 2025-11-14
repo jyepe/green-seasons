@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -43,6 +43,7 @@ export function Toast({
       }, duration);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, duration, onHide]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -52,8 +53,7 @@ export function Toast({
 
   if (!visible) return null;
 
-  const backgroundColor =
-    type === 'success' ? colors.success : colors.error;
+  const backgroundColor = type === 'success' ? colors.success : colors.error;
   const iconName = type === 'success' ? 'checkmark-circle' : 'alert-circle';
 
   return (
@@ -101,4 +101,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-

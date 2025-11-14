@@ -275,3 +275,15 @@ export async function addToCart(params: AddToCartParams): Promise<{
 
   return data;
 }
+
+export async function clearCart(): Promise<void> {
+  const { error } = await supabase.rpc('fn_clear_cart');
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error clearing cart:', error);
+    }
+    throw error;
+  }
+}

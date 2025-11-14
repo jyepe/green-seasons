@@ -1,10 +1,10 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAddToCart } from '@/hooks/useCart';
+import { useAddToCart, useCart } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -25,9 +25,11 @@ export default function ProductsScreen() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: items, isLoading, error } = useItems();
+  const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();
 
   const filteredProducts =
@@ -62,6 +64,45 @@ export default function ProductsScreen() {
     }
   }, [currentPage, totalPages]);
 
+  // Sync stepper items with cart when cart updates
+  useEffect(() => {
+    if (cartItems) {
+      setStepperItems(prev => {
+        const updated: Record<string, number> = {};
+        // Sync stepper state with actual cart quantities
+        cartItems.forEach(cartItem => {
+          updated[cartItem.item_id] = cartItem.quantity;
+        });
+        return updated;
+      });
+    }
+  }, [cartItems]);
+
+  // Get cart quantity for an item
+  const getCartQuantity = (itemId: string): number => {
+    const cartItem = cartItems?.find(item => item.item_id === itemId);
+    return cartItem?.quantity || 0;
+  };
+
+  // Get current quantity for stepper (either from stepper state or cart)
+  const getStepperQuantity = (itemId: string): number => {
+    if (stepperItems[itemId] !== undefined) {
+      return stepperItems[itemId];
+    }
+    const cartQty = getCartQuantity(itemId);
+    return cartQty > 0 ? cartQty : 1;
+  };
+
+  // Check if item is in cart
+  const isInCart = (itemId: string): boolean => {
+    return getCartQuantity(itemId) > 0;
+  };
+
+  // Check if item is in stepper mode (in cart or recently added)
+  const isStepperMode = (itemId: string): boolean => {
+    return isInCart(itemId);
+  };
+
   const handleAddToCart = async (itemId: string) => {
     setPendingItemId(itemId);
     try {
@@ -71,6 +112,7 @@ export default function ProductsScreen() {
       });
       // Show success toast
       setShowToast(true);
+      // Stepper will be shown automatically when cart updates
     } catch (error) {
       // Error is already logged in the supabase function
       const errorMessage =
@@ -83,6 +125,57 @@ export default function ProductsScreen() {
     }
   };
 
+  const handleUpdateCartQuantity = async (itemId: string, delta: number) => {
+    const currentQuantity = getStepperQuantity(itemId);
+    const newQuantity = Math.max(0, currentQuantity + delta);
+
+    // If quantity would be 0 or less, allow it (will trigger removal)
+    setStepperItems(prev => ({ ...prev, [itemId]: newQuantity }));
+
+    setPendingItemId(itemId);
+    try {
+      // Calculate the delta needed
+      const cartQuantity = getCartQuantity(itemId);
+      const quantityDelta = newQuantity - cartQuantity;
+
+      // Always call the mutation, even if delta is 0 (to handle removal case)
+      // The RPC function will handle deletion when quantity becomes <= 0
+      await addToCartMutation.mutateAsync({
+        itemId,
+        quantityDelta,
+      });
+
+      // If item was removed (quantity is now 0), clear stepper state
+      if (newQuantity <= 0) {
+        setStepperItems(prev => {
+          const { [itemId]: _, ...rest } = prev;
+          return rest;
+        });
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to update cart. Please try again.';
+      Alert.alert('Error', errorMessage);
+      // Revert on error - restore to current cart quantity
+      const cartQty = getCartQuantity(itemId);
+      setStepperItems(prev => {
+        if (cartQty > 0) {
+          return { ...prev, [itemId]: cartQty };
+        }
+        const { [itemId]: _, ...rest } = prev;
+        return rest;
+      });
+    } finally {
+      setPendingItemId(null);
+    }
+  };
+
+  const handleToastHide = useCallback(() => {
+    setShowToast(false);
+  }, []);
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -91,7 +184,7 @@ export default function ProductsScreen() {
         message="Item added to cart!"
         type="success"
         visible={showToast}
-        onHide={() => setShowToast(false)}
+        onHide={handleToastHide}
       />
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.surface }]}>
@@ -201,23 +294,109 @@ export default function ProductsScreen() {
                       {item.unit}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={[
-                      styles.addButton,
-                      {
-                        backgroundColor: colors.primary,
-                      },
-                      pendingItemId === item.id && styles.addButtonDisabled,
-                    ]}
-                    onPress={() => handleAddToCart(item.id)}
-                    disabled={pendingItemId === item.id}
-                  >
-                    {pendingItemId === item.id ? (
-                      <ActivityIndicator size="small" color="white" />
-                    ) : (
-                      <Ionicons name="add" size={20} color="white" />
-                    )}
-                  </TouchableOpacity>
+
+                  {/* Cart Badge */}
+                  {isInCart(item.id) && (
+                    <View
+                      style={[
+                        styles.cartBadge,
+                        { backgroundColor: colors.primary },
+                      ]}
+                    >
+                      <Ionicons name="checkmark" size={12} color="white" />
+                      <Text style={styles.cartBadgeText}>
+                        {getCartQuantity(item.id)} in cart
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Add to Cart Button or Stepper */}
+                  {!isStepperMode(item.id) ? (
+                    <TouchableOpacity
+                      style={[
+                        styles.addToCartButton,
+                        {
+                          backgroundColor: colors.primary,
+                        },
+                        pendingItemId === item.id && styles.addButtonDisabled,
+                      ]}
+                      onPress={() => handleAddToCart(item.id)}
+                      disabled={pendingItemId === item.id}
+                    >
+                      {pendingItemId === item.id ? (
+                        <ActivityIndicator size="small" color="white" />
+                      ) : (
+                        <>
+                          <Ionicons name="cart" size={18} color="white" />
+                          <Text style={styles.addToCartButtonText}>
+                            Add to Cart
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  ) : (
+                    <View
+                      style={[
+                        styles.stepperContainer,
+                        { borderColor: colors.border },
+                      ]}
+                    >
+                      <TouchableOpacity
+                        style={[
+                          styles.stepperButton,
+                          {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                            borderRightWidth: 1,
+                          },
+                          pendingItemId === item.id &&
+                            styles.stepperButtonDisabled,
+                        ]}
+                        onPress={() => handleUpdateCartQuantity(item.id, -1)}
+                        disabled={pendingItemId === item.id}
+                      >
+                        <Ionicons name="remove" size={18} color={colors.text} />
+                      </TouchableOpacity>
+                      <View
+                        style={[
+                          styles.stepperQuantity,
+                          { backgroundColor: colors.surface },
+                        ]}
+                      >
+                        {pendingItemId === item.id ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary}
+                          />
+                        ) : (
+                          <Text
+                            style={[
+                              styles.stepperQuantityText,
+                              { color: colors.text },
+                            ]}
+                          >
+                            {getStepperQuantity(item.id)}
+                          </Text>
+                        )}
+                      </View>
+                      <TouchableOpacity
+                        style={[
+                          styles.stepperButton,
+                          {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                            borderLeftWidth: 1,
+                          },
+                          pendingItemId === item.id &&
+                            styles.stepperButtonDisabled,
+                        ]}
+                        onPress={() => handleUpdateCartQuantity(item.id, 1)}
+                        disabled={pendingItemId === item.id}
+                      >
+                        <Ionicons name="add" size={18} color={colors.text} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               </TouchableOpacity>
             ))}
@@ -408,13 +587,66 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     marginLeft: 4,
   },
-  addButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  cartBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 8,
+    gap: 4,
+  },
+  cartBadgeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  addToCartButton: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  addToCartButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  stepperButton: {
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'flex-end',
+  },
+  stepperButtonDisabled: {
+    opacity: 0.5,
+  },
+  stepperQuantity: {
+    flex: 1,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepperQuantityText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   addButtonDisabled: {
     opacity: 0.6,

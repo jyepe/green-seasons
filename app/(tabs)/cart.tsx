@@ -1,13 +1,15 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useCart } from '@/hooks/useCart';
+import { useCart, useClearCart } from '@/hooks/useCart';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,9 +18,42 @@ export default function CartScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: cartItems, isLoading, error } = useCart();
+  const clearCartMutation = useClearCart();
+  const [isClearing, setIsClearing] = useState(false);
 
   const total =
     cartItems?.reduce((sum, item) => sum + item.line_subtotal, 0) || 0;
+
+  const handleClearCart = () => {
+    Alert.alert(
+      'Clear Cart',
+      'Are you sure you want to remove all items from your cart?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            setIsClearing(true);
+            try {
+              await clearCartMutation.mutateAsync();
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to clear cart. Please try again.';
+              Alert.alert('Error', errorMessage);
+            } finally {
+              setIsClearing(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView
@@ -34,14 +69,43 @@ export default function CartScreen() {
           },
         ]}
       >
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Cart</Text>
-        {cartItems && cartItems.length > 0 && (
-          <Text
-            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-          >
-            {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
-          </Text>
-        )}
+        <View style={styles.headerContent}>
+          <View style={styles.headerTextContainer}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              Cart
+            </Text>
+            {cartItems && cartItems.length > 0 && (
+              <Text
+                style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+              >
+                {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+              </Text>
+            )}
+          </View>
+          {cartItems && cartItems.length > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.clearButton,
+                {
+                  backgroundColor: colors.error,
+                },
+                (isClearing || clearCartMutation.isPending) &&
+                  styles.clearButtonDisabled,
+              ]}
+              onPress={handleClearCart}
+              disabled={isClearing || clearCartMutation.isPending}
+            >
+              {isClearing || clearCartMutation.isPending ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <Ionicons name="trash-outline" size={16} color="white" />
+                  <Text style={styles.clearButtonText}>Clear</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Content */}
@@ -164,6 +228,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
@@ -171,6 +243,23 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 14,
+  },
+  clearButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  clearButtonDisabled: {
+    opacity: 0.6,
+  },
+  clearButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   loadingContainer: {
     flex: 1,
