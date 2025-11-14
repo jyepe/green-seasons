@@ -222,3 +222,68 @@ export async function getItems(): Promise<Item[]> {
 
   return data || [];
 }
+
+export type CartItem = {
+  cart_id: string;
+  cart_created_at: string;
+  cart_updated_at: string;
+  item_row_id: string;
+  item_id: string;
+  item_name: string;
+  item_price: number;
+  quantity: number;
+  line_subtotal: number;
+};
+
+export async function getCartWithItems(): Promise<CartItem[]> {
+  const { data, error } = await supabase.rpc('fn_get_cart_with_items');
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching cart items:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}
+
+export type AddToCartParams = {
+  itemId: string;
+  quantityDelta?: number;
+};
+
+export async function addToCart(params: AddToCartParams): Promise<{
+  id: string;
+  cart_id: string;
+  item_id: string;
+  quantity: number;
+} | null> {
+  const { data, error } = await supabase.rpc('fn_add_to_cart', {
+    p_item_id: params.itemId,
+    p_quantity_delta: params.quantityDelta ?? 1,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error adding to cart:', error);
+    }
+    throw error;
+  }
+
+  return data;
+}
+
+export async function clearCart(): Promise<void> {
+  const { error } = await supabase.rpc('fn_clear_cart');
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error clearing cart:', error);
+    }
+    throw error;
+  }
+}
