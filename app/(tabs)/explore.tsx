@@ -103,6 +103,16 @@ export default function ProductsScreen() {
     return isInCart(itemId);
   };
 
+  // Shared error handling helper
+  const handleCartError = useCallback(
+    (error: unknown, defaultMessage: string) => {
+      const errorMessage =
+        error instanceof Error ? error.message : defaultMessage;
+      Alert.alert('Error', errorMessage);
+    },
+    []
+  );
+
   const handleAddToCart = async (itemId: string) => {
     setPendingItemId(itemId);
     try {
@@ -115,11 +125,7 @@ export default function ProductsScreen() {
       // Stepper will be shown automatically when cart updates
     } catch (error) {
       // Error is already logged in the supabase function
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to add item to cart. Please try again.';
-      Alert.alert('Error', errorMessage);
+      handleCartError(error, 'Failed to add item to cart. Please try again.');
     } finally {
       setPendingItemId(null);
     }
@@ -153,11 +159,7 @@ export default function ProductsScreen() {
         });
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to update cart. Please try again.';
-      Alert.alert('Error', errorMessage);
+      handleCartError(error, 'Failed to update cart. Please try again.');
       // Revert on error - restore to current cart quantity
       const cartQty = getCartQuantity(itemId);
       setStepperItems(prev => {
