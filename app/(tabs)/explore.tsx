@@ -2,6 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAddToCart } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
+import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
@@ -23,6 +24,7 @@ export default function ProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: items, isLoading, error } = useItems();
@@ -67,6 +69,8 @@ export default function ProductsScreen() {
         itemId,
         quantityDelta: 1,
       });
+      // Show success toast
+      setShowToast(true);
     } catch (error) {
       // Error is already logged in the supabase function
       const errorMessage =
@@ -83,6 +87,12 @@ export default function ProductsScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <Toast
+        message="Item added to cart!"
+        type="success"
+        visible={showToast}
+        onHide={() => setShowToast(false)}
+      />
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <Text style={[styles.title, { color: colors.text }]}>
