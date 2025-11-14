@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -21,6 +22,7 @@ const ITEMS_PER_PAGE = 10;
 export default function ProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [pendingItemId, setPendingItemId] = useState<string | null>(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: items, isLoading, error } = useItems();
@@ -59,6 +61,7 @@ export default function ProductsScreen() {
   }, [currentPage, totalPages]);
 
   const handleAddToCart = async (itemId: string) => {
+    setPendingItemId(itemId);
     try {
       await addToCartMutation.mutateAsync({
         itemId,
@@ -66,7 +69,13 @@ export default function ProductsScreen() {
       });
     } catch (error) {
       // Error is already logged in the supabase function
-      // Could show a toast/alert here if needed
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to add item to cart. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setPendingItemId(null);
     }
   };
 
@@ -188,12 +197,12 @@ export default function ProductsScreen() {
                       {
                         backgroundColor: colors.primary,
                       },
-                      addToCartMutation.isPending && styles.addButtonDisabled,
+                      pendingItemId === item.id && styles.addButtonDisabled,
                     ]}
                     onPress={() => handleAddToCart(item.id)}
-                    disabled={addToCartMutation.isPending}
+                    disabled={pendingItemId === item.id}
                   >
-                    {addToCartMutation.isPending ? (
+                    {pendingItemId === item.id ? (
                       <ActivityIndicator size="small" color="white" />
                     ) : (
                       <Ionicons name="add" size={20} color="white" />
