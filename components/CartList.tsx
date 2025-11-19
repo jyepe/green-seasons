@@ -1,0 +1,162 @@
+import { Ionicons } from '@expo/vector-icons';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SwipeableRow } from './SwipeableRow';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import type { CartItem } from '@/lib/supabase';
+
+type CartListProps = {
+  cartItems: CartItem[];
+  isLoading: boolean;
+  error: Error | null;
+  updatingItemId: string | null;
+  itemImageMap: Map<string, string | null>;
+  onQuantityChange: (itemId: string, delta: number) => void;
+  onDeleteItem: (itemId: string) => void;
+  onItemPress: (item: CartItem) => void;
+};
+
+export function CartList({
+  cartItems,
+  isLoading,
+  error,
+  updatingItemId,
+  itemImageMap,
+  onQuantityChange,
+  onDeleteItem,
+  onItemPress,
+}: CartListProps) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading cart...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Ionicons
+          name="alert-circle-outline"
+          size={48}
+          color={colors.error}
+          style={styles.errorIcon}
+        />
+        <Text style={[styles.errorText, { color: colors.text }]}>
+          Failed to load cart. Please try again.
+        </Text>
+      </View>
+    );
+  }
+
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons
+          name="cart-outline"
+          size={80}
+          color={colors.textTertiary}
+          style={styles.icon}
+        />
+        <Text style={[styles.title, { color: colors.text }]}>
+          Your cart is empty
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Start adding products to your cart to get started
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={cartItems}
+      renderItem={({ item, index }) => (
+        <SwipeableRow
+          item={item}
+          index={index}
+          updatingItemId={updatingItemId}
+          itemImageMap={itemImageMap}
+          onQuantityChange={onQuantityChange}
+          onDeleteItem={onDeleteItem}
+          onItemPress={onItemPress}
+        />
+      )}
+      keyExtractor={item => item.item_row_id}
+      style={styles.cartContainer}
+      contentContainerStyle={styles.cartContent}
+      ItemSeparatorComponent={() => (
+        <View style={[styles.separator, { backgroundColor: colors.border }]} />
+      )}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorIcon: {
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  icon: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    opacity: 0.7,
+  },
+  cartContainer: {
+    flex: 1,
+  },
+  cartContent: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 160,
+  },
+  separator: {
+    height: 1,
+    marginLeft: 0,
+  },
+});
