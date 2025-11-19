@@ -170,10 +170,12 @@ export default function CartScreen() {
     }
     const delta = newQuantity - editingItem.quantity;
     if (delta !== 0) {
-      setUpdatingItemId(editingItem.item_id);
+      // Capture the item_id at the start of the mutation to prevent race conditions
+      const mutationItemId = editingItem.item_id;
+      setUpdatingItemId(mutationItemId);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       addToCartMutation
-        .mutateAsync({ itemId: editingItem.item_id, quantityDelta: delta })
+        .mutateAsync({ itemId: mutationItemId, quantityDelta: delta })
         .catch(error => {
           const errorMessage =
             error instanceof Error
@@ -183,7 +185,13 @@ export default function CartScreen() {
         })
         .finally(() => {
           setUpdatingItemId(null);
-          setEditingItem(null);
+          // Only close modal if still editing the same item that initiated the mutation
+          setEditingItem(prev => {
+            if (prev && prev.item_id === mutationItemId) {
+              return null;
+            }
+            return prev;
+          });
         });
     } else {
       setEditingItem(null);
