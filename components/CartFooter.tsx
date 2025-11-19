@@ -1,0 +1,102 @@
+import {
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import type { AnimatedStyle } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+
+type CartFooterProps = {
+  total: number;
+  animatedTotalStyle: AnimatedStyle<TextStyle>;
+  onCheckout: () => void;
+};
+
+export function CartFooter({
+  total,
+  animatedTotalStyle,
+  onCheckout,
+}: CartFooterProps) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
+  return (
+    <>
+      <View style={styles.footerSpacer} />
+      <View
+        style={[
+          styles.checkoutBar,
+          {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.totalRow}>
+          <View>
+            <Text style={[styles.totalLabel, { color: colors.text }]}>
+              Total
+            </Text>
+            <Animated.Text
+              style={[
+                styles.totalAmount,
+                { color: colors.primary },
+                animatedTotalStyle,
+              ]}
+            >
+              ${total.toFixed(2)}
+            </Animated.Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={[styles.checkoutButton, { backgroundColor: colors.primary }]}
+          onPress={onCheckout}
+        >
+          <Text style={styles.checkoutButtonText}>Checkout</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  footerSpacer: {
+    height: 8,
+  },
+  checkoutBar: {
+    borderTopWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  totalAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  checkoutButton: {
+    paddingVertical: 18,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  checkoutButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+});

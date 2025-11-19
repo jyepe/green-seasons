@@ -1,38 +1,80 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useCart, useClearCart } from '@/hooks/useCart';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useCart, useClearCart, useAddToCart } from '@/hooks/useCart';
+import { useItems } from '@/hooks/useItems';
+import { useUserInfo } from '@/hooks/useUserInfo';
+import { useRestaurant } from '@/hooks/useRestaurant';
+import * as Haptics from 'expo-haptics';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { CartItem } from '@/lib/supabase';
+import { CartHeader } from '@/components/CartHeader';
+import { CartList } from '@/components/CartList';
+import { CartFooter } from '@/components/CartFooter';
+import { EditQuantityModal, EditingItem } from '@/components/EditQuantityModal';
 
 export default function CartScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: cartItems, isLoading, error } = useCart();
+  const { data: items } = useItems();
+  const { data: userInfo } = useUserInfo();
+  const { data: restaurant } = useRestaurant(userInfo?.owned_restaurant_id);
   const clearCartMutation = useClearCart();
+  const addToCartMutation = useAddToCart();
+
   const [isClearing, setIsClearing] = useState(false);
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
+  const [editQuantity, setEditQuantity] = useState('');
+
+  const totalScale = useSharedValue(1);
+  const totalOpacity = useSharedValue(1);
+  const prevTotalRef = useRef(0);
+
+  const itemImageMap = useMemo(() => {
+    if (!items) return new Map<string, string | null>();
+    const map = new Map<string, string | null>();
+    items.forEach(item => {
+      map.set(item.id, item.image_url);
+    });
+    return map;
+  }, [items]);
 
   const total =
     cartItems?.reduce((sum, item) => sum + item.line_subtotal, 0) || 0;
+
+  useEffect(() => {
+    if (prevTotalRef.current !== total && prevTotalRef.current > 0) {
+      totalScale.value = withSpring(1.1, { damping: 10 }, () => {
+        totalScale.value = withSpring(1, { damping: 10 });
+      });
+      totalOpacity.value = withTiming(0.5, { duration: 100 }, () => {
+        totalOpacity.value = withTiming(1, { duration: 200 });
+      });
+    }
+    prevTotalRef.current = total;
+  }, [total, totalScale, totalOpacity]);
+
+  const animatedTotalStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: totalScale.value }],
+    opacity: totalOpacity.value,
+  }));
 
   const handleClearCart = () => {
     Alert.alert(
       'Clear Cart',
       'Are you sure you want to remove all items from your cart?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Clear',
           style: 'destructive',
@@ -40,10 +82,10 @@ export default function CartScreen() {
             setIsClearing(true);
             try {
               await clearCartMutation.mutateAsync();
-            } catch (error) {
+            } catch (e) {
               const errorMessage =
-                error instanceof Error
-                  ? error.message
+                e instanceof Error
+                  ? e.message
                   : 'Failed to clear cart. Please try again.';
               Alert.alert('Error', errorMessage);
             } finally {
@@ -55,311 +97,119 @@ export default function CartScreen() {
     );
   };
 
+  const handleUpdateCartItem = async (
+    itemId: string,
+    quantityDelta: number
+  ) => {
+    if (updatingItemId) return;
+
+    setUpdatingItemId(itemId);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      await addToCartMutation.mutateAsync({ itemId, quantityDelta });
+    } catch (e) {
+      const errorMessage =
+        e instanceof Error
+          ? e.message
+          : 'Unable to update quantity. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
+  const handleDeleteItem = (itemId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const item = cartItems?.find(i => i.item_id === itemId);
+    if (item) {
+      handleUpdateCartItem(itemId, -item.quantity);
+    }
+  };
+
+  const handleItemPress = (item: CartItem) => {
+    const editing: EditingItem = {
+      item_id: item.item_id,
+      item_name: item.item_name,
+      quantity: item.quantity,
+      item_price: item.item_price,
+    };
+    setEditingItem(editing);
+    setEditQuantity(editing.quantity.toString());
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingItem) return;
+
+    const newQuantity = parseInt(editQuantity, 10);
+    if (isNaN(newQuantity) || newQuantity < 1) {
+      Alert.alert(
+        'Invalid Quantity',
+        'Please enter a valid quantity (1 or more).'
+      );
+      return;
+    }
+
+    const delta = newQuantity - editingItem.quantity;
+    if (delta !== 0) {
+      handleUpdateCartItem(editingItem.item_id, delta);
+    }
+    setEditingItem(null);
+  };
+
+  const handleCheckout = () => {
+    Alert.alert(
+      'Checkout',
+      'Checkout is not available yet. Stay tuned for updates!'
+    );
+  };
+
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.border,
-          },
-        ]}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <View style={styles.headerContent}>
-          <View style={styles.headerTextContainer}>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              Cart
-            </Text>
-            {cartItems && cartItems.length > 0 && (
-              <Text
-                style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-              >
-                {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
-              </Text>
-            )}
-          </View>
-          {cartItems && cartItems.length > 0 && (
-            <TouchableOpacity
-              style={[
-                styles.clearButton,
-                {
-                  backgroundColor: colors.error,
-                },
-                (isClearing || clearCartMutation.isPending) &&
-                  styles.clearButtonDisabled,
-              ]}
-              onPress={handleClearCart}
-              disabled={isClearing || clearCartMutation.isPending}
-            >
-              {isClearing || clearCartMutation.isPending ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <>
-                  <Ionicons name="trash-outline" size={16} color="white" />
-                  <Text style={styles.clearButtonText}>Clear</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+        <CartHeader
+          restaurantName={restaurant?.name}
+          itemCount={cartItems?.length || 0}
+          onClearCart={handleClearCart}
+          isClearing={isClearing || clearCartMutation.isPending}
+        />
 
-      {/* Content */}
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Loading cart...
-          </Text>
-        </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Ionicons
-            name="alert-circle-outline"
-            size={48}
-            color={colors.error}
-            style={styles.errorIcon}
-          />
-          <Text style={[styles.errorText, { color: colors.text }]}>
-            Failed to load cart. Please try again.
-          </Text>
-        </View>
-      ) : !cartItems || cartItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons
-            name="cart-outline"
-            size={80}
-            color={colors.textTertiary}
-            style={styles.icon}
-          />
-          <Text style={[styles.title, { color: colors.text }]}>
-            Your cart is empty
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Start adding products to your cart to get started
-          </Text>
-        </View>
-      ) : (
-        <>
-          <ScrollView
-            style={styles.cartContainer}
-            contentContainerStyle={styles.cartContent}
-          >
-            {cartItems.map(item => (
-              <View
-                key={item.item_row_id}
-                style={[
-                  styles.cartItem,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                  },
-                ]}
-              >
-                <View style={styles.cartItemContent}>
-                  <View style={styles.cartItemInfo}>
-                    <Text style={[styles.cartItemName, { color: colors.text }]}>
-                      {item.item_name}
-                    </Text>
-                    <View style={styles.cartItemDetails}>
-                      <Text
-                        style={[
-                          styles.cartItemPrice,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        ${item.item_price.toFixed(2)} each
-                      </Text>
-                      <Text
-                        style={[
-                          styles.cartItemQuantity,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        Qty: {item.quantity}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text
-                    style={[styles.cartItemSubtotal, { color: colors.text }]}
-                  >
-                    ${item.line_subtotal.toFixed(2)}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+        <CartList
+          cartItems={cartItems || []}
+          isLoading={isLoading}
+          error={error}
+          updatingItemId={updatingItemId}
+          itemImageMap={itemImageMap}
+          onQuantityChange={handleUpdateCartItem}
+          onDeleteItem={handleDeleteItem}
+          onItemPress={handleItemPress}
+        />
 
-          {/* Total Footer */}
-          <View
-            style={[
-              styles.footer,
-              {
-                backgroundColor: colors.surface,
-                borderTopColor: colors.border,
-              },
-            ]}
-          >
-            <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, { color: colors.text }]}>
-                Total:
-              </Text>
-              <Text style={[styles.totalAmount, { color: colors.primary }]}>
-                ${total.toFixed(2)}
-              </Text>
-            </View>
-          </View>
-        </>
-      )}
-    </SafeAreaView>
+        {cartItems && cartItems.length > 0 && (
+          <CartFooter
+            total={total}
+            animatedTotalStyle={animatedTotalStyle}
+            onCheckout={handleCheckout}
+          />
+        )}
+
+        <EditQuantityModal
+          editingItem={editingItem}
+          editQuantity={editQuantity}
+          updatingItemId={updatingItemId}
+          onClose={() => setEditingItem(null)}
+          onSave={handleSaveEdit}
+          setEditQuantity={setEditQuantity}
+        />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTextContainer: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-  },
-  clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  clearButtonDisabled: {
-    opacity: 0.6,
-  },
-  clearButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  errorIcon: {
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  icon: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  cartContainer: {
-    flex: 1,
-  },
-  cartContent: {
-    padding: 16,
-    gap: 12,
-  },
-  cartItem: {
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-  },
-  cartItemContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cartItemInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  cartItemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  cartItemDetails: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  cartItemPrice: {
-    fontSize: 14,
-  },
-  cartItemQuantity: {
-    fontSize: 14,
-  },
-  cartItemSubtotal: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  totalLabel: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  totalAmount: {
-    fontSize: 24,
-    fontWeight: '700',
   },
 });
