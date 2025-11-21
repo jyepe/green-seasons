@@ -24,18 +24,19 @@ export default function HomeScreen() {
   );
 
   // Helper function to format date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) {
+      return 'N/A';
+    }
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'N/A';
+    }
     return date.toLocaleDateString('en-US', {
       month: 'numeric',
       day: 'numeric',
       year: 'numeric',
     });
-  };
-
-  // Helper function to format currency
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toFixed(2)}`;
   };
 
   // Helper function to get status color
@@ -61,15 +62,13 @@ export default function HomeScreen() {
   // Calculate this month's total
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
-  const thisMonthTotal = orders
-    .filter(order => {
-      const orderDate = new Date(order.created_at);
-      return (
-        orderDate.getMonth() === currentMonth &&
-        orderDate.getFullYear() === currentYear
-      );
-    })
-    .reduce((sum, order) => sum + (order.total_amount || 0), 0);
+  const thisMonthTotal = orders.filter(order => {
+    const orderDate = new Date(order.created_at);
+    return (
+      orderDate.getMonth() === currentMonth &&
+      orderDate.getFullYear() === currentYear
+    );
+  }).length;
 
   // Get recent orders (first 5)
   const recentOrders = orders.slice(0, 5);
@@ -161,10 +160,10 @@ export default function HomeScreen() {
               <Text
                 style={[styles.summaryTitle, { color: colors.textSecondary }]}
               >
-                This Month
+                This Month Orders
               </Text>
               <Text style={[styles.summaryValue, { color: colors.text }]}>
-                {ordersLoading ? '...' : formatCurrency(thisMonthTotal)}
+                {ordersLoading ? '...' : thisMonthTotal}
               </Text>
             </View>
           </View>
@@ -249,9 +248,6 @@ export default function HomeScreen() {
                     <Text style={[styles.orderId, { color: colors.text }]}>
                       Order #{order.id.slice(0, 8)}
                     </Text>
-                    <Text style={[styles.orderPrice, { color: colors.text }]}>
-                      {formatCurrency(order.total_amount)}
-                    </Text>
                   </View>
                   <View style={styles.orderDates}>
                     <Text
@@ -268,7 +264,7 @@ export default function HomeScreen() {
                         { color: colors.textSecondary },
                       ]}
                     >
-                      Delivery: {formatDate(order.delivery_date)}
+                      Delivery: {formatDate(order.delivery_at)}
                     </Text>
                   </View>
                   <Text style={[styles.orderItems, { color: colors.text }]}>

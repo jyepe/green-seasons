@@ -16,6 +16,7 @@ export const Colors = {
     // Surface
     background: '#FAFBF7',
     surface: '#FFFFFF',
+    inputBackground: '#F3F4F6',
 
     // Neutrals
     text: '#111827',
@@ -47,6 +48,7 @@ export const Colors = {
     // Surface
     background: '#0B0F12',
     surface: '#1A1F24',
+    inputBackground: '#2D3238',
 
     // Neutrals
     text: '#F9FAFB',
