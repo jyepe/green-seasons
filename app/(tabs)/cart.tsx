@@ -15,6 +15,7 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import type { CartItem } from '@/lib/supabase';
 import { CartHeader } from '@/components/CartHeader';
 import { CartList } from '@/components/CartList';
@@ -22,6 +23,7 @@ import { CartFooter } from '@/components/CartFooter';
 import { EditQuantityModal, EditingItem } from '@/components/EditQuantityModal';
 
 export default function CartScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: cartItems, isLoading, error } = useCart();
@@ -158,10 +160,7 @@ export default function CartScreen() {
   };
 
   const handleCheckout = () => {
-    Alert.alert(
-      'Checkout',
-      'Checkout is not available yet. Stay tuned for updates!'
-    );
+    router.push('/checkout');
   };
 
   return (

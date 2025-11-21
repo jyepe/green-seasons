@@ -172,9 +172,8 @@ export type Order = {
   restaurant_id: string;
   user_id: string;
   status: 'pending' | 'in_transit' | 'delivered';
-  total_amount: number;
-  order_date: string;
-  delivery_date: string;
+  order_date?: string | null;
+  delivery_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -286,4 +285,38 @@ export async function clearCart(): Promise<void> {
     }
     throw error;
   }
+}
+
+export type CreateOrderFromCartResult = {
+  id: string;
+  status: 'pending' | 'in_transit' | 'delivered';
+  restaurant_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  total_amount: number;
+};
+
+export async function createOrderFromCart(
+  restaurantId: string,
+  deliveryAt: Date
+): Promise<CreateOrderFromCartResult> {
+  const { data, error } = await supabase.rpc('fn_create_order_from_cart', {
+    p_restaurant_id: restaurantId,
+    p_delivery_at: deliveryAt.toISOString(),
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error creating order from cart:', error);
+    }
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('Order creation returned no data');
+  }
+
+  return data[0];
 }
