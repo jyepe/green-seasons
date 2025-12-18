@@ -107,7 +107,7 @@ export default function OrderDetailsScreen() {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Invoice #${orderSummary.order_id.slice(0, 8)}</title>
+          <title>Invoice #${escapeHtml(orderSummary.order_id.slice(0, 8))}</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
