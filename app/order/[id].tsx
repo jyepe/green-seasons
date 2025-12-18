@@ -316,7 +316,11 @@ export default function OrderDetailsScreen() {
       setIsGeneratingPdf(true);
       const html = generateInvoiceHtml();
       await Print.printAsync({ html });
-    } catch {
+    } catch (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error previewing invoice:', error);
+      }
       Alert.alert('Error', 'Failed to preview invoice. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
@@ -355,7 +359,11 @@ export default function OrderDetailsScreen() {
           ]);
         }
       }
-    } catch {
+    } catch (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error downloading invoice:', error);
+      }
       Alert.alert('Error', 'Failed to download invoice. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
