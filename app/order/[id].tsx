@@ -516,6 +516,8 @@ export default function OrderDetailsScreen() {
             style={[styles.invoiceButton, styles.previewButton]}
             onPress={handlePreviewInvoice}
             disabled={isGeneratingPdf}
+            accessibilityLabel="Preview invoice"
+            accessibilityRole="button"
           >
             {isGeneratingPdf ? (
               <ActivityIndicator size="small" color="#16a34a" />
@@ -531,6 +533,8 @@ export default function OrderDetailsScreen() {
             style={[styles.invoiceButton, styles.downloadButton]}
             onPress={handleDownloadInvoice}
             disabled={isGeneratingPdf}
+            accessibilityLabel="Download invoice as PDF"
+            accessibilityRole="button"
           >
             {isGeneratingPdf ? (
               <ActivityIndicator size="small" color="#fff" />
