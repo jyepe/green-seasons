@@ -386,6 +386,8 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
