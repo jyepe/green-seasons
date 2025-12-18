@@ -248,6 +248,8 @@ export default function HomeScreen() {
                   })
                 }
                 activeOpacity={0.7}
+                accessibilityLabel={`View order details for order #${order.id.slice(0, 8)}`}
+                accessibilityRole="button"
               >
                 <View
                   style={[
