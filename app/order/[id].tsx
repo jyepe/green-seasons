@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -85,7 +85,7 @@ export default function OrderDetailsScreen() {
   };
 
   // Generate invoice HTML
-  const generateInvoiceHtml = () => {
+  const generateInvoiceHtml = useCallback(() => {
     if (!orderSummary) return '';
 
     const itemsHtml = orderDetails
@@ -295,7 +295,7 @@ export default function OrderDetailsScreen() {
         </body>
       </html>
     `;
-  };
+  }, [orderDetails, orderSummary]);
 
   // Handle PDF preview
   const handlePreviewInvoice = async () => {
