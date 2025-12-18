@@ -294,8 +294,7 @@ export default function OrderDetailsScreen() {
       setIsGeneratingPdf(true);
       const html = generateInvoiceHtml();
       await Print.printAsync({ html });
-    } catch (error) {
-      console.error('Error previewing invoice:', error);
+    } catch {
       Alert.alert('Error', 'Failed to preview invoice. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
@@ -334,8 +333,7 @@ export default function OrderDetailsScreen() {
           ]);
         }
       }
-    } catch (error) {
-      console.error('Error downloading invoice:', error);
+    } catch {
       Alert.alert('Error', 'Failed to download invoice. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
