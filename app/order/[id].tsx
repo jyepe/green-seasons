@@ -24,9 +24,20 @@ export default function OrderDetailsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { data: orderDetails = [], isLoading } = useOrderDetails(id);
+  const { data: orderDetails = [], isLoading, isError, error } = useOrderDetails(id);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+  if (isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: 'red', textAlign: 'center', paddingHorizontal: 16 }}>
+          {error instanceof Error
+            ? error.message
+            : 'An error occurred while loading the order details.'}
+        </Text>
+      </SafeAreaView>
+    );
+  }
   // Helper function to format date
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {
