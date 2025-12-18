@@ -30,7 +30,8 @@ export default function OrderDetailsScreen() {
     isError,
     error,
   } = useOrderDetails(id);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Get order summary (first item contains all order-level info)
   const orderSummary = orderDetails[0];
@@ -310,7 +311,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsGeneratingPdf(true);
+      setIsPreviewingPdf(true);
       const html = generateInvoiceHtml();
       await Print.printAsync({ html });
     } catch (error) {
@@ -320,7 +321,7 @@ export default function OrderDetailsScreen() {
       }
       Alert.alert('Error', 'Failed to preview invoice. Please try again.');
     } finally {
-      setIsGeneratingPdf(false);
+      setIsPreviewingPdf(false);
     }
   };
 
@@ -329,7 +330,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsGeneratingPdf(true);
+      setIsDownloadingPdf(true);
       const html = generateInvoiceHtml();
 
       // Generate PDF file
@@ -363,7 +364,7 @@ export default function OrderDetailsScreen() {
       }
       Alert.alert('Error', 'Failed to download invoice. Please try again.');
     } finally {
-      setIsGeneratingPdf(false);
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -549,11 +550,11 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             style={[styles.invoiceButton, styles.previewButton]}
             onPress={handlePreviewInvoice}
-            disabled={isGeneratingPdf}
+            disabled={isPreviewingPdf || isDownloadingPdf}
             accessibilityLabel="Preview invoice"
             accessibilityRole="button"
           >
-            {isGeneratingPdf ? (
+            {isPreviewingPdf ? (
               <ActivityIndicator size="small" color="#16a34a" />
             ) : (
               <>
@@ -566,11 +567,11 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             style={[styles.invoiceButton, styles.downloadButton]}
             onPress={handleDownloadInvoice}
-            disabled={isGeneratingPdf}
+            disabled={isPreviewingPdf || isDownloadingPdf}
             accessibilityLabel="Download invoice as PDF"
             accessibilityRole="button"
           >
-            {isGeneratingPdf ? (
+            {isDownloadingPdf ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
