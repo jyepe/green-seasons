@@ -73,6 +73,17 @@ export default function OrderDetailsScreen() {
   // Get order summary (first item contains all order-level info)
   const orderSummary = orderDetails[0];
 
+  // Helper function to escape HTML entities to prevent XSS attacks
+  const escapeHtml = (text: string | null | undefined): string => {
+    if (!text) return '';
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
   // Generate invoice HTML
   const generateInvoiceHtml = () => {
     if (!orderSummary) return '';
@@ -81,7 +92,7 @@ export default function OrderDetailsScreen() {
       .map(
         item => `
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.item_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(item.item_name)}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatCurrency(item.unit_price)}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatCurrency(item.line_total)}</td>
@@ -96,7 +107,7 @@ export default function OrderDetailsScreen() {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Invoice #${orderSummary.order_id.slice(0, 8)}</title>
+          <title>Invoice #${escapeHtml(orderSummary.order_id.slice(0, 8))}</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
@@ -229,14 +240,14 @@ export default function OrderDetailsScreen() {
             </div>
             <div class="invoice-title">
               <h1>INVOICE</h1>
-              <div class="invoice-number">#${orderSummary.order_id.slice(0, 8).toUpperCase()}</div>
+              <div class="invoice-number">#${escapeHtml(orderSummary.order_id.slice(0, 8).toUpperCase())}</div>
             </div>
           </div>
           
           <div class="info-section">
             <div class="info-block">
               <h3>Restaurant</h3>
-              <p><strong>${orderSummary.restaurant_name}</strong></p>
+              <p><strong>${escapeHtml(orderSummary.restaurant_name)}</strong></p>
             </div>
             <div class="info-block">
               <h3>Order Date</h3>
@@ -248,7 +259,7 @@ export default function OrderDetailsScreen() {
             </div>
             <div class="info-block">
               <h3>Status</h3>
-              <span class="status-badge">${formatStatus(orderSummary.order_status)}</span>
+              <span class="status-badge">${escapeHtml(formatStatus(orderSummary.order_status))}</span>
             </div>
           </div>
           
