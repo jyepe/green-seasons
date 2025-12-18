@@ -24,20 +24,17 @@ export default function OrderDetailsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { data: orderDetails = [], isLoading, isError, error } = useOrderDetails(id);
+  const {
+    data: orderDetails = [],
+    isLoading,
+    isError,
+    error,
+  } = useOrderDetails(id);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  if (isError) {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: 'red', textAlign: 'center', paddingHorizontal: 16 }}>
-          {error instanceof Error
-            ? error.message
-            : 'An error occurred while loading the order details.'}
-        </Text>
-      </SafeAreaView>
-    );
-  }
+  // Get order summary (first item contains all order-level info)
+  const orderSummary = orderDetails[0];
+
   // Helper function to format date
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {
@@ -60,18 +57,21 @@ export default function OrderDetailsScreen() {
   };
 
   // Helper function to get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '#F59E0B'; // warning/yellow
-      case 'in_transit':
-        return '#3B82F6'; // info/blue
-      case 'delivered':
-        return '#16A34A'; // success/green
-      default:
-        return colors.success;
-    }
-  };
+  const getStatusColor = useCallback(
+    (status: string) => {
+      switch (status) {
+        case 'pending':
+          return '#F59E0B'; // warning/yellow
+        case 'in_transit':
+          return '#3B82F6'; // info/blue
+        case 'delivered':
+          return '#16A34A'; // success/green
+        default:
+          return colors.success;
+      }
+    },
+    [colors.success]
+  );
 
   // Helper function to capitalize status
   const formatStatus = (status: string) => {
@@ -80,9 +80,6 @@ export default function OrderDetailsScreen() {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
-
-  // Get order summary (first item contains all order-level info)
-  const orderSummary = orderDetails[0];
 
   // Helper function to escape HTML entities to prevent XSS attacks
   const escapeHtml = (text: string | null | undefined): string => {
@@ -306,7 +303,7 @@ export default function OrderDetailsScreen() {
         </body>
       </html>
     `;
-  }, [orderDetails, orderSummary]);
+  }, [orderDetails, orderSummary, getStatusColor]);
 
   // Handle PDF preview
   const handlePreviewInvoice = async () => {
@@ -369,6 +366,22 @@ export default function OrderDetailsScreen() {
       setIsGeneratingPdf(false);
     }
   };
+
+  if (isError) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Text
+          style={{ color: 'red', textAlign: 'center', paddingHorizontal: 16 }}
+        >
+          {error instanceof Error
+            ? error.message
+            : 'An error occurred while loading the order details.'}
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (
