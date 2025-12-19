@@ -14,7 +14,7 @@ export function useCart() {
   return useQuery({
     queryKey: CART_QUERY_KEY,
     queryFn: getCartWithItems,
-    staleTime: 0, // Always consider stale to ensure cart is in sync across screens
+    staleTime: 2000, // 2 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
 }
