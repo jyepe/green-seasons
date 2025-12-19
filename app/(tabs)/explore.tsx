@@ -185,7 +185,17 @@ export default function ProductsScreen() {
 
   const handleToggleFavorite = useCallback(
     (itemId: string, currentlyFavorite: boolean) => {
-      toggleFavoriteMutation.mutate({ itemId, currentlyFavorite });
+      toggleFavoriteMutation.mutate(
+        { itemId, currentlyFavorite },
+        {
+          onError: (error) => {
+            const errorMessage = error instanceof Error 
+              ? error.message 
+              : 'Failed to update favorite status. Please try again.';
+            Alert.alert('Error', errorMessage);
+          },
+        }
+      );
     },
     [toggleFavoriteMutation]
   );

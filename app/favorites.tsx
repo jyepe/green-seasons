@@ -22,6 +22,7 @@ export default function FavoritesScreen() {
   const router = useRouter();
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('Item added to cart!');
   const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -88,6 +89,7 @@ export default function FavoritesScreen() {
         itemId,
         quantityDelta: 1,
       });
+      setToastMessage('Item added to cart!');
       setShowToast(true);
     } catch (err) {
       handleCartError(err, 'Failed to add item to cart. Please try again.');
@@ -139,7 +141,23 @@ export default function FavoritesScreen() {
 
   const handleToggleFavorite = useCallback(
     (itemId: string, currentlyFavorite: boolean) => {
-      toggleFavoriteMutation.mutate({ itemId, currentlyFavorite });
+      toggleFavoriteMutation.mutate(
+        { itemId, currentlyFavorite },
+        {
+          onError: (error) => {
+            const errorMessage = error instanceof Error 
+              ? error.message 
+              : 'Failed to update favorite status. Please try again.';
+            Alert.alert('Error', errorMessage);
+          },
+        }
+      );
+      
+      // Show toast notification when removing from favorites
+      if (currentlyFavorite) {
+        setToastMessage('Removed from favorites');
+        setShowToast(true);
+      }
     },
     [toggleFavoriteMutation]
   );
@@ -149,7 +167,7 @@ export default function FavoritesScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Toast
-        message="Item added to cart!"
+        message={toastMessage}
         type="success"
         visible={showToast}
         onHide={handleToastHide}
