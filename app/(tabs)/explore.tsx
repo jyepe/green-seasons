@@ -2,6 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAddToCart, useCart } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
+import { useToggleFavorite } from '@/hooks/useFavorite';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -31,6 +32,7 @@ export default function ProductsScreen() {
   const { data: items, isLoading, error } = useItems();
   const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();
+  const toggleFavoriteMutation = useToggleFavorite();
 
   const filteredProducts =
     items?.filter(item => {
@@ -178,6 +180,13 @@ export default function ProductsScreen() {
     setShowToast(false);
   }, []);
 
+  const handleToggleFavorite = useCallback(
+    (itemId: string, currentlyFavorite: boolean) => {
+      toggleFavoriteMutation.mutate({ itemId, currentlyFavorite });
+    },
+    [toggleFavoriteMutation]
+  );
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -266,6 +275,21 @@ export default function ProductsScreen() {
                   ) : (
                     <Text style={styles.productEmoji}>{'??'}</Text>
                   )}
+                  <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={() =>
+                      handleToggleFavorite(item.id, item.is_favorite)
+                    }
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={item.is_favorite ? 'heart' : 'heart-outline'}
+                      size={22}
+                      color={
+                        item.is_favorite ? '#EF4444' : colors.textSecondary
+                      }
+                    />
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.productInfo}>
                   <Text style={[styles.productName, { color: colors.text }]}>
@@ -535,6 +559,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
     position: 'relative',
     overflow: 'hidden',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
   },
   productImage: {
     width: '100%',
