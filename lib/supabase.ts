@@ -320,3 +320,39 @@ export async function createOrderFromCart(
 
   return data[0];
 }
+
+export type OrderDetailItem = {
+  order_id: string;
+  order_status: string;
+  placed_at: string;
+  delivery_at: string | null;
+  restaurant_id: string;
+  restaurant_name: string;
+  customer_id: string;
+  subtotal: number;
+  total: number;
+  item_id: string;
+  item_name: string;
+  item_image_url: string | null;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+};
+
+export async function getOrderDetails(
+  orderId: string
+): Promise<OrderDetailItem[]> {
+  const { data, error } = await supabase.rpc('fn_get_order_details', {
+    p_order_id: orderId,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching order details:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}

@@ -4,6 +4,7 @@ import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useOrders } from '@/hooks/useOrders';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   ScrollView,
@@ -15,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { data: userInfo } = useUserInfo();
@@ -84,7 +86,7 @@ export default function HomeScreen() {
     },
     {
       icon: 'cube-outline',
-      title: 'Track Orders',
+      title: 'Ongoing Orders',
     },
   ];
 
@@ -236,7 +238,19 @@ export default function HomeScreen() {
             </View>
           ) : (
             recentOrders.map(order => (
-              <View key={order.id} style={styles.orderItem}>
+              <TouchableOpacity
+                key={order.id}
+                style={styles.orderItem}
+                onPress={() =>
+                  router.push({
+                    pathname: '/order/[id]',
+                    params: { id: order.id },
+                  })
+                }
+                activeOpacity={0.7}
+                accessibilityLabel={`View order details for order #${order.id.slice(0, 8)}`}
+                accessibilityRole="button"
+              >
                 <View
                   style={[
                     styles.orderStatusIndicator,
@@ -248,6 +262,11 @@ export default function HomeScreen() {
                     <Text style={[styles.orderId, { color: colors.text }]}>
                       Order #{order.id.slice(0, 8)}
                     </Text>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color={colors.textSecondary}
+                    />
                   </View>
                   <View style={styles.orderDates}>
                     <Text
@@ -281,7 +300,7 @@ export default function HomeScreen() {
                     </View>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           )}
 
