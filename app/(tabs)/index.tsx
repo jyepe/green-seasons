@@ -79,14 +79,17 @@ export default function HomeScreen() {
     {
       icon: 'time-outline',
       title: 'Order History',
+      onPress: undefined,
     },
     {
       icon: 'heart-outline',
       title: 'My Favorites',
+      onPress: () => router.push('/favorites'),
     },
     {
       icon: 'cube-outline',
       title: 'Ongoing Orders',
+      onPress: undefined,
     },
   ];
 
@@ -184,6 +187,7 @@ export default function HomeScreen() {
                   styles.quickActionButton,
                   { backgroundColor: colors.surface },
                 ]}
+                onPress={action.onPress}
               >
                 <Ionicons
                   name={action.icon as keyof typeof Ionicons.glyphMap}

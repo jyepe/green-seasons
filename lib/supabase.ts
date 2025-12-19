@@ -223,6 +223,24 @@ export async function getItems(): Promise<Item[]> {
   return data || [];
 }
 
+export async function getFavoriteItems(): Promise<Item[]> {
+  const { data, error } = await supabase
+    .from('v_items_with_favorite')
+    .select('*')
+    .eq('is_favorite', true)
+    .order('name', { ascending: true });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching favorite items:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}
+
 export async function toggleFavorite(
   itemId: string,
   currentlyFavorite: boolean
