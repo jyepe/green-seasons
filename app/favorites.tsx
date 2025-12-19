@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAddToCart, useCart } from '@/hooks/useCart';
+import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useFavoriteItems, useToggleFavorite } from '@/hooks/useFavorite';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +29,9 @@ export default function FavoritesScreen() {
   const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();
   const toggleFavoriteMutation = useToggleFavorite();
+
+  // Refetch cart when screen comes into focus to stay in sync with other screens
+  useCartRefetchOnFocus();
 
   // Sync stepper items with cart when cart updates
   useEffect(() => {

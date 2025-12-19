@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAddToCart, useCart } from '@/hooks/useCart';
+import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
 import { useToggleFavorite } from '@/hooks/useFavorite';
 import { Toast } from '@/components/ui/Toast';
@@ -33,6 +33,9 @@ export default function ProductsScreen() {
   const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();
   const toggleFavoriteMutation = useToggleFavorite();
+
+  // Refetch cart when screen comes into focus to stay in sync with other screens
+  useCartRefetchOnFocus();
 
   const filteredProducts =
     items?.filter(item => {
