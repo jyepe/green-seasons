@@ -144,20 +144,22 @@ export default function FavoritesScreen() {
       toggleFavoriteMutation.mutate(
         { itemId, currentlyFavorite },
         {
-          onError: (error) => {
-            const errorMessage = error instanceof Error 
-              ? error.message 
-              : 'Failed to update favorite status. Please try again.';
+          onSuccess: () => {
+            // Show toast notification when removing from favorites
+            if (currentlyFavorite) {
+              setToastMessage('Removed from favorites');
+              setShowToast(true);
+            }
+          },
+          onError: error => {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : 'Failed to update favorite status. Please try again.';
             Alert.alert('Error', errorMessage);
           },
         }
       );
-      
-      // Show toast notification when removing from favorites
-      if (currentlyFavorite) {
-        setToastMessage('Removed from favorites');
-        setShowToast(true);
-      }
     },
     [toggleFavoriteMutation]
   );
