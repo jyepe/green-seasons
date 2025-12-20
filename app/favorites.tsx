@@ -1,11 +1,11 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
-import { useItems } from '@/hooks/useItems';
-import { useToggleFavorite } from '@/hooks/useFavorite';
+import { useFavoriteItems, useToggleFavorite } from '@/hooks/useFavorite';
 import { ProductCard } from '@/components/ProductCard';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,23 +13,20 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const ITEMS_PER_PAGE = 10;
-
-export default function ProductsScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+export default function FavoritesScreen() {
+  const router = useRouter();
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('Item added to cart!');
   const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { data: items, isLoading, error } = useItems();
+  const { data: favoriteItems, isLoading, error } = useFavoriteItems();
   const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();
   const toggleFavoriteMutation = useToggleFavorite();
@@ -37,44 +34,11 @@ export default function ProductsScreen() {
   // Refetch cart when screen comes into focus to stay in sync with other screens
   useCartRefetchOnFocus();
 
-  const filteredProducts =
-    items?.filter(item => {
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.description &&
-          item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesSearch;
-    }) || [];
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
-  );
-  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
-  const paginatedProducts = filteredProducts.slice(
-    (safePage - 1) * ITEMS_PER_PAGE,
-    safePage * ITEMS_PER_PAGE
-  );
-
-  const hasPrevious = safePage > 1;
-  const hasNext = safePage < totalPages;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
   // Sync stepper items with cart when cart updates
   useEffect(() => {
     if (cartItems) {
-      setStepperItems(prev => {
+      setStepperItems(() => {
         const updated: Record<string, number> = {};
-        // Sync stepper state with actual cart quantities
         cartItems.forEach(cartItem => {
           updated[cartItem.item_id] = cartItem.quantity;
         });
@@ -125,12 +89,10 @@ export default function ProductsScreen() {
         itemId,
         quantityDelta: 1,
       });
-      // Show success toast
+      setToastMessage('Item added to cart!');
       setShowToast(true);
-      // Stepper will be shown automatically when cart updates
-    } catch (error) {
-      // Error is already logged in the supabase function
-      handleCartError(error, 'Failed to add item to cart. Please try again.');
+    } catch (err) {
+      handleCartError(err, 'Failed to add item to cart. Please try again.');
     } finally {
       setPendingItemId(null);
     }
@@ -140,32 +102,26 @@ export default function ProductsScreen() {
     const currentQuantity = getStepperQuantity(itemId);
     const newQuantity = Math.max(0, currentQuantity + delta);
 
-    // If quantity would be 0 or less, allow it (will trigger removal)
     setStepperItems(prev => ({ ...prev, [itemId]: newQuantity }));
 
     setPendingItemId(itemId);
     try {
-      // Calculate the delta needed
       const cartQuantity = getCartQuantity(itemId);
       const quantityDelta = newQuantity - cartQuantity;
 
-      // Always call the mutation, even if delta is 0 (to handle removal case)
-      // The RPC function will handle deletion when quantity becomes <= 0
       await addToCartMutation.mutateAsync({
         itemId,
         quantityDelta,
       });
 
-      // If item was removed (quantity is now 0), clear stepper state
       if (newQuantity <= 0) {
         setStepperItems(prev => {
           const { [itemId]: _, ...rest } = prev;
           return rest;
         });
       }
-    } catch (error) {
-      handleCartError(error, 'Failed to update cart. Please try again.');
-      // Revert on error - restore to current cart quantity
+    } catch (err) {
+      handleCartError(err, 'Failed to update cart. Please try again.');
       const cartQty = getCartQuantity(itemId);
       setStepperItems(prev => {
         if (cartQty > 0) {
@@ -188,10 +144,18 @@ export default function ProductsScreen() {
       toggleFavoriteMutation.mutate(
         { itemId, currentlyFavorite },
         {
-          onError: (error) => {
-            const errorMessage = error instanceof Error 
-              ? error.message 
-              : 'Failed to update favorite status. Please try again.';
+          onSuccess: () => {
+            // Show toast notification when removing from favorites
+            if (currentlyFavorite) {
+              setToastMessage('Removed from favorites');
+              setShowToast(true);
+            }
+          },
+          onError: error => {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : 'Failed to update favorite status. Please try again.';
             Alert.alert('Error', errorMessage);
           },
         }
@@ -205,44 +169,13 @@ export default function ProductsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <Toast
-        message="Item added to cart!"
+        message={toastMessage}
         type="success"
         visible={showToast}
         onHide={handleToastHide}
       />
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          Fresh Produce
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Order the freshest ingredients for your restaurant
-        </Text>
-      </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View
-          style={[
-            styles.searchBar,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.textTertiary,
-            },
-          ]}
-        >
-          <Ionicons name="search" size={20} color={colors.textTertiary} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search products..."
-            placeholderTextColor={colors.textTertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-      </View>
-
-      {/* Products Grid */}
+      {/* Favorites Grid */}
       <ScrollView
         style={styles.productsContainer}
         contentContainerStyle={styles.productsContent}
@@ -251,26 +184,41 @@ export default function ProductsScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading products...
+              Loading favorites...
             </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={[styles.errorText, { color: colors.text }]}>
-              Failed to load products. Please try again.
+              Failed to load favorites. Please try again.
             </Text>
           </View>
-        ) : filteredProducts.length === 0 ? (
+        ) : !favoriteItems || favoriteItems.length === 0 ? (
           <View style={styles.emptyState}>
+            <Ionicons
+              name="heart-outline"
+              size={64}
+              color={colors.textTertiary}
+            />
+            <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
+              No Favorites Yet
+            </Text>
             <Text
               style={[styles.emptyStateText, { color: colors.textSecondary }]}
             >
-              No products found. Try a different search.
+              Start adding items to your favorites by tapping the heart icon on
+              any product.
             </Text>
+            <TouchableOpacity
+              style={[styles.browseButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/(tabs)/explore')}
+            >
+              <Text style={styles.browseButtonText}>Browse Products</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.productsGrid}>
-            {paginatedProducts.map(item => (
+            {favoriteItems.map(item => (
               <ProductCard
                 key={item.id}
                 item={item}
@@ -286,53 +234,6 @@ export default function ProductsScreen() {
           </View>
         )}
       </ScrollView>
-
-      {!isLoading && !error && filteredProducts.length > 0 && (
-        <View
-          style={[
-            styles.paginationContainer,
-            { borderColor: colors.textTertiary },
-          ]}
-        >
-          <TouchableOpacity
-            style={[
-              styles.paginationButton,
-              { backgroundColor: colors.surface },
-              !hasPrevious && styles.paginationButtonDisabled,
-            ]}
-            onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={!hasPrevious}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={18}
-              color={!hasPrevious ? colors.textTertiary : colors.text}
-            />
-          </TouchableOpacity>
-          <Text
-            style={[styles.paginationLabel, { color: colors.textSecondary }]}
-          >
-            Page {safePage} of {totalPages}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.paginationButton,
-              { backgroundColor: colors.surface },
-              !hasNext && styles.paginationButtonDisabled,
-            ]}
-            onPress={() =>
-              setCurrentPage(prev => Math.min(prev + 1, totalPages))
-            }
-            disabled={!hasNext}
-          >
-            <Ionicons
-              name="chevron-forward"
-              size={18}
-              color={!hasNext ? colors.textTertiary : colors.text}
-            />
-          </TouchableOpacity>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -340,48 +241,6 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    padding: 20,
-    marginBottom: 16,
-    borderRadius: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    fontFamily: 'Inter_700Bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   productsContainer: {
     flex: 1,
@@ -395,58 +254,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: 'space-between',
   },
-  outOfStockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  outOfStockText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  paginationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    marginHorizontal: 16,
-    marginBottom: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderRadius: 12,
-  },
-  paginationButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paginationButtonDisabled: {
-    opacity: 0.4,
-  },
-  paginationLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter_600SemiBold',
-  },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    paddingVertical: 60,
     paddingHorizontal: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: 16,
+    marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  browseButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  browseButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   loadingContainer: {
     flex: 1,

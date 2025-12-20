@@ -52,6 +52,10 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="order/[id]" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="favorites"
+              options={{ title: 'My Favorites' }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="auto" />

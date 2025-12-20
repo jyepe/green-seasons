@@ -79,14 +79,24 @@ export default function HomeScreen() {
     {
       icon: 'time-outline',
       title: 'Order History',
+      onPress: () => {
+        // Feature coming soon
+      },
+      disabled: true,
     },
     {
       icon: 'heart-outline',
       title: 'My Favorites',
+      onPress: () => router.push('/favorites'),
+      disabled: false,
     },
     {
       icon: 'cube-outline',
       title: 'Ongoing Orders',
+      onPress: () => {
+        // Feature coming soon
+      },
+      disabled: true,
     },
   ];
 
@@ -183,14 +193,20 @@ export default function HomeScreen() {
                 style={[
                   styles.quickActionButton,
                   { backgroundColor: colors.surface },
+                  action.disabled && styles.quickActionButtonDisabled,
                 ]}
+                onPress={action.onPress}
+                disabled={action.disabled}
               >
                 <Ionicons
                   name={action.icon as keyof typeof Ionicons.glyphMap}
                   size={20}
-                  color={colors.text}
+                  color={action.disabled ? colors.textTertiary : colors.text}
                 />
-                <Text style={[styles.quickActionText, { color: colors.text }]}>
+                <Text style={[
+                  styles.quickActionText,
+                  { color: action.disabled ? colors.textTertiary : colors.text }
+                ]}>
                   {action.title}
                 </Text>
               </TouchableOpacity>
@@ -421,6 +437,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     fontFamily: 'Inter_500Medium',
+  },
+  quickActionButtonDisabled: {
+    opacity: 0.5,
   },
   recentOrdersSection: {
     paddingHorizontal: 20,

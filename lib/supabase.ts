@@ -203,11 +203,12 @@ export type Item = {
   price: number;
   unit: string;
   image_url: string | null;
+  is_favorite: boolean;
 };
 
 export async function getItems(): Promise<Item[]> {
   const { data, error } = await supabase
-    .from('items')
+    .from('v_items_with_favorite')
     .select('*')
     .order('name', { ascending: true });
 
@@ -220,6 +221,59 @@ export async function getItems(): Promise<Item[]> {
   }
 
   return data || [];
+}
+
+export async function getFavoriteItems(): Promise<Item[]> {
+  const { data, error } = await supabase
+    .from('v_items_with_favorite')
+    .select('*')
+    .eq('is_favorite', true)
+    .order('name', { ascending: true });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching favorite items:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}
+
+export async function toggleFavorite(
+  itemId: string,
+  currentlyFavorite: boolean
+): Promise<boolean> {
+  if (currentlyFavorite) {
+    // Remove from favorites
+    const { error } = await supabase.rpc('fn_remove_favorite_item', {
+      p_item_id: itemId,
+    });
+
+    if (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error removing favorite:', error);
+      }
+      throw error;
+    }
+    return false; // No longer a favorite
+  } else {
+    // Add to favorites
+    const { error } = await supabase.rpc('fn_add_favorite_item', {
+      p_item_id: itemId,
+    });
+
+    if (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error adding favorite:', error);
+      }
+      throw error;
+    }
+    return true; // Now a favorite
+  }
 }
 
 export type CartItem = {

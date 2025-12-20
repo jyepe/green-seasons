@@ -25,9 +25,9 @@ export const formatCurrency = (amount: number) => {
 export const formatStatus = (status: string) => {
   return status
     .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-  };
+};
 
 // Helper function to escape HTML entities to prevent XSS attacks
 export const escapeHtml = (text: string | null | undefined): string => {
@@ -49,7 +49,7 @@ export const generateInvoiceHtml = (
 
   const itemsHtml = orderDetails
     .map(
-      (item) => `
+      item => `
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(item.item_name)}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
