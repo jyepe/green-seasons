@@ -14,6 +14,7 @@ export default function TabLayout() {
   const { data: cartItems } = useCart();
 
   const hasItems = cartItems && cartItems.length > 0;
+  const colors = Colors[colorScheme ?? 'light'];
 
   return (
     <Tabs
@@ -59,7 +60,17 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <View>
               <IconSymbol size={28} name="cart.fill" color={color} />
-              {hasItems && <View style={styles.badge} />}
+              {hasItems && (
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      backgroundColor: colors.error,
+                      borderColor: colors.background,
+                    },
+                  ]}
+                />
+              )}
             </View>
           ),
         }}
@@ -76,8 +87,6 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#EF4444', // Red color
     borderWidth: 1.5,
-    borderColor: 'white', // White border to separate from icon
   },
 });
