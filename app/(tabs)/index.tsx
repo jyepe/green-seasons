@@ -203,10 +203,16 @@ export default function HomeScreen() {
                   size={20}
                   color={action.disabled ? colors.textTertiary : colors.text}
                 />
-                <Text style={[
-                  styles.quickActionText,
-                  { color: action.disabled ? colors.textTertiary : colors.text }
-                ]}>
+                <Text
+                  style={[
+                    styles.quickActionText,
+                    {
+                      color: action.disabled
+                        ? colors.textTertiary
+                        : colors.text,
+                    },
+                  ]}
+                >
                   {action.title}
                 </Text>
               </TouchableOpacity>
@@ -291,7 +297,7 @@ export default function HomeScreen() {
                         { color: colors.textSecondary },
                       ]}
                     >
-                      Date: {formatDate(order.order_date)}
+                      Date: {formatDate(order.order_date || order.created_at)}
                     </Text>
                     <Text
                       style={[
@@ -302,9 +308,6 @@ export default function HomeScreen() {
                       Delivery: {formatDate(order.delivery_at)}
                     </Text>
                   </View>
-                  <Text style={[styles.orderItems, { color: colors.text }]}>
-                    Order #{order.id.slice(0, 8)}
-                  </Text>
                   <View style={styles.orderFooter}>
                     <View
                       style={[
