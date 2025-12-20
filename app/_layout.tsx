@@ -47,14 +47,36 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
         >
-          <Stack>
+          <Stack
+            screenOptions={{
+              animation: 'slide_from_right',
+              animationDuration: 250,
+              gestureEnabled: true,
+              gestureDirection: 'horizontal',
+            }}
+          >
             <Stack.Screen name="auth" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="order/[id]" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerShown: false,
+                animation: 'fade',
+              }}
+            />
+            <Stack.Screen
+              name="order/[id]"
+              options={{
+                headerShown: false,
+                animation: 'slide_from_right',
+              }}
+            />
             <Stack.Screen
               name="favorites"
-              options={{ title: 'My Favorites' }}
+              options={{
+                headerShown: false,
+                animation: 'slide_from_right',
+              }}
             />
             <Stack.Screen name="+not-found" />
           </Stack>
