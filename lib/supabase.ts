@@ -167,11 +167,13 @@ export async function getRestaurantById(
   return data;
 }
 
+export type OrderStatus = 'pending' | 'in_transit' | 'delivered';
+
 export type Order = {
   id: string;
   restaurant_id: string;
   user_id: string;
-  status: 'pending' | 'in_transit' | 'delivered';
+  status: OrderStatus;
   order_date?: string | null;
   delivery_at?: string | null;
   created_at: string;

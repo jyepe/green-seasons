@@ -3,6 +3,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useOrders } from '@/hooks/useOrders';
 import { useUserInfo } from '@/hooks/useUserInfo';
+import { OrderStatus } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
@@ -17,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type FilterStatus = 'all' | 'pending' | 'in_transit' | 'delivered';
+type FilterStatus = 'all' | OrderStatus;
 
 const FILTER_LABELS: Record<FilterStatus, string> = {
   all: 'All',
@@ -129,11 +130,17 @@ export default function OrderHistoryScreen() {
           </Text>
           {activeFilter !== 'all' && (
             <TouchableOpacity
-              style={[styles.clearFilterButton, { borderColor: colors.primary }]}
+              style={[
+                styles.clearFilterButton,
+                { borderColor: colors.primary },
+              ]}
               onPress={() => setActiveFilter('all')}
             >
               <Text
-                style={[styles.clearFilterButtonText, { color: colors.primary }]}
+                style={[
+                  styles.clearFilterButtonText,
+                  { color: colors.primary },
+                ]}
               >
                 Clear Filter
               </Text>

@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Order } from '@/lib/supabase';
+import { Order, OrderStatus } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -30,20 +30,11 @@ export function OrderListItem({ order }: OrderListItemProps) {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '#F59E0B'; // warning/yellow
-      case 'in_transit':
-        return '#3B82F6'; // info/blue
-      case 'delivered':
-        return '#16A34A'; // success/green
-      default:
-        return colors.success;
-    }
+  const getStatusColor = (status: OrderStatus) => {
+    return colors.orderStatus[status];
   };
 
-  const formatStatus = (status: string) => {
+  const formatStatus = (status: OrderStatus) => {
     return status
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))

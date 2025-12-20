@@ -30,6 +30,13 @@ export const Colors = {
     error: '#DC2626',
     info: '#0EA5E9',
 
+    // Order status colors
+    orderStatus: {
+      pending: '#F59E0B', // warning/yellow
+      in_transit: '#3B82F6', // info/blue
+      delivered: '#16A34A', // success/green
+    },
+
     // Legacy compatibility
     tint: '#2E7D32',
     icon: '#6B7280',
@@ -61,6 +68,13 @@ export const Colors = {
     warning: '#F59E0B',
     error: '#EF4444',
     info: '#3B82F6',
+
+    // Order status colors
+    orderStatus: {
+      pending: '#F59E0B', // warning/yellow
+      in_transit: '#3B82F6', // info/blue
+      delivered: '#22C55E', // success/green (using dark mode success color)
+    },
 
     // Legacy compatibility
     tint: '#4CAF50',

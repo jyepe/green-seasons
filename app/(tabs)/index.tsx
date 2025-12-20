@@ -226,7 +226,7 @@ export default function HomeScreen() {
           )}
 
           {!ordersLoading && orders.length > 0 && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.viewAllButton}
               onPress={() => router.push('/orders')}
             >
