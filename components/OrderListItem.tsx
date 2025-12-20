@@ -43,6 +43,13 @@ export function OrderListItem({ order }: OrderListItemProps) {
     }
   };
 
+  const formatStatus = (status: string) => {
+    return status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   return (
     <TouchableOpacity
       style={styles.orderItem}
@@ -88,7 +95,7 @@ export function OrderListItem({ order }: OrderListItemProps) {
               { backgroundColor: getStatusColor(order.status) },
             ]}
           >
-            <Text style={styles.statusText}>{order.status}</Text>
+            <Text style={styles.statusText}>{formatStatus(order.status)}</Text>
           </View>
         </View>
       </View>

@@ -17,14 +17,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type FilterStatus = 'all' | 'pending' | 'in_transit' | 'delivered' | 'cancelled';
+type FilterStatus = 'all' | 'pending' | 'in_transit' | 'delivered';
 
 const FILTER_LABELS: Record<FilterStatus, string> = {
   all: 'All',
   pending: 'Pending',
   in_transit: 'In Transit',
   delivered: 'Delivered',
-  cancelled: 'Cancelled',
 };
 
 export default function OrderHistoryScreen() {

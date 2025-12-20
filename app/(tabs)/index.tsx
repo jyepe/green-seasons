@@ -59,14 +59,6 @@ export default function HomeScreen() {
       onPress: () => router.push('/favorites'),
       disabled: false,
     },
-    {
-      icon: 'cube-outline',
-      title: 'Ongoing Orders',
-      onPress: () => {
-        // Feature coming soon
-      },
-      disabled: true,
-    },
   ];
 
   return (
