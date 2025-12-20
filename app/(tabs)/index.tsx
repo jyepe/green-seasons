@@ -3,6 +3,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useOrders } from '@/hooks/useOrders';
+import { OrderListItem } from '@/components/OrderListItem';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -25,36 +26,6 @@ export default function HomeScreen() {
     userInfo?.id
   );
 
-  // Helper function to format date
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) {
-      return 'N/A';
-    }
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'N/A';
-    }
-    return date.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  // Helper function to get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '#F59E0B'; // warning/yellow
-      case 'in_transit':
-        return '#3B82F6'; // info/blue
-      case 'delivered':
-        return '#16A34A'; // success/green
-      default:
-        return colors.success;
-    }
-  };
-
   // Calculate stats from orders
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(order =>
@@ -72,17 +43,15 @@ export default function HomeScreen() {
     );
   }).length;
 
-  // Get recent orders (first 5)
-  const recentOrders = orders.slice(0, 5);
+  // Get recent orders (first 4)
+  const recentOrders = orders.slice(0, 4);
 
   const quickActions = [
     {
       icon: 'time-outline',
       title: 'Order History',
-      onPress: () => {
-        // Feature coming soon
-      },
-      disabled: true,
+      onPress: () => router.push('/orders'),
+      disabled: false,
     },
     {
       icon: 'heart-outline',
@@ -260,71 +229,15 @@ export default function HomeScreen() {
             </View>
           ) : (
             recentOrders.map(order => (
-              <TouchableOpacity
-                key={order.id}
-                style={styles.orderItem}
-                onPress={() =>
-                  router.push({
-                    pathname: '/order/[id]',
-                    params: { id: order.id },
-                  })
-                }
-                activeOpacity={0.7}
-                accessibilityLabel={`View order details for order #${order.id.slice(0, 8)}`}
-                accessibilityRole="button"
-              >
-                <View
-                  style={[
-                    styles.orderStatusIndicator,
-                    { backgroundColor: getStatusColor(order.status) },
-                  ]}
-                />
-                <View style={styles.orderContent}>
-                  <View style={styles.orderHeader}>
-                    <Text style={[styles.orderId, { color: colors.text }]}>
-                      Order #{order.id.slice(0, 8)}
-                    </Text>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={20}
-                      color={colors.textSecondary}
-                    />
-                  </View>
-                  <View style={styles.orderDates}>
-                    <Text
-                      style={[
-                        styles.orderDate,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      Date: {formatDate(order.order_date || order.created_at)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.orderDate,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      Delivery: {formatDate(order.delivery_at)}
-                    </Text>
-                  </View>
-                  <View style={styles.orderFooter}>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        { backgroundColor: getStatusColor(order.status) },
-                      ]}
-                    >
-                      <Text style={styles.statusText}>{order.status}</Text>
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
+              <OrderListItem key={order.id} order={order} />
             ))
           )}
 
           {!ordersLoading && orders.length > 0 && (
-            <TouchableOpacity style={styles.viewAllButton}>
+            <TouchableOpacity 
+              style={styles.viewAllButton}
+              onPress={() => router.push('/orders')}
+            >
               <Text style={[styles.viewAllText, { color: colors.primary }]}>
                 View All Orders ({totalOrders})
               </Text>
@@ -451,63 +364,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     marginBottom: 20,
-  },
-  orderItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: 'transparent',
-  },
-  orderStatusIndicator: {
-    width: 4,
-    borderRadius: 2,
-    marginRight: 12,
-  },
-  orderContent: {
-    flex: 1,
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  orderId: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  orderPrice: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  orderDates: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 8,
-  },
-  orderDate: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-  },
-  orderItems: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    marginBottom: 8,
-  },
-  orderFooter: {
-    alignItems: 'flex-start',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
   viewAllButton: {
     alignItems: 'flex-end',
