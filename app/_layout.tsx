@@ -7,6 +7,7 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
+  Theme,
 } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -14,8 +15,11 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect } from 'react';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -36,6 +40,43 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
+  // Create custom themes based on our Colors constants
+  const CustomDefaultTheme: Theme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: Colors.light.primary,
+      background: Colors.light.background,
+      card: Colors.light.surface,
+      text: Colors.light.text,
+      border: Colors.light.border,
+      notification: Colors.light.accent,
+    },
+  };
+
+  const CustomDarkTheme: Theme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: Colors.dark.primary,
+      background: Colors.dark.background,
+      card: Colors.dark.surface,
+      text: Colors.dark.text,
+      border: Colors.dark.border,
+      notification: Colors.dark.accent,
+    },
+  };
+
+  useEffect(() => {
+    if (loaded) {
+      // Set the native root view background color to match our theme
+      // This prevents white flashes during deep navigation transitions
+      const backgroundColor =
+        colorScheme === 'dark' ? Colors.dark.background : Colors.light.background;
+      SystemUI.setBackgroundColorAsync(backgroundColor);
+    }
+  }, [loaded, colorScheme]);
+
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
@@ -45,7 +86,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <ThemeProvider
-          value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+          value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}
         >
           <Stack
             screenOptions={{
@@ -53,6 +94,12 @@ export default function RootLayout() {
               animationDuration: 250,
               gestureEnabled: true,
               gestureDirection: 'horizontal',
+              contentStyle: {
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? Colors.dark.background
+                    : Colors.light.background,
+              },
             }}
           >
             <Stack.Screen name="auth" options={{ headerShown: false }} />
