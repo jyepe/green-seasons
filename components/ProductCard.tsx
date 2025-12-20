@@ -46,9 +46,7 @@ export function ProductCard({
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <TouchableOpacity
-      style={[styles.productCard, { backgroundColor: colors.surface }]}
-    >
+    <View style={[styles.productCard, { backgroundColor: colors.surface }]}>
       <View style={styles.productImageContainer}>
         {item.image_url ? (
           <Image
@@ -57,7 +55,11 @@ export function ProductCard({
             resizeMode="cover"
           />
         ) : (
-          <Text style={styles.productEmoji}>{'??'}</Text>
+          <Ionicons
+            name="image-outline"
+            size={48}
+            color={colors.textSecondary}
+          />
         )}
         <TouchableOpacity
           style={styles.favoriteButton}
@@ -174,7 +176,7 @@ export function ProductCard({
           </View>
         )}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -223,9 +225,6 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: '100%',
-  },
-  productEmoji: {
-    fontSize: 48,
   },
   productInfo: {
     padding: 12,
