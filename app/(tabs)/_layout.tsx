@@ -1,15 +1,19 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useCart } from '@/hooks/useCart';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { data: cartItems } = useCart();
+
+  const hasItems = cartItems && cartItems.length > 0;
 
   return (
     <Tabs
@@ -53,10 +57,27 @@ export default function TabLayout() {
         options={{
           title: 'Cart',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="cart.fill" color={color} />
+            <View>
+              <IconSymbol size={28} name="cart.fill" color={color} />
+              {hasItems && <View style={styles.badge} />}
+            </View>
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    right: -2,
+    top: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444', // Red color
+    borderWidth: 1.5,
+    borderColor: 'white', // White border to separate from icon
+  },
+});
