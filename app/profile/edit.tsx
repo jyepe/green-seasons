@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUpdateUserInfo, useUserInfo } from '@/hooks/useUserInfo';
+import type { UpdateUserInfoParams } from '@/lib/supabase';
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -56,7 +57,7 @@ export default function EditProfileScreen() {
     }
 
     // Only send fields that have actually changed
-    const updatedFields: Record<string, string> = {};
+    const updatedFields: Partial<UpdateUserInfoParams> = {};
     const originalEmail = userInfo?.email || '';
     const originalFirstName = userInfo?.first_name || '';
     const originalLastName = userInfo?.last_name || '';

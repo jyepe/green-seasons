@@ -133,8 +133,8 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
     if (authError) throw authError;
 
     const updatedUser = updatedUserResponse?.user;
-    // Check if email was actually changed but not yet confirmed
-    if (updatedUser && updatedUser.email !== user.email && !updatedUser.email_confirmed_at) {
+    // Check if the new email hasn't been confirmed yet
+    if (updatedUser && updatedUser.email === params.email && !updatedUser.email_confirmed_at) {
       throw new Error(
         'Email change pending confirmation. Please confirm your new email address via the link sent to complete the update.'
       );
