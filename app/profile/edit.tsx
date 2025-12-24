@@ -38,18 +38,50 @@ export default function EditProfileScreen() {
   }, [userInfo]);
 
   const handleSave = async () => {
-    if (!email.trim() || !firstName.trim() || !lastName.trim()) {
+    const trimmedEmail = email.trim();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedEmail || !trimmedFirstName || !trimmedLastName) {
       Alert.alert('Error', 'Email, first name, and last name are required.');
       return;
     }
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    // Only send fields that have actually changed
+    const updatedFields: Record<string, string> = {};
+    const originalEmail = userInfo?.email || '';
+    const originalFirstName = userInfo?.first_name || '';
+    const originalLastName = userInfo?.last_name || '';
+    const originalPhone = userInfo?.phone || '';
+
+    if (trimmedEmail !== originalEmail) {
+      updatedFields.email = trimmedEmail;
+    }
+    if (trimmedFirstName !== originalFirstName) {
+      updatedFields.first_name = trimmedFirstName;
+    }
+    if (trimmedLastName !== originalLastName) {
+      updatedFields.last_name = trimmedLastName;
+    }
+    if (trimmedPhone !== originalPhone) {
+      updatedFields.phone = trimmedPhone;
+    }
+
+    if (Object.keys(updatedFields).length === 0) {
+      Alert.alert('No changes', 'There are no changes to save.');
+      return;
+    }
+
     try {
-      await updateUserInfoMutation.mutateAsync({
-        email: email,
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone,
-      });
+      await updateUserInfoMutation.mutateAsync(updatedFields);
       Alert.alert('Success', 'Profile updated successfully', [
         { text: 'OK', onPress: () => router.back() },
       ]);
@@ -99,6 +131,7 @@ export default function EditProfileScreen() {
               placeholderTextColor={colors.textSecondary}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
 
@@ -167,6 +200,8 @@ export default function EditProfileScreen() {
             style={[styles.saveButton, { backgroundColor: colors.primary }]}
             onPress={handleSave}
             disabled={updateUserInfoMutation.isPending}
+            accessibilityLabel="Save Changes"
+            accessibilityRole="button"
           >
             {updateUserInfoMutation.isPending ? (
               <ActivityIndicator color="white" />
