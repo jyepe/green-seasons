@@ -1,10 +1,19 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import { CartesianChart, Area, useChartPressState } from 'victory-native';
+import { matchFont } from '@shopify/react-native-skia';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
+
+const fontFamily = Platform.select({ ios: 'Helvetica', default: 'sans-serif' });
+const fontStyle = {
+  fontFamily,
+  fontSize: 11,
+  fontWeight: '400' as const,
+};
+const font = matchFont(fontStyle);
 
 type RevenueByDayChartProps = {
   data: AdminChartRevenueByDay[];
@@ -72,6 +81,7 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
         domainPadding={{ left: 20, right: 20, top: 20 }}
         chartPressState={state}
         axisOptions={{
+          font,
           tickCount: { x: Math.min(6, data.length), y: 5 },
           formatXLabel: (value) => chartData[Math.round(value)]?.label ?? '',
           formatYLabel: formatCurrency,

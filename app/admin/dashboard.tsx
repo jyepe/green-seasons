@@ -66,7 +66,7 @@ export default function AdminDashboardScreen() {
 
   // Navigate to previous month
   const goToPreviousMonth = () => {
-    setSelectedMonth((prev) => {
+    setSelectedMonth(prev => {
       const newMonth = prev.month - 1;
       if (newMonth < 0) {
         return { year: prev.year - 1, month: 11 };
@@ -85,7 +85,7 @@ export default function AdminDashboardScreen() {
     // Don't allow going beyond current month
     if (selectedYearMonth >= currentYearMonth) return;
 
-    setSelectedMonth((prev) => {
+    setSelectedMonth(prev => {
       const newMonth = prev.month + 1;
       if (newMonth > 11) {
         return { year: prev.year + 1, month: 0 };
@@ -133,7 +133,7 @@ export default function AdminDashboardScreen() {
       if (ordersOffset === 0) {
         setAllOrders(newOrders);
       } else {
-        setAllOrders((prev) => [...prev, ...newOrders]);
+        setAllOrders(prev => [...prev, ...newOrders]);
       }
       return newOrders;
     },
@@ -153,7 +153,10 @@ export default function AdminDashboardScreen() {
 
   // Revenue by Restaurant Chart Query
   const revenueByRestaurantQuery = useQuery({
-    queryKey: ['admin-chart-revenue-by-restaurant', dateRange.start.toISOString()],
+    queryKey: [
+      'admin-chart-revenue-by-restaurant',
+      dateRange.start.toISOString(),
+    ],
     queryFn: () =>
       getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 10),
   });
@@ -184,7 +187,7 @@ export default function AdminDashboardScreen() {
   // Load more orders
   const loadMoreOrders = () => {
     if (!ordersQuery.isFetching) {
-      setOrdersOffset((prev) => prev + ORDERS_PAGE_SIZE);
+      setOrdersOffset(prev => prev + ORDERS_PAGE_SIZE);
     }
   };
 
@@ -215,12 +218,17 @@ export default function AdminDashboardScreen() {
           <Text style={[styles.headerTitle, { color: colors.text }]}>
             Admin Dashboard
           </Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+          >
             Manage your business
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: colors.error + '15' }]}
+          style={[
+            styles.logoutButton,
+            { backgroundColor: colors.error + '15' },
+          ]}
           onPress={handleLogout}
         >
           <Ionicons name="log-out-outline" size={20} color={colors.error} />
@@ -229,10 +237,7 @@ export default function AdminDashboardScreen() {
 
       {/* Month Selector */}
       <View style={[styles.monthSelector, { backgroundColor: colors.surface }]}>
-        <TouchableOpacity
-          style={styles.monthArrow}
-          onPress={goToPreviousMonth}
-        >
+        <TouchableOpacity style={styles.monthArrow} onPress={goToPreviousMonth}>
           <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.monthLabelContainer}>
@@ -289,7 +294,7 @@ export default function AdminDashboardScreen() {
         </ExpandableCard>
 
         {/* Orders by Day Chart */}
-        <ExpandableCard title="Orders by Day" defaultExpanded={false}>
+        <ExpandableCard title="Orders by Day" defaultExpanded>
           <OrdersByDayChart
             data={ordersByDayQuery.data ?? []}
             isLoading={ordersByDayQuery.isLoading}
@@ -297,7 +302,7 @@ export default function AdminDashboardScreen() {
         </ExpandableCard>
 
         {/* Revenue by Day Chart */}
-        <ExpandableCard title="Revenue by Day" defaultExpanded={false}>
+        <ExpandableCard title="Revenue by Day" defaultExpanded>
           <RevenueByDayChart
             data={revenueByDayQuery.data ?? []}
             isLoading={revenueByDayQuery.isLoading}
@@ -305,7 +310,7 @@ export default function AdminDashboardScreen() {
         </ExpandableCard>
 
         {/* Revenue by Restaurant Chart */}
-        <ExpandableCard title="Revenue by Restaurant" defaultExpanded={false}>
+        <ExpandableCard title="Revenue by Restaurant" defaultExpanded>
           <RevenueByRestaurantChart
             data={revenueByRestaurantQuery.data ?? []}
             isLoading={revenueByRestaurantQuery.isLoading}
@@ -398,4 +403,3 @@ const styles = StyleSheet.create({
     height: 32,
   },
 });
-

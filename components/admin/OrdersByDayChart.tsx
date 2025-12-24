@@ -1,11 +1,19 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import { CartesianChart, Line, useChartPressState } from 'victory-native';
-import { Circle } from '@shopify/react-native-skia';
+import { Circle, matchFont } from '@shopify/react-native-skia';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
+
+const fontFamily = Platform.select({ ios: 'Helvetica', default: 'sans-serif' });
+const fontStyle = {
+  fontFamily,
+  fontSize: 11,
+  fontWeight: '400' as const,
+};
+const font = matchFont(fontStyle);
 
 type OrdersByDayChartProps = {
   data: AdminChartOrdersByDay[];
@@ -66,6 +74,7 @@ export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
         domainPadding={{ left: 20, right: 20, top: 20 }}
         chartPressState={state}
         axisOptions={{
+          font,
           tickCount: { x: Math.min(6, data.length), y: 5 },
           formatXLabel: (value) => chartData[Math.round(value)]?.label ?? '',
           labelColor: colors.textSecondary,

@@ -1,6 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  LayoutAnimation,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  UIManager,
+  View,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,6 +17,11 @@ import Animated, {
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 type ExpandableCardProps = {
   title: string;
@@ -28,22 +41,15 @@ export function ExpandableCard({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const rotation = useSharedValue(defaultExpanded ? 180 : 0);
-  const height = useSharedValue(defaultExpanded ? 1 : 0);
 
   const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
     rotation.value = withTiming(isExpanded ? 0 : 180, { duration: 300 });
-    height.value = withTiming(isExpanded ? 0 : 1, { duration: 300 });
   };
 
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: height.value,
-    maxHeight: height.value === 0 ? 0 : undefined,
-    overflow: 'hidden' as const,
   }));
 
   return (
@@ -58,9 +64,9 @@ export function ExpandableCard({
           <Ionicons name="chevron-down" size={24} color={colors.textSecondary} />
         </Animated.View>
       </TouchableOpacity>
-      <Animated.View style={contentStyle}>
+      {isExpanded && (
         <View style={styles.content}>{children}</View>
-      </Animated.View>
+      )}
     </View>
   );
 }

@@ -1,10 +1,19 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import { CartesianChart, Bar, useChartPressState } from 'victory-native';
+import { matchFont } from '@shopify/react-native-skia';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByRestaurant } from '@/lib/supabase';
+
+const fontFamily = Platform.select({ ios: 'Helvetica', default: 'sans-serif' });
+const fontStyle = {
+  fontFamily,
+  fontSize: 11,
+  fontWeight: '400' as const,
+};
+const font = matchFont(fontStyle);
 
 type RevenueByRestaurantChartProps = {
   data: AdminChartRevenueByRestaurant[];
@@ -76,6 +85,7 @@ export function RevenueByRestaurantChart({
         domainPadding={{ left: 20, right: 20, top: 20, bottom: 20 }}
         chartPressState={state}
         axisOptions={{
+          font,
           tickCount: { x: data.length, y: 5 },
           formatXLabel: (value) => chartData[Math.round(value)]?.label ?? '',
           formatYLabel: formatCurrency,
