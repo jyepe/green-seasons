@@ -6,7 +6,6 @@ import { matchFont } from '@shopify/react-native-skia';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
-import { formatCurrency as formatFullCurrency } from '@/utils/currency';
 
 const fontFamily = Platform.select({ ios: 'Helvetica', default: 'sans-serif' });
 const fontStyle = {
