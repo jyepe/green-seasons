@@ -71,6 +71,7 @@ export default function EditProfileScreen() {
     if (trimmedLastName !== originalLastName) {
       updatedFields.last_name = trimmedLastName;
     }
+    // Phone can be empty string (converted to null on backend) or a value
     if (trimmedPhone !== originalPhone) {
       updatedFields.phone = trimmedPhone;
     }
