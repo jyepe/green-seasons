@@ -70,7 +70,18 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
     <View style={styles.container}>
       {isActive && (
         <View style={styles.tooltip}>
-          <Text style={[styles.tooltipText, { color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)' }]}>
+          <Text
+            style={[
+              styles.tooltipText,
+              {
+                color: colors.text,
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'rgba(0,0,0,0.9)'
+                    : 'rgba(255,255,255,0.9)',
+              },
+            ]}
+          >
             {(() => {
               const rawIndex = state.x.value.value;
               const safeIndex = Number.isFinite(rawIndex)
