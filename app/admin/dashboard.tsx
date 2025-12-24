@@ -192,7 +192,6 @@ export default function AdminDashboardScreen() {
   const handleLogout = async () => {
     try {
       await signOutUser();
-      router.replace('/auth/login');
     } catch (error) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
@@ -203,7 +202,11 @@ export default function AdminDashboardScreen() {
         'Unable to sign out. Please try again.',
         [{ text: 'OK' }]
       );
+      return;
     }
+
+    // Only navigate if sign out was successful
+    router.replace('/auth/login');
   };
 
   return (
