@@ -165,12 +165,12 @@ export default function AdminDashboardScreen() {
     revenueByDayQuery.refetch();
     revenueByRestaurantQuery.refetch();
   }, [
-    kpisQuery.refetch,
-    topItemsQuery.refetch,
-    ordersQuery.refetch,
-    ordersByDayQuery.refetch,
-    revenueByDayQuery.refetch,
-    revenueByRestaurantQuery.refetch,
+    kpisQuery,
+    topItemsQuery,
+    ordersQuery,
+    ordersByDayQuery,
+    revenueByDayQuery,
+    revenueByRestaurantQuery,
   ]);
 
   const isRefreshing =
@@ -197,11 +197,9 @@ export default function AdminDashboardScreen() {
         // eslint-disable-next-line no-console
         console.error('Error signing out:', error);
       }
-      Alert.alert(
-        'Logout Failed',
-        'Unable to sign out. Please try again.',
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Logout Failed', 'Unable to sign out. Please try again.', [
+        { text: 'OK' },
+      ]);
       return;
     }
 
