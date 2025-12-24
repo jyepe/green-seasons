@@ -1,0 +1,401 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+
+import {
+  ExpandableCard,
+  KPICard,
+  OrdersByDayChart,
+  OrdersCard,
+  RevenueByDayChart,
+  RevenueByRestaurantChart,
+  TopItemsCard,
+} from '@/components/admin';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import {
+  getAdminChartOrdersByDay,
+  getAdminChartRevenueByDay,
+  getAdminChartRevenueByRestaurant,
+  getAdminMonthKPIs,
+  getAdminOrders,
+  getAdminTopItems,
+  signOutUser,
+  type AdminOrder,
+} from '@/lib/supabase';
+
+const ORDERS_PAGE_SIZE = 10;
+
+export default function AdminDashboardScreen() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const router = useRouter();
+
+  // Month selection state
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
+
+  // Orders pagination
+  const [ordersOffset, setOrdersOffset] = useState(0);
+  const [allOrders, setAllOrders] = useState<AdminOrder[]>([]);
+
+  // Calculate date range for selected month
+  const dateRange = useMemo(() => {
+    const start = new Date(selectedMonth.year, selectedMonth.month, 1);
+    const end = new Date(selectedMonth.year, selectedMonth.month + 1, 1);
+    return { start, end };
+  }, [selectedMonth]);
+
+  // Format month for display
+  const monthLabel = useMemo(() => {
+    const date = new Date(selectedMonth.year, selectedMonth.month, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }, [selectedMonth]);
+
+  // Navigate to previous month
+  const goToPreviousMonth = () => {
+    setSelectedMonth((prev) => {
+      const newMonth = prev.month - 1;
+      if (newMonth < 0) {
+        return { year: prev.year - 1, month: 11 };
+      }
+      return { ...prev, month: newMonth };
+    });
+    resetOrders();
+  };
+
+  // Navigate to next month
+  const goToNextMonth = () => {
+    const now = new Date();
+    const currentYearMonth = now.getFullYear() * 12 + now.getMonth();
+    const selectedYearMonth = selectedMonth.year * 12 + selectedMonth.month;
+
+    // Don't allow going beyond current month
+    if (selectedYearMonth >= currentYearMonth) return;
+
+    setSelectedMonth((prev) => {
+      const newMonth = prev.month + 1;
+      if (newMonth > 11) {
+        return { year: prev.year + 1, month: 0 };
+      }
+      return { ...prev, month: newMonth };
+    });
+    resetOrders();
+  };
+
+  const resetOrders = () => {
+    setOrdersOffset(0);
+    setAllOrders([]);
+  };
+
+  // Check if we can go to next month
+  const canGoNext = useMemo(() => {
+    const now = new Date();
+    const currentYearMonth = now.getFullYear() * 12 + now.getMonth();
+    const selectedYearMonth = selectedMonth.year * 12 + selectedMonth.month;
+    return selectedYearMonth < currentYearMonth;
+  }, [selectedMonth]);
+
+  // KPIs Query
+  const kpisQuery = useQuery({
+    queryKey: ['admin-kpis', dateRange.start.toISOString()],
+    queryFn: () => getAdminMonthKPIs(dateRange.start, dateRange.end),
+  });
+
+  // Top Items Query
+  const topItemsQuery = useQuery({
+    queryKey: ['admin-top-items', dateRange.start.toISOString()],
+    queryFn: () => getAdminTopItems(dateRange.start, dateRange.end, 5),
+  });
+
+  // Orders Query
+  const ordersQuery = useQuery({
+    queryKey: ['admin-orders', dateRange.start.toISOString(), ordersOffset],
+    queryFn: async () => {
+      const newOrders = await getAdminOrders(
+        dateRange.start,
+        dateRange.end,
+        ORDERS_PAGE_SIZE,
+        ordersOffset
+      );
+      if (ordersOffset === 0) {
+        setAllOrders(newOrders);
+      } else {
+        setAllOrders((prev) => [...prev, ...newOrders]);
+      }
+      return newOrders;
+    },
+  });
+
+  // Orders by Day Chart Query
+  const ordersByDayQuery = useQuery({
+    queryKey: ['admin-chart-orders-by-day', dateRange.start.toISOString()],
+    queryFn: () => getAdminChartOrdersByDay(dateRange.start, dateRange.end),
+  });
+
+  // Revenue by Day Chart Query
+  const revenueByDayQuery = useQuery({
+    queryKey: ['admin-chart-revenue-by-day', dateRange.start.toISOString()],
+    queryFn: () => getAdminChartRevenueByDay(dateRange.start, dateRange.end),
+  });
+
+  // Revenue by Restaurant Chart Query
+  const revenueByRestaurantQuery = useQuery({
+    queryKey: ['admin-chart-revenue-by-restaurant', dateRange.start.toISOString()],
+    queryFn: () =>
+      getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 10),
+  });
+
+  // Refresh all data
+  const onRefresh = useCallback(() => {
+    resetOrders();
+    kpisQuery.refetch();
+    topItemsQuery.refetch();
+    ordersQuery.refetch();
+    ordersByDayQuery.refetch();
+    revenueByDayQuery.refetch();
+    revenueByRestaurantQuery.refetch();
+  }, [
+    kpisQuery,
+    topItemsQuery,
+    ordersQuery,
+    ordersByDayQuery,
+    revenueByDayQuery,
+    revenueByRestaurantQuery,
+  ]);
+
+  const isRefreshing =
+    kpisQuery.isRefetching ||
+    topItemsQuery.isRefetching ||
+    ordersByDayQuery.isRefetching;
+
+  // Load more orders
+  const loadMoreOrders = () => {
+    if (!ordersQuery.isFetching) {
+      setOrdersOffset((prev) => prev + ORDERS_PAGE_SIZE);
+    }
+  };
+
+  const hasMoreOrders =
+    ordersQuery.data && ordersQuery.data.length === ORDERS_PAGE_SIZE;
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      router.replace('/auth/login');
+    } catch (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error signing out:', error);
+      }
+    }
+  };
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['top']}
+    >
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Admin Dashboard
+          </Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+            Manage your business
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: colors.error + '15' }]}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={20} color={colors.error} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Month Selector */}
+      <View style={[styles.monthSelector, { backgroundColor: colors.surface }]}>
+        <TouchableOpacity
+          style={styles.monthArrow}
+          onPress={goToPreviousMonth}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.primary} />
+        </TouchableOpacity>
+        <View style={styles.monthLabelContainer}>
+          <Ionicons
+            name="calendar-outline"
+            size={18}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.monthLabel, { color: colors.text }]}>
+            {monthLabel}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.monthArrow, !canGoNext && styles.monthArrowDisabled]}
+          onPress={goToNextMonth}
+          disabled={!canGoNext}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={24}
+            color={canGoNext ? colors.primary : colors.textTertiary}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      >
+        {/* Monthly KPIs */}
+        <ExpandableCard title="Monthly Overview" defaultExpanded>
+          <KPICard
+            ordersCount={kpisQuery.data?.orders_count ?? 0}
+            totalRevenue={kpisQuery.data?.total_revenue ?? 0}
+            isLoading={kpisQuery.isLoading}
+          />
+        </ExpandableCard>
+
+        {/* Top 5 Items */}
+        <ExpandableCard title="Top Selling Items" defaultExpanded>
+          <TopItemsCard
+            items={topItemsQuery.data ?? []}
+            isLoading={topItemsQuery.isLoading}
+          />
+        </ExpandableCard>
+
+        {/* Orders by Day Chart */}
+        <ExpandableCard title="Orders by Day" defaultExpanded={false}>
+          <OrdersByDayChart
+            data={ordersByDayQuery.data ?? []}
+            isLoading={ordersByDayQuery.isLoading}
+          />
+        </ExpandableCard>
+
+        {/* Revenue by Day Chart */}
+        <ExpandableCard title="Revenue by Day" defaultExpanded={false}>
+          <RevenueByDayChart
+            data={revenueByDayQuery.data ?? []}
+            isLoading={revenueByDayQuery.isLoading}
+          />
+        </ExpandableCard>
+
+        {/* Revenue by Restaurant Chart */}
+        <ExpandableCard title="Revenue by Restaurant" defaultExpanded={false}>
+          <RevenueByRestaurantChart
+            data={revenueByRestaurantQuery.data ?? []}
+            isLoading={revenueByRestaurantQuery.isLoading}
+          />
+        </ExpandableCard>
+
+        {/* All Orders */}
+        <ExpandableCard title="Recent Orders" defaultExpanded>
+          <OrdersCard
+            orders={allOrders}
+            isLoading={ordersQuery.isLoading}
+            hasMore={hasMoreOrders}
+            onLoadMore={loadMoreOrders}
+          />
+        </ExpandableCard>
+
+        {/* Bottom spacing */}
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 2,
+  },
+  logoutButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  monthSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+  },
+  monthArrow: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  monthArrowDisabled: {
+    opacity: 0.5,
+  },
+  monthLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  monthLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 8,
+  },
+  bottomSpacer: {
+    height: 32,
+  },
+});
+
