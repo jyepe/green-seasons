@@ -97,6 +97,10 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
     throw error;
   }
 
+  if (!data) {
+    throw new Error('User data not found');
+  }
+
   return {
     ...data,
     email: user.email ?? data.email,
@@ -123,20 +127,25 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
   if (!user) throw new Error('Not authenticated');
 
   if (params.email && params.email !== user.email) {
-    const { error: authError } = await supabase.auth.updateUser({
+    const { data: updatedUserResponse, error: authError } = await supabase.auth.updateUser({
       email: params.email,
     });
     if (authError) throw authError;
+
+    // Note: If email confirmation is required, Supabase will send a confirmation email
+    // The user's email won't change until they confirm via the link
   }
 
   const updates: {
     first_name?: string;
     last_name?: string;
-    phone?: string;
+    phone?: string | null;
   } = {};
   if (params.first_name !== undefined) updates.first_name = params.first_name;
   if (params.last_name !== undefined) updates.last_name = params.last_name;
-  if (params.phone !== undefined) updates.phone = params.phone;
+  if (params.phone !== undefined) {
+    updates.phone = params.phone === '' ? null : params.phone;
+  }
 
   if (Object.keys(updates).length > 0) {
     const { data, error } = await supabase
@@ -150,7 +159,15 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
     return data;
   }
 
-  return null;
+  // If only email was updated, fetch and return the current profile data
+  const { data, error } = await supabase
+    .from('profiles')
+    .select()
+    .eq('id', user.id)
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
 export type Restaurant = {

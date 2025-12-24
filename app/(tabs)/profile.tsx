@@ -26,24 +26,36 @@ export default function ProfileScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
       </View>
 
       <View style={styles.content}>
-        {userInfo && (
+        {userInfo ? (
           <View style={[styles.userInfoContainer, { backgroundColor: colors.surface }]}>
             <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
               <Text style={styles.avatarText}>
-                {userInfo.first_name?.[0] || userInfo.email?.[0] || '?'}
+                {(userInfo.first_name?.[0] || userInfo.email?.[0] || '?').toUpperCase()}
               </Text>
             </View>
             <Text style={[styles.userName, { color: colors.text }]}>
-              {userInfo.first_name} {userInfo.last_name}
+              {(() => {
+                const parts: string[] = [];
+                if (userInfo.first_name) parts.push(userInfo.first_name);
+                if (userInfo.last_name) parts.push(userInfo.last_name);
+                if (parts.length > 0) {
+                  return parts.join(' ');
+                }
+                return userInfo.email || 'User';
+              })()}
             </Text>
             <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
               {userInfo.email}
             </Text>
+          </View>
+        ) : (
+          <View style={styles.loadingContainer}>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading profile...</Text>
           </View>
         )}
 
@@ -53,6 +65,8 @@ export default function ProfileScreen() {
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
           onPress={() => router.push('/profile/edit')}
+          accessibilityLabel="Edit Profile"
+          accessibilityRole="button"
         >
           <Text style={[styles.editProfileButtonText, { color: colors.text }]}>
             Edit Profile
@@ -62,6 +76,8 @@ export default function ProfileScreen() {
         <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: colors.error }]}
           onPress={handleSignOut}
+          accessibilityLabel="Log Out"
+          accessibilityRole="button"
         >
           <Text style={styles.logoutButtonText}>Log Out</Text>
         </TouchableOpacity>
@@ -78,9 +94,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB', // We might want to use colors.border but we are outside component for now, or just inline.
-    // Actually, accessing colors inside component is better. But keeping simple for style sheet.
-    // Let's use View style override for border color in component if strictly needed.
   },
   headerTitle: {
     fontSize: 24,
@@ -157,5 +170,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  loadingContainer: {
+    width: '100%',
+    alignItems: 'center',
+    padding: 24,
+    marginBottom: 32,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
   },
 });

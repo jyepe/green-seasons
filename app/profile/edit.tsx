@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUpdateUserInfo, useUserInfo } from '@/hooks/useUserInfo';
+import type { UpdateUserInfoParams } from '@/lib/supabase';
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -38,23 +39,67 @@ export default function EditProfileScreen() {
   }, [userInfo]);
 
   const handleSave = async () => {
-    if (!email.trim() || !firstName.trim() || !lastName.trim()) {
+    const trimmedEmail = email.trim();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedEmail || !trimmedFirstName || !trimmedLastName) {
       Alert.alert('Error', 'Email, first name, and last name are required.');
       return;
     }
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    // Only send fields that have actually changed
+    const updatedFields: Partial<UpdateUserInfoParams> = {};
+    const originalEmail = userInfo?.email || '';
+    const originalFirstName = userInfo?.first_name || '';
+    const originalLastName = userInfo?.last_name || '';
+    const originalPhone = userInfo?.phone || '';
+
+    if (trimmedEmail !== originalEmail) {
+      updatedFields.email = trimmedEmail;
+    }
+    if (trimmedFirstName !== originalFirstName) {
+      updatedFields.first_name = trimmedFirstName;
+    }
+    if (trimmedLastName !== originalLastName) {
+      updatedFields.last_name = trimmedLastName;
+    }
+    // Phone can be empty string (converted to null on backend) or a value
+    if (trimmedPhone !== originalPhone) {
+      updatedFields.phone = trimmedPhone;
+    }
+
+    if (Object.keys(updatedFields).length === 0) {
+      Alert.alert('No changes', 'There are no changes to save.');
+      return;
+    }
+
     try {
-      await updateUserInfoMutation.mutateAsync({
-        email: email,
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone,
-      });
-      Alert.alert('Success', 'Profile updated successfully', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
-    } catch {
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      await updateUserInfoMutation.mutateAsync(updatedFields);
+      
+      // Show different messages based on what was updated
+      if (updatedFields.email) {
+        Alert.alert(
+          'Success',
+          'Profile updated successfully. If you changed your email, please check your inbox to confirm the new address.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      } else {
+        Alert.alert('Success', 'Profile updated successfully', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile. Please try again.';
+      Alert.alert('Error', errorMessage);
     }
   };
 
@@ -99,6 +144,7 @@ export default function EditProfileScreen() {
               placeholderTextColor={colors.textSecondary}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
 
@@ -167,6 +213,8 @@ export default function EditProfileScreen() {
             style={[styles.saveButton, { backgroundColor: colors.primary }]}
             onPress={handleSave}
             disabled={updateUserInfoMutation.isPending}
+            accessibilityLabel="Save Changes"
+            accessibilityRole="button"
           >
             {updateUserInfoMutation.isPending ? (
               <ActivityIndicator color="white" />
