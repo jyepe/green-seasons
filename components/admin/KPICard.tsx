@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { formatCurrency } from '@/utils/currency';
 
 type KPICardProps = {
   ordersCount: number;
@@ -14,14 +15,6 @@ type KPICardProps = {
 export function KPICard({ ordersCount, totalRevenue, isLoading }: KPICardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   if (isLoading) {
     return (

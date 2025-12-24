@@ -127,10 +127,9 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
   if (!user) throw new Error('Not authenticated');
 
   if (params.email && params.email !== user.email) {
-    const { data: updatedUserResponse, error: authError } =
-      await supabase.auth.updateUser({
-        email: params.email,
-      });
+    const { error: authError } = await supabase.auth.updateUser({
+      email: params.email,
+    });
     if (authError) throw authError;
 
     // Note: If email confirmation is required, Supabase will send a confirmation email
@@ -481,6 +480,7 @@ export async function getOrderDetails(
 
 /**
  * Check if the current user is an admin
+ * @throws Error if unable to determine admin status due to network or backend issues
  */
 export async function isAdmin(): Promise<boolean> {
   const { data, error } = await supabase.rpc('fn_is_admin');
@@ -490,7 +490,9 @@ export async function isAdmin(): Promise<boolean> {
       // eslint-disable-next-line no-console
       console.error('Error checking admin status:', error);
     }
-    return false;
+    // Throw error instead of silently returning false
+    // This allows callers to distinguish between "not an admin" and "unable to check"
+    throw new Error(`Unable to verify admin status: ${error.message}`);
   }
 
   return data === true;
@@ -559,13 +561,27 @@ export async function getAdminTopItems(
     throw error;
   }
 
-  return (data || []).map((item: Record<string, unknown>) => ({
-    item_id: item.item_id as string,
-    item_name: item.item_name as string,
-    unit: item.unit as string,
-    quantity: parseFloat(String(item.quantity ?? '0')),
-    revenue: parseFloat(String(item.revenue ?? '0')),
-  }));
+  return (data || []).map((item: unknown) => {
+    if (!item || typeof item !== 'object') {
+      return {
+        item_id: '',
+        item_name: '',
+        unit: '',
+        quantity: 0,
+        revenue: 0,
+      };
+    }
+
+    const record = item as Record<string, unknown>;
+
+    return {
+      item_id: String(record.item_id ?? ''),
+      item_name: String(record.item_name ?? ''),
+      unit: String(record.unit ?? ''),
+      quantity: parseFloat(String(record.quantity ?? '0')),
+      revenue: parseFloat(String(record.revenue ?? '0')),
+    };
+  });
 }
 
 export type AdminOrder = {

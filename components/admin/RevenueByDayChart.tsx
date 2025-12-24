@@ -6,6 +6,7 @@ import { matchFont } from '@shopify/react-native-skia';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
+import { formatCurrency as formatFullCurrency } from '@/utils/currency';
 
 const fontFamily = Platform.select({ ios: 'Helvetica', default: 'sans-serif' });
 const fontStyle = {
@@ -21,7 +22,8 @@ type RevenueByDayChartProps = {
 };
 
 const { width } = Dimensions.get('window');
-const CHART_WIDTH = width - 64;
+const HORIZONTAL_PADDING = 32;
+const CHART_WIDTH = width - HORIZONTAL_PADDING * 2;
 const CHART_HEIGHT = 200;
 
 export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
@@ -68,9 +70,16 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
     <View style={styles.container}>
       {isActive && (
         <View style={styles.tooltip}>
-          <Text style={[styles.tooltipText, { color: colors.text }]}>
-            {chartData[Math.round(state.x.value.value)]?.label}:{' '}
-            {formatCurrency(state.y.revenue.value.value)}
+          <Text style={[styles.tooltipText, { color: colors.text, backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)' }]}>
+            {(() => {
+              const rawIndex = state.x.value.value;
+              const safeIndex = Number.isFinite(rawIndex)
+                ? Math.min(chartData.length - 1, Math.max(0, Math.round(rawIndex)))
+                : 0;
+              const label = chartData[safeIndex]?.label ?? '';
+              const value = state.y.revenue.value.value;
+              return `${label}: ${formatCurrency(value)}`;
+            })()}
           </Text>
         </View>
       )}
@@ -133,7 +142,6 @@ const styles = StyleSheet.create({
   tooltipText: {
     fontSize: 12,
     fontFamily: 'Inter_600SemiBold',
-    backgroundColor: 'rgba(255,255,255,0.9)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

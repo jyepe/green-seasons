@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -164,12 +165,12 @@ export default function AdminDashboardScreen() {
     revenueByDayQuery.refetch();
     revenueByRestaurantQuery.refetch();
   }, [
-    kpisQuery,
-    topItemsQuery,
-    ordersQuery,
-    ordersByDayQuery,
-    revenueByDayQuery,
-    revenueByRestaurantQuery,
+    kpisQuery.refetch,
+    topItemsQuery.refetch,
+    ordersQuery.refetch,
+    ordersByDayQuery.refetch,
+    revenueByDayQuery.refetch,
+    revenueByRestaurantQuery.refetch,
   ]);
 
   const isRefreshing =
@@ -197,6 +198,11 @@ export default function AdminDashboardScreen() {
         // eslint-disable-next-line no-console
         console.error('Error signing out:', error);
       }
+      Alert.alert(
+        'Logout Failed',
+        'Unable to sign out. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -223,6 +229,9 @@ export default function AdminDashboardScreen() {
             { backgroundColor: colors.error + '15' },
           ]}
           onPress={handleLogout}
+          accessibilityLabel="Logout"
+          accessibilityRole="button"
+          accessibilityHint="Double tap to sign out of your admin account"
         >
           <Ionicons name="log-out-outline" size={20} color={colors.error} />
         </TouchableOpacity>
@@ -230,7 +239,13 @@ export default function AdminDashboardScreen() {
 
       {/* Month Selector */}
       <View style={[styles.monthSelector, { backgroundColor: colors.surface }]}>
-        <TouchableOpacity style={styles.monthArrow} onPress={goToPreviousMonth}>
+        <TouchableOpacity
+          style={styles.monthArrow}
+          onPress={goToPreviousMonth}
+          accessibilityLabel="Previous month"
+          accessibilityRole="button"
+          accessibilityHint="Double tap to view the previous month"
+        >
           <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.monthLabelContainer}>
@@ -247,6 +262,10 @@ export default function AdminDashboardScreen() {
           style={[styles.monthArrow, !canGoNext && styles.monthArrowDisabled]}
           onPress={goToNextMonth}
           disabled={!canGoNext}
+          accessibilityLabel="Next month"
+          accessibilityRole="button"
+          accessibilityHint="Double tap to view the next month"
+          accessibilityState={{ disabled: !canGoNext }}
         >
           <Ionicons
             name="chevron-forward"

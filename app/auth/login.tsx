@@ -57,11 +57,21 @@ export default function LoginScreen() {
       });
 
       // Check if user is an admin
-      const userIsAdmin = await isAdmin();
-      if (userIsAdmin) {
-        // Admin user - go to admin dashboard
-        router.replace('/admin/dashboard');
-        return;
+      try {
+        const userIsAdmin = await isAdmin();
+        if (userIsAdmin) {
+          // Admin user - go to admin dashboard
+          router.replace('/admin/dashboard');
+          return;
+        }
+      } catch (adminCheckError) {
+        // Log the error but don't block user flow
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to check admin status:', adminCheckError);
+        }
+        // If admin check fails, treat user as non-admin and continue
+        // This prevents blocking legitimate users due to transient issues
       }
 
       // Get user info to check restaurant ownership

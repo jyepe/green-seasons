@@ -25,14 +25,12 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 type ExpandableCardProps = {
   title: string;
-  icon?: keyof typeof Ionicons.glyphMap;
   children: React.ReactNode;
   defaultExpanded?: boolean;
 };
 
 export function ExpandableCard({
   title,
-  icon = 'chevron-down',
   children,
   defaultExpanded = true,
 }: ExpandableCardProps) {
@@ -58,6 +56,10 @@ export function ExpandableCard({
         style={styles.header}
         onPress={toggleExpand}
         activeOpacity={0.7}
+        accessibilityLabel={`${title}, ${isExpanded ? 'expanded' : 'collapsed'}`}
+        accessibilityRole="button"
+        accessibilityHint="Double tap to expand or collapse"
+        accessibilityState={{ expanded: isExpanded }}
       >
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         <Animated.View style={chevronStyle}>
