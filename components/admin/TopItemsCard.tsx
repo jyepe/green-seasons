@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminTopItem } from '@/lib/supabase';
+import { formatCurrency } from '@/utils/currency';
 
 type TopItemsCardProps = {
   items: AdminTopItem[];
@@ -13,14 +14,6 @@ type TopItemsCardProps = {
 export function TopItemsCard({ items, isLoading }: TopItemsCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   if (isLoading) {
     return (

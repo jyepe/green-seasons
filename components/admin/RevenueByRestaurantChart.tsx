@@ -21,7 +21,8 @@ type RevenueByRestaurantChartProps = {
 };
 
 const { width } = Dimensions.get('window');
-const CHART_WIDTH = width - 64;
+const HORIZONTAL_PADDING = 32;
+const CHART_WIDTH = width - HORIZONTAL_PADDING * 2;
 const BAR_HEIGHT = 40;
 
 export function RevenueByRestaurantChart({
@@ -51,12 +52,29 @@ export function RevenueByRestaurantChart({
   }
 
   // Format data for Victory Native
+  const MAX_LABEL_LENGTH = 18;
+
+  const createRestaurantLabel = (name: string): string => {
+    if (name.length <= MAX_LABEL_LENGTH) {
+      return name;
+    }
+
+    // Preserve both the beginning and end of the name to reduce ambiguity,
+    // e.g., "Starbucks…1st Ave"
+    const startLength = 10;
+    const endLength = MAX_LABEL_LENGTH - startLength - 1; // 1 for the ellipsis
+
+    if (endLength <= 0) {
+      return name.slice(0, MAX_LABEL_LENGTH - 1) + '…';
+    }
+
+    return `${name.slice(0, startLength)}…${name.slice(-endLength)}`;
+  };
+
   const chartData = data.map((item, index) => ({
     x: index,
     revenue: item.revenue,
-    label: item.restaurant_name.length > 12
-      ? item.restaurant_name.substring(0, 12) + '...'
-      : item.restaurant_name,
+    label: createRestaurantLabel(item.restaurant_name),
   }));
 
   const chartHeight = Math.max(200, data.length * BAR_HEIGHT + 60);
@@ -72,9 +90,28 @@ export function RevenueByRestaurantChart({
     <View style={[styles.container, { height: chartHeight }]}>
       {isActive && (
         <View style={styles.tooltip}>
-          <Text style={[styles.tooltipText, { color: colors.text }]}>
-            {data[Math.round(state.x.value.value)]?.restaurant_name}:{' '}
-            {formatCurrency(state.y.revenue.value.value)}
+          <Text
+            style={[
+              styles.tooltipText,
+              {
+                color: colors.text,
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'rgba(0,0,0,0.9)'
+                    : 'rgba(255,255,255,0.9)',
+              },
+            ]}
+          >
+            {(() => {
+              const rawIndex = state.x.value.value;
+              const safeIndex = Number.isFinite(rawIndex)
+                ? Math.min(data.length - 1, Math.max(0, Math.round(rawIndex)))
+                : -1;
+              const hoveredRestaurant = safeIndex >= 0 ? data[safeIndex] : undefined;
+              if (!hoveredRestaurant) return '';
+              const value = state.y.revenue.value.value;
+              return `${hoveredRestaurant.restaurant_name}: ${formatCurrency(value)}`;
+            })()}
           </Text>
         </View>
       )}
@@ -135,7 +172,6 @@ const styles = StyleSheet.create({
   tooltipText: {
     fontSize: 12,
     fontFamily: 'Inter_600SemiBold',
-    backgroundColor: 'rgba(255,255,255,0.9)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

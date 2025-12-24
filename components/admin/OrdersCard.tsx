@@ -11,6 +11,7 @@ import {
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminOrder, OrderStatus } from '@/lib/supabase';
+import { formatCurrency } from '@/utils/currency';
 
 type OrdersCardProps = {
   orders: AdminOrder[];
@@ -36,14 +37,6 @@ export function OrdersCard({
 }: OrdersCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -154,6 +147,9 @@ export function OrdersCard({
           style={[styles.loadMoreButton, { borderColor: colors.border }]}
           onPress={onLoadMore}
           disabled={isLoading}
+          accessibilityLabel="Load more orders"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isLoading }}
         >
           {isLoading ? (
             <ActivityIndicator size="small" color={colors.primary} />
