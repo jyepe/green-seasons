@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import {
   ExpandableCard,
@@ -31,7 +31,6 @@ import {
   getAdminOrders,
   getAdminTopItems,
   signOutUser,
-  type AdminOrder,
 } from '@/lib/supabase';
 
 const ORDERS_PAGE_SIZE = 10;
@@ -46,10 +45,6 @@ export default function AdminDashboardScreen() {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
-
-  // Orders pagination
-  const [ordersOffset, setOrdersOffset] = useState(0);
-  const [allOrders, setAllOrders] = useState<AdminOrder[]>([]);
 
   // Calculate date range for selected month
   const dateRange = useMemo(() => {
@@ -73,7 +68,6 @@ export default function AdminDashboardScreen() {
       }
       return { ...prev, month: newMonth };
     });
-    resetOrders();
   };
 
   // Navigate to next month
@@ -92,12 +86,6 @@ export default function AdminDashboardScreen() {
       }
       return { ...prev, month: newMonth };
     });
-    resetOrders();
-  };
-
-  const resetOrders = () => {
-    setOrdersOffset(0);
-    setAllOrders([]);
   };
 
   // Check if we can go to next month
@@ -121,23 +109,29 @@ export default function AdminDashboardScreen() {
   });
 
   // Orders Query
-  const ordersQuery = useQuery({
-    queryKey: ['admin-orders', dateRange.start.toISOString(), ordersOffset],
-    queryFn: async () => {
-      const newOrders = await getAdminOrders(
+  const ordersQuery = useInfiniteQuery({
+    queryKey: ['admin-orders', dateRange.start.toISOString()],
+    queryFn: async ({ pageParam = 0 }) => {
+      return getAdminOrders(
         dateRange.start,
         dateRange.end,
         ORDERS_PAGE_SIZE,
-        ordersOffset
+        pageParam as number
       );
-      if (ordersOffset === 0) {
-        setAllOrders(newOrders);
-      } else {
-        setAllOrders(prev => [...prev, ...newOrders]);
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < ORDERS_PAGE_SIZE) {
+        return undefined;
       }
-      return newOrders;
+      return allPages.length * ORDERS_PAGE_SIZE;
     },
   });
+
+  const allOrders = useMemo(
+    () => ordersQuery.data?.pages.flat() ?? [],
+    [ordersQuery.data]
+  );
 
   // Orders by Day Chart Query
   const ordersByDayQuery = useQuery({
@@ -163,7 +157,6 @@ export default function AdminDashboardScreen() {
 
   // Refresh all data
   const onRefresh = useCallback(() => {
-    resetOrders();
     kpisQuery.refetch();
     topItemsQuery.refetch();
     ordersQuery.refetch();
@@ -182,17 +175,17 @@ export default function AdminDashboardScreen() {
   const isRefreshing =
     kpisQuery.isRefetching ||
     topItemsQuery.isRefetching ||
-    ordersByDayQuery.isRefetching;
+    ordersByDayQuery.isRefetching ||
+    ordersQuery.isRefetching;
 
   // Load more orders
   const loadMoreOrders = () => {
-    if (!ordersQuery.isFetching) {
-      setOrdersOffset(prev => prev + ORDERS_PAGE_SIZE);
+    if (ordersQuery.hasNextPage && !ordersQuery.isFetchingNextPage) {
+      ordersQuery.fetchNextPage();
     }
   };
 
-  const hasMoreOrders =
-    ordersQuery.data && ordersQuery.data.length === ORDERS_PAGE_SIZE;
+  const hasMoreOrders = !!ordersQuery.hasNextPage;
 
   // Logout handler
   const handleLogout = async () => {
