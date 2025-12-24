@@ -24,12 +24,14 @@ export default function EditProfileScreen() {
   const { data: userInfo, isLoading: isUserLoading } = useUserInfo();
   const updateUserInfoMutation = useUpdateUserInfo();
 
+  const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
 
   useEffect(() => {
     if (userInfo) {
+      setEmail(userInfo.email || '');
       setFirstName(userInfo.first_name || '');
       setLastName(userInfo.last_name || '');
       setPhone(userInfo.phone || '');
@@ -37,13 +39,14 @@ export default function EditProfileScreen() {
   }, [userInfo]);
 
   const handleSave = async () => {
-    if (!firstName.trim() || !lastName.trim()) {
-      Alert.alert('Error', 'First name and last name are required.');
+    if (!email.trim() || !firstName.trim() || !lastName.trim()) {
+      Alert.alert('Error', 'Email, first name, and last name are required.');
       return;
     }
 
     try {
       await updateUserInfoMutation.mutateAsync({
+        email: email,
         first_name: firstName,
         last_name: lastName,
         phone: phone,
@@ -82,6 +85,26 @@ export default function EditProfileScreen() {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  color: colors.text,
+                  borderColor: colors.border,
+                },
+              ]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: colors.text }]}>
               First Name

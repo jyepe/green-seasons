@@ -94,14 +94,13 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
   const { data, error } = await supabase.from('me').select('*').single();
 
   if (error) {
-    if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching user info:', error);
-    }
     throw error;
   }
 
-  return data;
+  return {
+    ...data,
+    email: user.email ?? data.email,
+  };
 }
 
 export async function signOutUser() {
@@ -110,6 +109,7 @@ export async function signOutUser() {
 }
 
 export type UpdateUserInfoParams = {
+  email?: string;
   first_name?: string;
   last_name?: string;
   phone?: string;
@@ -122,6 +122,13 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
 
   if (!user) throw new Error('Not authenticated');
 
+  if (params.email && params.email !== user.email) {
+    const { error: authError } = await supabase.auth.updateUser({
+      email: params.email,
+    });
+    if (authError) throw authError;
+  }
+
   const updates: {
     first_name?: string;
     last_name?: string;
@@ -131,15 +138,19 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
   if (params.last_name !== undefined) updates.last_name = params.last_name;
   if (params.phone !== undefined) updates.phone = params.phone;
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', user.id)
-    .select()
-    .single();
+  if (Object.keys(updates).length > 0) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
+  }
+
+  return null;
 }
 
 export type Restaurant = {
