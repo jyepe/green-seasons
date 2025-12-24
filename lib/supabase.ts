@@ -109,6 +109,39 @@ export async function signOutUser() {
   if (error) throw error;
 }
 
+export type UpdateUserInfoParams = {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+};
+
+export async function updateUserInfo(params: UpdateUserInfoParams) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('Not authenticated');
+
+  const updates: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+  } = {};
+  if (params.first_name !== undefined) updates.first_name = params.first_name;
+  if (params.last_name !== undefined) updates.last_name = params.last_name;
+  if (params.phone !== undefined) updates.phone = params.phone;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', user.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export type Restaurant = {
   id: string;
   name: string;

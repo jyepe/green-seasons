@@ -1,5 +1,11 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getCurrentUserInfo, signOutUser, type UserInfo } from '@/lib/supabase';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import {
+  getCurrentUserInfo,
+  signOutUser,
+  updateUserInfo,
+  type UserInfo,
+  type UpdateUserInfoParams,
+} from '@/lib/supabase';
 
 export const USER_INFO_QUERY_KEY = ['userInfo'] as const;
 
@@ -20,6 +26,17 @@ export function useUserInfo() {
         return false;
       }
       return failureCount < 3;
+    },
+  });
+}
+
+export function useUpdateUserInfo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: UpdateUserInfoParams) => updateUserInfo(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USER_INFO_QUERY_KEY });
     },
   });
 }

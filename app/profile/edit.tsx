@@ -1,0 +1,207 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useUpdateUserInfo, useUserInfo } from '@/hooks/useUserInfo';
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function EditProfileScreen() {
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const { data: userInfo, isLoading: isUserLoading } = useUserInfo();
+  const updateUserInfoMutation = useUpdateUserInfo();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+
+  useEffect(() => {
+    if (userInfo) {
+      setFirstName(userInfo.first_name || '');
+      setLastName(userInfo.last_name || '');
+      setPhone(userInfo.phone || '');
+    }
+  }, [userInfo]);
+
+  const handleSave = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      Alert.alert('Error', 'First name and last name are required.');
+      return;
+    }
+
+    try {
+      await updateUserInfoMutation.mutateAsync({
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone,
+      });
+      Alert.alert('Success', 'Profile updated successfully', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch {
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    }
+  };
+
+  if (isUserLoading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.center,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <Stack.Screen
+        options={{ title: 'Edit Profile', headerBackTitle: 'Profile' }}
+      />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              First Name
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  color: colors.text,
+                  borderColor: colors.border,
+                },
+              ]}
+              value={firstName}
+              onChangeText={setFirstName}
+              placeholder="First Name"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Last Name
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  color: colors.text,
+                  borderColor: colors.border,
+                },
+              ]}
+              value={lastName}
+              onChangeText={setLastName}
+              placeholder="Last Name"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Phone Number
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  color: colors.text,
+                  borderColor: colors.border,
+                },
+              ]}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Phone Number"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.saveButton, { backgroundColor: colors.primary }]}
+            onPress={handleSave}
+            disabled={updateUserInfoMutation.isPending}
+          >
+            {updateUserInfoMutation.isPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  saveButton: {
+    height: 50,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+});

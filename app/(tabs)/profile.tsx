@@ -48,6 +48,18 @@ export default function ProfileScreen() {
         )}
 
         <TouchableOpacity
+          style={[
+            styles.editProfileButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+          onPress={() => router.push('/profile/edit')}
+        >
+          <Text style={[styles.editProfileButtonText, { color: colors.text }]}>
+            Edit Profile
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: colors.error }]}
           onPress={handleSignOut}
         >
@@ -66,7 +78,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB', // We might want to use colors.border but we are outside component for now, or just inline. 
+    borderBottomColor: '#E5E7EB', // We might want to use colors.border but we are outside component for now, or just inline.
     // Actually, accessing colors inside component is better. But keeping simple for style sheet.
     // Let's use View style override for border color in component if strictly needed.
   },
@@ -118,6 +130,20 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
+  },
+  editProfileButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  editProfileButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   logoutButton: {
     width: '100%',
