@@ -15,7 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -74,9 +73,7 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen
         options={{ title: 'Edit Profile', headerBackTitle: 'Profile' }}
       />
@@ -179,7 +176,7 @@ export default function EditProfileScreen() {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
