@@ -132,13 +132,8 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
     });
     if (authError) throw authError;
 
-    const updatedUser = updatedUserResponse?.user;
-    // Check if the new email hasn't been confirmed yet
-    if (updatedUser && updatedUser.email === params.email && !updatedUser.email_confirmed_at) {
-      throw new Error(
-        'Email change pending confirmation. Please confirm your new email address via the link sent to complete the update.'
-      );
-    }
+    // Note: If email confirmation is required, Supabase will send a confirmation email
+    // The user's email won't change until they confirm via the link
   }
 
   const updates: {

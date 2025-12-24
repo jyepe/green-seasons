@@ -84,11 +84,22 @@ export default function EditProfileScreen() {
 
     try {
       await updateUserInfoMutation.mutateAsync(updatedFields);
-      Alert.alert('Success', 'Profile updated successfully', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
-    } catch {
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      
+      // Show different messages based on what was updated
+      if (updatedFields.email) {
+        Alert.alert(
+          'Success',
+          'Profile updated successfully. If you changed your email, please check your inbox to confirm the new address.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      } else {
+        Alert.alert('Success', 'Profile updated successfully', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile. Please try again.';
+      Alert.alert('Error', errorMessage);
     }
   };
 
