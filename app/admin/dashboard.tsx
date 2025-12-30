@@ -112,25 +112,22 @@ export default function AdminDashboardScreen() {
   // Orders Query
   const ordersQuery = useInfiniteQuery({
     queryKey: ['admin-orders', dateRange.start.toISOString()],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = null }) => {
       return getAdminOrders(
         dateRange.start,
         dateRange.end,
         ORDERS_PAGE_SIZE,
-        pageParam as number
+        pageParam as { created_at: string; id: string } | null
       );
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < ORDERS_PAGE_SIZE) {
-        return undefined;
-      }
-      return allPages.length * ORDERS_PAGE_SIZE;
+    initialPageParam: null as { created_at: string; id: string } | null,
+    getNextPageParam: lastPage => {
+      return lastPage.nextCursor;
     },
   });
 
   const allOrders = useMemo(
-    () => ordersQuery.data?.pages.flat() ?? [],
+    () => ordersQuery.data?.pages.flatMap(page => page.orders) ?? [],
     [ordersQuery.data]
   );
 
@@ -337,6 +334,7 @@ export default function AdminDashboardScreen() {
             isLoading={ordersQuery.isLoading}
             hasMore={hasMoreOrders}
             onLoadMore={loadMoreOrders}
+            onViewAll={() => router.push('/admin/orders')}
           />
         </ExpandableCard>
 
