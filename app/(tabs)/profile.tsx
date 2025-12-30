@@ -1,7 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useSignOut, useUserInfo } from '@/hooks/useUserInfo';
-import { useAdmin } from '@/hooks/useAdmin';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
@@ -13,7 +12,6 @@ export default function ProfileScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const signOut = useSignOut();
   const { data: userInfo } = useUserInfo();
-  const { data: isUserAdmin } = useAdmin();
 
   const handleSignOut = async () => {
     try {
@@ -29,15 +27,31 @@ export default function ProfileScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Profile
+        </Text>
       </View>
 
       <View style={styles.content}>
         {userInfo ? (
-          <View style={[styles.userInfoContainer, { backgroundColor: colors.surface }]}>
-            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
+          <View
+            style={[
+              styles.userInfoContainer,
+              { backgroundColor: colors.surface },
+            ]}
+          >
+            <View
+              style={[
+                styles.avatarPlaceholder,
+                { backgroundColor: colors.primary },
+              ]}
+            >
               <Text style={styles.avatarText}>
-                {(userInfo.first_name?.[0] || userInfo.email?.[0] || '?').toUpperCase()}
+                {(
+                  userInfo.first_name?.[0] ||
+                  userInfo.email?.[0] ||
+                  '?'
+                ).toUpperCase()}
               </Text>
             </View>
             <Text style={[styles.userName, { color: colors.text }]}>
@@ -57,7 +71,9 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading profile...</Text>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Loading profile...
+            </Text>
           </View>
         )}
 
@@ -74,42 +90,6 @@ export default function ProfileScreen() {
             Edit Profile
           </Text>
         </TouchableOpacity>
-
-        {isUserAdmin && (
-          <>
-            <TouchableOpacity
-              style={[
-                styles.adminButton,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-              onPress={() => {
-                // TODO: Implement create customer functionality
-              }}
-              accessibilityLabel="Create Customer"
-              accessibilityRole="button"
-            >
-              <Text style={[styles.adminButtonText, { color: colors.text }]}>
-                Create Customer
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.adminButton,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-              onPress={() => {
-                // TODO: Implement create employee functionality
-              }}
-              accessibilityLabel="Create Employee"
-              accessibilityRole="button"
-            >
-              <Text style={[styles.adminButtonText, { color: colors.text }]}>
-                Create Employee
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
 
         <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: colors.error }]}
@@ -192,20 +172,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   editProfileButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  adminButton: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  adminButtonText: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
