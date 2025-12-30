@@ -127,7 +127,7 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
   if (!user) throw new Error('Not authenticated');
 
   if (params.email && params.email !== user.email) {
-    const { data: updatedUserResponse, error: authError } = await supabase.auth.updateUser({
+    const { error: authError } = await supabase.auth.updateUser({
       email: params.email,
     });
     if (authError) throw authError;
@@ -472,4 +472,269 @@ export async function getOrderDetails(
   }
 
   return data || [];
+}
+
+// ============================================================================
+// Admin Dashboard Functions
+// ============================================================================
+
+/**
+ * Check if the current user is an admin
+ * @throws Error if unable to determine admin status due to network or backend issues
+ */
+export async function isAdmin(): Promise<boolean> {
+  const { data, error } = await supabase.rpc('fn_is_admin');
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error checking admin status:', error);
+    }
+    // Throw error instead of silently returning false
+    // This allows callers to distinguish between "not an admin" and "unable to check"
+    throw new Error(`Unable to verify admin status: ${error.message}`);
+  }
+
+  return data === true;
+}
+
+export type AdminMonthKPIs = {
+  orders_count: number;
+  total_revenue: number;
+};
+
+/**
+ * Get monthly KPIs (orders count + total revenue)
+ */
+export async function getAdminMonthKPIs(
+  monthStart: Date,
+  monthEnd: Date
+): Promise<AdminMonthKPIs> {
+  const { data, error } = await supabase.rpc('fn_admin_dashboard_month_kpis', {
+    p_month_start: monthStart.toISOString(),
+    p_month_end: monthEnd.toISOString(),
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching admin month KPIs:', error);
+    }
+    throw error;
+  }
+
+  // RPC returns an array with one row
+  const result = Array.isArray(data) ? data[0] : data;
+  return {
+    orders_count: result?.orders_count ?? 0,
+    total_revenue: parseFloat(result?.total_revenue ?? '0'),
+  };
+}
+
+export type AdminTopItem = {
+  item_id: string;
+  item_name: string;
+  unit: string;
+  quantity: number;
+  revenue: number;
+};
+
+/**
+ * Get top selling items for the given period
+ */
+export async function getAdminTopItems(
+  monthStart: Date,
+  monthEnd: Date,
+  limit: number = 5
+): Promise<AdminTopItem[]> {
+  const { data, error } = await supabase.rpc('fn_admin_dashboard_top_items', {
+    p_month_start: monthStart.toISOString(),
+    p_month_end: monthEnd.toISOString(),
+    p_limit: limit,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching admin top items:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((item: unknown) => {
+    if (!item || typeof item !== 'object') {
+      return {
+        item_id: '',
+        item_name: '',
+        unit: '',
+        quantity: 0,
+        revenue: 0,
+      };
+    }
+
+    const record = item as Record<string, unknown>;
+
+    return {
+      item_id: String(record.item_id ?? ''),
+      item_name: String(record.item_name ?? ''),
+      unit: String(record.unit ?? ''),
+      quantity: parseFloat(String(record.quantity ?? '0')),
+      revenue: parseFloat(String(record.revenue ?? '0')),
+    };
+  });
+}
+
+export type AdminOrder = {
+  order_id: string;
+  status: OrderStatus;
+  created_at: string;
+  delivery_at: string | null;
+  restaurant_id: string;
+  restaurant_name: string;
+  created_by: string;
+  buyer_first_name: string | null;
+  buyer_last_name: string | null;
+  total_amount: number;
+  items_count: number;
+};
+
+/**
+ * Get paginated list of all orders for admin
+ */
+export async function getAdminOrders(
+  from: Date,
+  to: Date,
+  limit: number = 50,
+  offset: number = 0
+): Promise<AdminOrder[]> {
+  const { data, error } = await supabase.rpc('fn_admin_list_orders', {
+    p_from: from.toISOString(),
+    p_to: to.toISOString(),
+    p_limit: limit,
+    p_offset: offset,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching admin orders:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((order: Record<string, unknown>) => ({
+    order_id: order.order_id as string,
+    status: order.status as OrderStatus,
+    created_at: order.created_at as string,
+    delivery_at: order.delivery_at as string | null,
+    restaurant_id: order.restaurant_id as string,
+    restaurant_name: order.restaurant_name as string,
+    created_by: order.created_by as string,
+    buyer_first_name: order.buyer_first_name as string | null,
+    buyer_last_name: order.buyer_last_name as string | null,
+    total_amount: parseFloat(String(order.total_amount ?? '0')),
+    items_count: parseInt(String(order.items_count ?? '0'), 10),
+  }));
+}
+
+export type AdminChartOrdersByDay = {
+  day: string;
+  orders_count: number;
+};
+
+/**
+ * Get orders count by day for charts
+ */
+export async function getAdminChartOrdersByDay(
+  from: Date,
+  to: Date
+): Promise<AdminChartOrdersByDay[]> {
+  const { data, error } = await supabase.rpc('fn_admin_chart_orders_by_day', {
+    p_from: from.toISOString(),
+    p_to: to.toISOString(),
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching orders by day chart:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    day: row.day as string,
+    orders_count: parseInt(String(row.orders_count ?? '0'), 10),
+  }));
+}
+
+export type AdminChartRevenueByDay = {
+  day: string;
+  revenue: number;
+};
+
+/**
+ * Get revenue by day for charts
+ */
+export async function getAdminChartRevenueByDay(
+  from: Date,
+  to: Date
+): Promise<AdminChartRevenueByDay[]> {
+  const { data, error } = await supabase.rpc('fn_admin_chart_revenue_by_day', {
+    p_from: from.toISOString(),
+    p_to: to.toISOString(),
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching revenue by day chart:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    day: row.day as string,
+    revenue: parseFloat(String(row.revenue ?? '0')),
+  }));
+}
+
+export type AdminChartRevenueByRestaurant = {
+  restaurant_id: string;
+  restaurant_name: string;
+  orders_count: number;
+  revenue: number;
+};
+
+/**
+ * Get revenue by restaurant for charts
+ */
+export async function getAdminChartRevenueByRestaurant(
+  from: Date,
+  to: Date,
+  limit: number = 10
+): Promise<AdminChartRevenueByRestaurant[]> {
+  const { data, error } = await supabase.rpc(
+    'fn_admin_chart_revenue_by_restaurant',
+    {
+      p_from: from.toISOString(),
+      p_to: to.toISOString(),
+      p_limit: limit,
+    }
+  );
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching revenue by restaurant chart:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    restaurant_id: row.restaurant_id as string,
+    restaurant_name: row.restaurant_name as string,
+    orders_count: parseInt(String(row.orders_count ?? '0'), 10),
+    revenue: parseFloat(String(row.revenue ?? '0')),
+  }));
 }
