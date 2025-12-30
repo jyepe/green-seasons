@@ -29,15 +29,31 @@ export default function ProfileScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Profile
+        </Text>
       </View>
 
       <View style={styles.content}>
         {userInfo ? (
-          <View style={[styles.userInfoContainer, { backgroundColor: colors.surface }]}>
-            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
+          <View
+            style={[
+              styles.userInfoContainer,
+              { backgroundColor: colors.surface },
+            ]}
+          >
+            <View
+              style={[
+                styles.avatarPlaceholder,
+                { backgroundColor: colors.primary },
+              ]}
+            >
               <Text style={styles.avatarText}>
-                {(userInfo.first_name?.[0] || userInfo.email?.[0] || '?').toUpperCase()}
+                {(
+                  userInfo.first_name?.[0] ||
+                  userInfo.email?.[0] ||
+                  '?'
+                ).toUpperCase()}
               </Text>
             </View>
             <Text style={[styles.userName, { color: colors.text }]}>
@@ -57,7 +73,9 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading profile...</Text>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Loading profile...
+            </Text>
           </View>
         )}
 
@@ -82,14 +100,12 @@ export default function ProfileScreen() {
                 styles.adminButton,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
-              onPress={() => {
-                // TODO: Implement create customer functionality
-              }}
-              accessibilityLabel="Create Customer"
+              onPress={() => router.push('/onboarding/restaurant')}
+              accessibilityLabel="Create Restaurant"
               accessibilityRole="button"
             >
               <Text style={[styles.adminButtonText, { color: colors.text }]}>
-                Create Customer
+                Create Restaurant
               </Text>
             </TouchableOpacity>
 

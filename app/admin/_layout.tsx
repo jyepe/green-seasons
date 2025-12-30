@@ -44,7 +44,10 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          href: null, // Hide this tab for admin
+          title: 'Products',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="leaf.fill" color={color} />
+          ),
         }}
       />
       <Tabs.Screen

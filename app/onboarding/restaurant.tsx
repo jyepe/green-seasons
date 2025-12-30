@@ -25,6 +25,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { createRestaurant, type CreateRestaurantParams } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
+import { useAdmin } from '@/hooks/useAdmin';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -43,6 +44,7 @@ export default function RestaurantOnboardingScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const invalidateUserInfo = useInvalidateUserInfo();
+  const { data: isUserAdmin } = useAdmin();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -162,15 +164,26 @@ export default function RestaurantOnboardingScreen() {
         [
           {
             text: 'Continue',
-            onPress: () => router.replace('/(tabs)'),
+            onPress: () => {
+              if (isUserAdmin) {
+                router.replace('/admin/dashboard');
+              } else {
+                router.replace('/(tabs)');
+              }
+            },
           },
         ]
       );
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to create restaurant. Please try again.';
+      let errorMessage = 'Failed to create restaurant. Please try again.';
+
+      // Check if error has a message property (Supabase error format)
+      if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
       Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
@@ -460,6 +473,21 @@ export default function RestaurantOnboardingScreen() {
                 )}
               </TouchableOpacity>
             </Animated.View>
+
+            {isUserAdmin && (
+              <TouchableOpacity
+                style={[
+                  styles.cancelButton,
+                  {
+                    backgroundColor: colors.error,
+                  },
+                ]}
+                onPress={() => router.back()}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            )}
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -547,6 +575,18 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   buttonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: 'white',
+  },
+  cancelButton: {
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  cancelButtonText: {
     fontSize: 18,
     fontWeight: '700',
     color: 'white',
