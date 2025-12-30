@@ -4,6 +4,7 @@ import { useCart, useClearCart, useAddToCart } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
+import { useAdmin } from '@/hooks/useAdmin';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
@@ -29,6 +30,7 @@ export default function CartScreen() {
   const { data: cartItems, isLoading, error } = useCart();
   const { data: items } = useItems();
   const { data: userInfo } = useUserInfo();
+  const { data: isUserAdmin } = useAdmin();
   const { data: restaurant } = useRestaurant(userInfo?.owned_restaurant_id);
   const clearCartMutation = useClearCart();
   const addToCartMutation = useAddToCart();
@@ -169,7 +171,7 @@ export default function CartScreen() {
         style={[styles.container, { backgroundColor: colors.background }]}
       >
         <CartHeader
-          restaurantName={restaurant?.name}
+          restaurantName={isUserAdmin ? undefined : restaurant?.name}
           itemCount={cartItems?.length || 0}
           onClearCart={handleClearCart}
           isClearing={isClearing || clearCartMutation.isPending}
