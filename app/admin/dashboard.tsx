@@ -131,6 +131,9 @@ export default function AdminDashboardScreen() {
     [ordersQuery.data]
   );
 
+  // Limit to 5 most recent orders for display
+  const recentOrders = useMemo(() => allOrders.slice(0, 5), [allOrders]);
+
   // Orders by Day Chart Query
   const ordersByDayQuery = useQuery({
     queryKey: ['admin-chart-orders-by-day', dateRange.start.toISOString()],
@@ -182,8 +185,6 @@ export default function AdminDashboardScreen() {
       ordersQuery.fetchNextPage();
     }
   };
-
-  const hasMoreOrders = !!ordersQuery.hasNextPage;
 
   // Logout handler
   const handleLogout = async () => {
@@ -330,9 +331,9 @@ export default function AdminDashboardScreen() {
         {/* All Orders */}
         <ExpandableCard title="Recent Orders" defaultExpanded>
           <OrdersCard
-            orders={allOrders}
+            orders={recentOrders}
             isLoading={ordersQuery.isLoading}
-            hasMore={hasMoreOrders}
+            hasMore={ordersQuery.hasNextPage}
             onLoadMore={loadMoreOrders}
             onViewAll={() => router.push('/admin/orders')}
           />
