@@ -79,10 +79,18 @@ export function useSignOut() {
       queryClient.removeQueries({
         queryKey: USER_INFO_QUERY_KEY,
       });
+      // Clear admin status cache
+      queryClient.removeQueries({
+        queryKey: ['admin-status'],
+      });
     } catch (error) {
       // Even if logout fails, clear the cache
       queryClient.removeQueries({
         queryKey: USER_INFO_QUERY_KEY,
+      });
+      // Clear admin status cache
+      queryClient.removeQueries({
+        queryKey: ['admin-status'],
       });
       throw error;
     }

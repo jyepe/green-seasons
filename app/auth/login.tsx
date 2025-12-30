@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
+import { useSetAdminStatus } from '@/hooks/useAdmin';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +34,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const setAdminStatus = useSetAdminStatus();
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
@@ -56,9 +58,13 @@ export default function LoginScreen() {
         password,
       });
 
-      // Check if user is an admin
+      // Check if user is an admin and cache the result
+      let userIsAdmin = false;
       try {
-        const userIsAdmin = await isAdmin();
+        userIsAdmin = await isAdmin();
+        // Cache the admin status
+        setAdminStatus(userIsAdmin);
+        
         if (userIsAdmin) {
           // Admin user - go to admin dashboard
           router.replace('/admin/dashboard');
@@ -70,6 +76,8 @@ export default function LoginScreen() {
           // eslint-disable-next-line no-console
           console.error('Failed to check admin status:', adminCheckError);
         }
+        // Cache as non-admin if check fails
+        setAdminStatus(false);
         // If admin check fails, treat user as non-admin and continue
         // This prevents blocking legitimate users due to transient issues
       }
