@@ -178,4 +178,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
   },
 });
-
