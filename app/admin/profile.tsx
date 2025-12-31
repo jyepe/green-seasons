@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useSignOut, useUserInfo } from '@/hooks/useUserInfo';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
@@ -12,6 +13,7 @@ export default function ProfileScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const signOut = useSignOut();
   const { data: userInfo } = useUserInfo();
+  const { data: isUserAdmin } = useAdmin();
 
   const handleSignOut = async () => {
     try {
@@ -90,6 +92,39 @@ export default function ProfileScreen() {
             Edit Profile
           </Text>
         </TouchableOpacity>
+
+        {isUserAdmin && (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.adminButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              onPress={() => router.push('/onboarding/restaurant')}
+              accessibilityLabel="Create Restaurant"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.adminButtonText, { color: colors.text }]}>
+                Create Restaurant
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.adminButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              disabled={true}
+              accessibilityState={{ disabled: true }}
+              accessibilityLabel="Create Employee (coming soon)"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.adminButtonText, { color: colors.text }]}>
+                Create Employee (coming soon)
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: colors.error }]}
@@ -172,6 +207,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   editProfileButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  adminButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  adminButtonText: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',

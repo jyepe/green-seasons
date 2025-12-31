@@ -112,27 +112,27 @@ export default function AdminDashboardScreen() {
   // Orders Query
   const ordersQuery = useInfiniteQuery({
     queryKey: ['admin-orders', dateRange.start.toISOString()],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = null }) => {
       return getAdminOrders(
         dateRange.start,
         dateRange.end,
         ORDERS_PAGE_SIZE,
-        pageParam as number
+        pageParam as { created_at: string; id: string } | null
       );
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < ORDERS_PAGE_SIZE) {
-        return undefined;
-      }
-      return allPages.length * ORDERS_PAGE_SIZE;
+    initialPageParam: null as { created_at: string; id: string } | null,
+    getNextPageParam: lastPage => {
+      return lastPage.nextCursor;
     },
   });
 
   const allOrders = useMemo(
-    () => ordersQuery.data?.pages.flat() ?? [],
+    () => ordersQuery.data?.pages.flatMap(page => page.orders) ?? [],
     [ordersQuery.data]
   );
+
+  // Limit to 5 most recent orders for display
+  const recentOrders = useMemo(() => allOrders.slice(0, 5), [allOrders]);
 
   // Orders by Day Chart Query
   const ordersByDayQuery = useQuery({
@@ -185,8 +185,6 @@ export default function AdminDashboardScreen() {
       ordersQuery.fetchNextPage();
     }
   };
-
-  const hasMoreOrders = !!ordersQuery.hasNextPage;
 
   // Logout handler
   const handleLogout = async () => {
@@ -333,10 +331,11 @@ export default function AdminDashboardScreen() {
         {/* All Orders */}
         <ExpandableCard title="Recent Orders" defaultExpanded>
           <OrdersCard
-            orders={allOrders}
+            orders={recentOrders}
             isLoading={ordersQuery.isLoading}
-            hasMore={hasMoreOrders}
+            hasMore={ordersQuery.hasNextPage}
             onLoadMore={loadMoreOrders}
+            onViewAll={() => router.push('/admin/orders')}
           />
         </ExpandableCard>
 

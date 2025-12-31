@@ -3,10 +3,11 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useOrders } from '@/hooks/useOrders';
+import { useAdmin } from '@/hooks/useAdmin';
 import { OrderListItem } from '@/components/OrderListItem';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -25,6 +26,20 @@ export default function HomeScreen() {
   const { data: orders = [], isLoading: ordersLoading } = useOrders(
     userInfo?.id
   );
+  const { data: isUserAdmin, isLoading: isAdminLoading } = useAdmin();
+
+  // Check if user is admin and redirect to admin dashboard
+  useEffect(() => {
+    // Only redirect if we have a definitive answer (not loading) and user is admin
+    if (!isAdminLoading && isUserAdmin === true) {
+      router.replace('/admin/dashboard');
+    }
+  }, [isUserAdmin, isAdminLoading, router]);
+
+  // Don't render the home screen if user is admin (will redirect)
+  if (!isAdminLoading && isUserAdmin === true) {
+    return null;
+  }
 
   // Calculate stats from orders
   const totalOrders = orders.length;

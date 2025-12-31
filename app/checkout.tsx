@@ -23,7 +23,14 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useCreateOrder } from '@/hooks/useOrders';
+import {
+  getAllRestaurants,
+  getUserInfoById,
+  type Restaurant,
+} from '@/lib/supabase';
+import { useQuery } from '@tanstack/react-query';
 
 type PaymentMethod = 'net30' | 'credit' | 'cash';
 
@@ -47,16 +54,28 @@ export default function CheckoutScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
+  const { data: isUserAdmin } = useAdmin();
   const restaurantId = userInfo?.owned_restaurant_id;
   const { data: restaurant, isLoading: isRestaurantLoading } =
     useRestaurant(restaurantId);
   const createOrderMutation = useCreateOrder();
 
+  // Get all restaurants for admin dropdown
+  const { data: allRestaurants = [] } = useQuery({
+    queryKey: ['all-restaurants'],
+    queryFn: getAllRestaurants,
+    enabled: isUserAdmin === true,
+  });
+
   // Restaurant Information
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
+    string | null
+  >(restaurantId || null);
   const [restaurantName, setRestaurantName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   // Delivery Information
   const [deliveryAddress, setDeliveryAddress] = useState('');
@@ -86,26 +105,108 @@ export default function CheckoutScreen() {
     setPhoneNumber(userInfo.phone ?? '');
   }, [userInfo]);
 
+  // Load restaurant data when selected restaurant changes
+  const { data: selectedRestaurant } = useRestaurant(
+    selectedRestaurantId || undefined
+  );
+
+  // Get owner info when admin selects a restaurant
+  const { data: ownerInfo } = useQuery({
+    queryKey: ['owner-info', selectedRestaurant?.owner_id],
+    queryFn: () =>
+      selectedRestaurant?.owner_id
+        ? getUserInfoById(selectedRestaurant.owner_id)
+        : null,
+    enabled:
+      isUserAdmin === true &&
+      !!selectedRestaurant?.owner_id &&
+      !!selectedRestaurantId,
+  });
+
   useEffect(() => {
-    if (!restaurant) {
+    if (!restaurant && !selectedRestaurant) {
       setRestaurantName('');
       setDeliveryAddress('');
       return;
     }
 
-    setRestaurantName(restaurant.name ?? '');
+    const activeRestaurant = selectedRestaurant || restaurant;
+    if (!activeRestaurant) return;
+
+    setRestaurantName(activeRestaurant.name ?? '');
 
     const formattedAddress = [
-      restaurant.address_line1,
-      restaurant.address_line2,
-      [restaurant.city, restaurant.postal_code].filter(Boolean).join(', '),
-      restaurant.country,
+      activeRestaurant.address_line1,
+      activeRestaurant.address_line2,
+      [activeRestaurant.city, activeRestaurant.postal_code]
+        .filter(Boolean)
+        .join(', '),
+      activeRestaurant.country,
     ]
       .filter(part => part && part.trim().length > 0)
       .join('\n');
 
     setDeliveryAddress(formattedAddress || '');
-  }, [restaurant]);
+  }, [restaurant, selectedRestaurant]);
+
+  // Auto-populate contact info when admin selects restaurant
+  useEffect(() => {
+    if (isUserAdmin && ownerInfo) {
+      // Admin has selected a restaurant - use owner info
+      const fullName = [ownerInfo.first_name, ownerInfo.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      setContactPerson(fullName || '');
+      // Explicitly set email, clearing it if owner has no email
+      setEmail(ownerInfo.email ?? '');
+      setPhoneNumber(ownerInfo.phone ?? '');
+    } else if (isUserAdmin && !ownerInfo && userInfo) {
+      // Admin without selected restaurant - use admin's own info
+      const fullName = [userInfo.first_name, userInfo.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      setContactPerson(fullName || userInfo.email || '');
+      setEmail(userInfo.email ?? '');
+      setPhoneNumber(userInfo.phone ?? '');
+    } else if (!isUserAdmin) {
+      // Reset to current user info if not admin
+      if (userInfo) {
+        const fullName = [userInfo.first_name, userInfo.last_name]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+        setContactPerson(fullName || userInfo.email || '');
+        setEmail(userInfo.email ?? '');
+        setPhoneNumber(userInfo.phone ?? '');
+      } else {
+        // Clear fields if not admin and no user info
+        setContactPerson('');
+        setEmail('');
+        setPhoneNumber('');
+      }
+    }
+  }, [isUserAdmin, ownerInfo, userInfo]);
+
+  // Handle restaurant selection for admin
+  const handleRestaurantSelect = (rest: Restaurant) => {
+    setSelectedRestaurantId(rest.id);
+    setRestaurantName(rest.name);
+    setDropdownVisible(false);
+
+    // Auto-populate delivery address
+    const formattedAddress = [
+      rest.address_line1,
+      rest.address_line2,
+      [rest.city, rest.postal_code].filter(Boolean).join(', '),
+      rest.country,
+    ]
+      .filter(part => part && part.trim().length > 0)
+      .join('\n');
+
+    setDeliveryAddress(formattedAddress || '');
+  };
 
   const handleAndroidDateChange = (
     event: DateTimePickerEvent,
@@ -171,10 +272,14 @@ export default function CheckoutScreen() {
     isUserInfoLoading || (!!restaurantId && isRestaurantLoading);
 
   const handlePlaceOrder = async () => {
-    if (!restaurantId) {
+    const activeRestaurantId = isUserAdmin
+      ? selectedRestaurantId
+      : restaurantId;
+
+    if (!activeRestaurantId) {
       Alert.alert(
         'Error',
-        'Restaurant information is missing. Please ensure you have a restaurant linked to your account.'
+        'Restaurant information is missing. Please select a restaurant.'
       );
       return;
     }
@@ -189,7 +294,7 @@ export default function CheckoutScreen() {
 
     try {
       const order = await createOrderMutation.mutateAsync({
-        restaurantId,
+        restaurantId: activeRestaurantId,
         deliveryAt: deliveryDate,
       });
       Alert.alert(
@@ -243,6 +348,7 @@ export default function CheckoutScreen() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={() => setDropdownVisible(false)}
           >
             {!restaurant && (
               <View
@@ -281,20 +387,98 @@ export default function CheckoutScreen() {
                 <Text style={[styles.label, { color: colors.text }]}>
                   Restaurant Name
                 </Text>
-                <View
-                  style={[
-                    styles.input,
-                    styles.readOnlyInput,
-                    {
-                      backgroundColor: colors.inputBackground,
-                      justifyContent: 'center',
-                    },
-                  ]}
-                >
-                  <Text style={{ color: colors.text, fontSize: 16 }}>
-                    {restaurantName}
-                  </Text>
-                </View>
+                {isUserAdmin ? (
+                  <View>
+                    <TouchableOpacity
+                      style={[
+                        styles.input,
+                        {
+                          backgroundColor: colors.inputBackground,
+                          borderColor: colors.border,
+                          borderWidth: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        },
+                      ]}
+                      onPress={() => setDropdownVisible(!dropdownVisible)}
+                    >
+                      <Text
+                        style={{
+                          color: restaurantName
+                            ? colors.text
+                            : colors.textSecondary,
+                          fontSize: 16,
+                          flex: 1,
+                        }}
+                      >
+                        {restaurantName || 'Select a restaurant'}
+                      </Text>
+                      <Ionicons
+                        name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                    {dropdownVisible && (
+                      <View
+                        style={[
+                          styles.dropdown,
+                          {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                          },
+                        ]}
+                      >
+                        <ScrollView
+                          style={styles.dropdownScroll}
+                          nestedScrollEnabled
+                        >
+                          {allRestaurants.map(rest => (
+                            <TouchableOpacity
+                              key={rest.id}
+                              style={[
+                                styles.dropdownItem,
+                                selectedRestaurantId === rest.id && {
+                                  backgroundColor: colors.primary + '20',
+                                },
+                              ]}
+                              onPress={() => handleRestaurantSelect(rest)}
+                            >
+                              <Text
+                                style={[
+                                  styles.dropdownItemText,
+                                  { color: colors.text },
+                                  selectedRestaurantId === rest.id && {
+                                    color: colors.primary,
+                                    fontWeight: '600',
+                                  },
+                                ]}
+                              >
+                                {rest.name}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </View>
+                ) : (
+                  <View
+                    style={[
+                      styles.input,
+                      styles.readOnlyInput,
+                      {
+                        backgroundColor: colors.inputBackground,
+                        justifyContent: 'center',
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: colors.text, fontSize: 16 }}>
+                      {restaurantName}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               <View style={styles.fullColumn}>
@@ -341,20 +525,41 @@ export default function CheckoutScreen() {
                 <Text style={[styles.label, { color: colors.text }]}>
                   Email
                 </Text>
-                <View
-                  style={[
-                    styles.input,
-                    styles.readOnlyInput,
-                    {
-                      backgroundColor: colors.inputBackground,
-                      justifyContent: 'center',
-                    },
-                  ]}
-                >
-                  <Text style={{ color: colors.text, fontSize: 16 }}>
-                    {email}
-                  </Text>
-                </View>
+                {isUserAdmin ? (
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: colors.inputBackground,
+                        color: colors.text,
+                        borderColor: colors.border,
+                        borderWidth: 1,
+                      },
+                    ]}
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Enter email address"
+                    placeholderTextColor={colors.textSecondary}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.input,
+                      styles.readOnlyInput,
+                      {
+                        backgroundColor: colors.inputBackground,
+                        justifyContent: 'center',
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: colors.text, fontSize: 16 }}>
+                      {email}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
 
@@ -741,5 +946,31 @@ const styles = StyleSheet.create({
   },
   iosPicker: {
     width: '100%',
+  },
+  dropdown: {
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  dropdownItemText: {
+    fontSize: 16,
   },
 });

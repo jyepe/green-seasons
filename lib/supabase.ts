@@ -107,6 +107,37 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
   };
 }
 
+/**
+ * Get user info by ID (admin only)
+ * Note: This requires an RPC function or view that includes email
+ * For now, we'll get what we can from profiles
+ */
+export async function getUserInfoById(
+  userId: string
+): Promise<UserInfo | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, first_name, last_name, phone, role, owned_restaurant_id')
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching user info:', error);
+    }
+    return null;
+  }
+
+  // Email is not in profiles table, we'll need to get it from auth
+  // For now, return what we have - email will need to be handled separately
+  // or via an RPC function that joins with auth.users
+  return {
+    ...data,
+    email: '', // Email will need to be fetched separately or via RPC
+  };
+}
+
 export async function signOutUser() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
@@ -228,6 +259,26 @@ export async function getRestaurantById(
   return data;
 }
 
+/**
+ * Get all restaurants (admin only)
+ */
+export async function getAllRestaurants(): Promise<Restaurant[]> {
+  const { data, error } = await supabase
+    .from('restaurants')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching all restaurants:', error);
+    }
+    throw error;
+  }
+
+  return data || [];
+}
+
 export type OrderStatus = 'pending' | 'in_transit' | 'delivered';
 
 export type Order = {
@@ -245,7 +296,6 @@ export async function getOrdersForUser(userId: string): Promise<Order[]> {
   const { data, error } = await supabase
     .from('orders')
     .select('*')
-    .eq('created_by', userId)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -598,20 +648,30 @@ export type AdminOrder = {
   items_count: number;
 };
 
+export type AdminOrdersResult = {
+  orders: AdminOrder[];
+  nextCursor: { created_at: string; id: string } | null;
+};
+
 /**
- * Get paginated list of all orders for admin
+ * Get paginated list of all orders for admin using cursor-based pagination
  */
 export async function getAdminOrders(
   from: Date,
   to: Date,
   limit: number = 50,
-  offset: number = 0
-): Promise<AdminOrder[]> {
+  cursor: { created_at: string; id: string } | null = null,
+  restaurantId: string | null = null,
+  status: OrderStatus | null = null
+): Promise<AdminOrdersResult> {
   const { data, error } = await supabase.rpc('fn_admin_list_orders', {
     p_from: from.toISOString(),
     p_to: to.toISOString(),
     p_limit: limit,
-    p_offset: offset,
+    p_cursor_created_at: cursor?.created_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+    p_restaurant_id: restaurantId ?? null,
+    p_status: status ?? null,
   });
 
   if (error) {
@@ -622,7 +682,7 @@ export async function getAdminOrders(
     throw error;
   }
 
-  return (data || []).map((order: Record<string, unknown>) => ({
+  const orders = (data || []).map((order: Record<string, unknown>) => ({
     order_id: order.order_id as string,
     status: order.status as OrderStatus,
     created_at: order.created_at as string,
@@ -635,6 +695,20 @@ export async function getAdminOrders(
     total_amount: parseFloat(String(order.total_amount ?? '0')),
     items_count: parseInt(String(order.items_count ?? '0'), 10),
   }));
+
+  // Extract cursor from last order for next page
+  const nextCursor =
+    orders.length > 0 && orders.length === limit
+      ? {
+          created_at: orders[orders.length - 1].created_at,
+          id: orders[orders.length - 1].order_id,
+        }
+      : null;
+
+  return {
+    orders,
+    nextCursor,
+  };
 }
 
 export type AdminChartOrdersByDay = {

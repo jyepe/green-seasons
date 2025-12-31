@@ -18,6 +18,7 @@ type OrdersCardProps = {
   isLoading?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
+  onViewAll?: () => void;
 };
 
 const STATUS_CONFIG: Record<
@@ -34,6 +35,7 @@ export function OrdersCard({
   isLoading,
   hasMore,
   onLoadMore,
+  onViewAll,
 }: OrdersCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -160,6 +162,19 @@ export function OrdersCard({
           )}
         </TouchableOpacity>
       )}
+
+      {onViewAll && (
+        <TouchableOpacity
+          style={[styles.viewAllButton, { borderColor: colors.primary }]}
+          onPress={onViewAll}
+          accessibilityLabel="View all orders"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.viewAllText, { color: colors.primary }]}>
+            View All Orders
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -244,5 +259,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
   },
+  viewAllButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
 });
-
