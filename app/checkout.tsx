@@ -159,7 +159,7 @@ export default function CheckoutScreen() {
         .trim();
       setContactPerson(fullName || '');
       // Explicitly set email, clearing it if owner has no email
-      setEmail(ownerInfo.email || '');
+      setEmail(ownerInfo.email ?? '');
       setPhoneNumber(ownerInfo.phone ?? '');
     } else if (isUserAdmin && !ownerInfo && userInfo) {
       // Admin without selected restaurant - use admin's own info
