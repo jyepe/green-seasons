@@ -157,22 +157,18 @@ export default function CheckoutScreen() {
         .join(' ')
         .trim();
       setContactPerson(fullName || '');
-      // Email may be empty, so only set if available
-      if (ownerInfo.email) {
-        setEmail(ownerInfo.email);
-      }
+      // Explicitly set email, clearing it if owner has no email
+      setEmail(ownerInfo.email || '');
       setPhoneNumber(ownerInfo.phone ?? '');
-    } else if (!isUserAdmin) {
+    } else if (!isUserAdmin && userInfo) {
       // Reset to current user info if not admin
-      if (userInfo) {
-        const fullName = [userInfo.first_name, userInfo.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
-        setContactPerson(fullName || userInfo.email || '');
-        setEmail(userInfo.email ?? '');
-        setPhoneNumber(userInfo.phone ?? '');
-      }
+      const fullName = [userInfo.first_name, userInfo.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      setContactPerson(fullName || userInfo.email || '');
+      setEmail(userInfo.email ?? '');
+      setPhoneNumber(userInfo.phone ?? '');
     }
   }, [isUserAdmin, ownerInfo, userInfo]);
 
