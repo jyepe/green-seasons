@@ -71,12 +71,10 @@ export default function AdminOrdersScreen() {
   );
 
   const filteredOrders = useMemo(() => {
-    // Filtering is already done server-side, but we keep this for consistency
-    if (activeFilter === 'all') {
-      return allOrders;
-    }
-    return allOrders.filter(order => order.status === activeFilter);
-  }, [allOrders, activeFilter]);
+    // Filtering is handled server-side via `activeFilter` in `getAdminOrders`.
+    // We keep this alias for clarity and potential future client-side filters.
+    return allOrders;
+  }, [allOrders]);
 
   const loadMore = () => {
     if (ordersQuery.hasNextPage && !ordersQuery.isFetchingNextPage) {
