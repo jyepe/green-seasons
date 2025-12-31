@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.jyepe.greenseasons"
     },
     "web": {
       "bundler": "metro",
@@ -40,7 +41,12 @@
     },
     "extra": {
       "EXPO_PUBLIC_SUPABASE_URL": "",
-      "EXPO_PUBLIC_SUPABASE_ANON_KEY": ""
-    }
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "",
+      "router": {},
+      "eas": {
+        "projectId": "c1f84f64-7a38-4544-ab41-f2c33fa77130"
+      }
+    },
+    "owner": "jyepe"
   }
 }
