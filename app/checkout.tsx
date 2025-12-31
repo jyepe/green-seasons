@@ -160,15 +160,22 @@ export default function CheckoutScreen() {
       // Explicitly set email, clearing it if owner has no email
       setEmail(ownerInfo.email || '');
       setPhoneNumber(ownerInfo.phone ?? '');
-    } else if (!isUserAdmin && userInfo) {
+    } else if (!isUserAdmin) {
       // Reset to current user info if not admin
-      const fullName = [userInfo.first_name, userInfo.last_name]
-        .filter(Boolean)
-        .join(' ')
-        .trim();
-      setContactPerson(fullName || userInfo.email || '');
-      setEmail(userInfo.email ?? '');
-      setPhoneNumber(userInfo.phone ?? '');
+      if (userInfo) {
+        const fullName = [userInfo.first_name, userInfo.last_name]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+        setContactPerson(fullName || userInfo.email || '');
+        setEmail(userInfo.email ?? '');
+        setPhoneNumber(userInfo.phone ?? '');
+      } else {
+        // Clear fields if not admin and no user info
+        setContactPerson('');
+        setEmail('');
+        setPhoneNumber('');
+      }
     }
   }, [isUserAdmin, ownerInfo, userInfo]);
 
