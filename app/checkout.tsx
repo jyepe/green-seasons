@@ -152,16 +152,24 @@ export default function CheckoutScreen() {
   // Auto-populate contact info when admin selects restaurant
   useEffect(() => {
     if (isUserAdmin && ownerInfo) {
+      // Admin has selected a restaurant - use owner info
       const fullName = [ownerInfo.first_name, ownerInfo.last_name]
         .filter(Boolean)
         .join(' ')
         .trim();
       setContactPerson(fullName || '');
-      // Email may be empty, so only set if available
-      if (ownerInfo.email) {
-        setEmail(ownerInfo.email);
-      }
+      // Explicitly set email, clearing it if owner has no email
+      setEmail(ownerInfo.email ?? '');
       setPhoneNumber(ownerInfo.phone ?? '');
+    } else if (isUserAdmin && !ownerInfo && userInfo) {
+      // Admin without selected restaurant - use admin's own info
+      const fullName = [userInfo.first_name, userInfo.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      setContactPerson(fullName || userInfo.email || '');
+      setEmail(userInfo.email ?? '');
+      setPhoneNumber(userInfo.phone ?? '');
     } else if (!isUserAdmin) {
       // Reset to current user info if not admin
       if (userInfo) {
@@ -172,6 +180,11 @@ export default function CheckoutScreen() {
         setContactPerson(fullName || userInfo.email || '');
         setEmail(userInfo.email ?? '');
         setPhoneNumber(userInfo.phone ?? '');
+      } else {
+        // Clear fields if not admin and no user info
+        setContactPerson('');
+        setEmail('');
+        setPhoneNumber('');
       }
     }
   }, [isUserAdmin, ownerInfo, userInfo]);
