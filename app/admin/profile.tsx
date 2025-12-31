@@ -114,14 +114,13 @@ export default function ProfileScreen() {
                 styles.adminButton,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
-              onPress={() => {
-                // TODO: Implement create employee functionality
-              }}
-              accessibilityLabel="Create Employee"
+              disabled={true}
+              accessibilityState={{ disabled: true }}
+              accessibilityLabel="Create Employee (coming soon)"
               accessibilityRole="button"
             >
               <Text style={[styles.adminButtonText, { color: colors.text }]}>
-                Create Employee
+                Create Employee (coming soon)
               </Text>
             </TouchableOpacity>
           </>
