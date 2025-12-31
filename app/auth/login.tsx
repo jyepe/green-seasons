@@ -64,7 +64,6 @@ export default function LoginScreen() {
         userIsAdmin = await isAdmin();
         // Cache the admin status
         setAdminStatus(userIsAdmin);
-        
         if (userIsAdmin) {
           // Admin user - go to admin dashboard
           router.replace('/admin/dashboard');
