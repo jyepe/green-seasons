@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import {
   Alert,
   Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -186,7 +187,11 @@ export default function LoginScreen() {
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
-                <Ionicons name="leaf" size={36} color="#4CAF50" />
+                <Image
+                  source={require('@/assets/images/cl.png')}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.title}>
                 <Text style={styles.titleGreen}>Green</Text>{' '}
@@ -376,6 +381,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
+  },
+  logoImage: {
+    width: 60,
+    height: 60,
   },
   title: {
     fontSize: 32,
