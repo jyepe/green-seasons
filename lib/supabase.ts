@@ -58,7 +58,7 @@ export async function signUpUser(params: SignUpParams) {
         lastName,
         phone,
       },
-      emailRedirectTo: undefined,
+      emailRedirectTo: 'greenseasons://auth/callback',
     },
   });
 
