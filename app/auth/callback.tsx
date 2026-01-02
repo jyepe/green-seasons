@@ -14,6 +14,7 @@ export default function AuthCallback() {
     | 'recovery'
     | 'invite'
     | 'email_change'
+    | 'email'
     | 'magiclink';
   const router = useRouter();
   const [msg, setMsg] = useState('Verifying…');
