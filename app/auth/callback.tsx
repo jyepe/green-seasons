@@ -9,6 +9,12 @@ export default function AuthCallback() {
     type?: string;
   }>();
 
+  type OtpType =
+    | 'signup'
+    | 'recovery'
+    | 'invite'
+    | 'email_change'
+    | 'magiclink';
   const router = useRouter();
   const [msg, setMsg] = useState('Verifying…');
 
@@ -21,7 +27,7 @@ export default function AuthCallback() {
 
       const { error } = await supabase.auth.verifyOtp({
         token_hash: String(token_hash),
-        type: String(type) as any, // "signup"
+        type: String(type) as OtpType,
       });
 
       if (error) {
