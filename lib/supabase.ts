@@ -58,7 +58,7 @@ export async function signUpUser(params: SignUpParams) {
         lastName,
         phone,
       },
-      emailRedirectTo: 'greenseasons:///auth/callback',
+      emailRedirectTo: 'https://greenseasonsdelivery.com/auth/callback',
     },
   });
 
