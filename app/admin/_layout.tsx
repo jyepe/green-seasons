@@ -87,6 +87,13 @@ export default function AdminLayout() {
           href: null, // Hide from tab bar, accessible via navigation
         }}
       />
+      <Tabs.Screen
+        name="items"
+        options={{
+          href: null, // Hide from tab bar, accessible via navigation
+          tabBarStyle: { display: 'none' }, // Hide tab bar when on this screen
+        }}
+      />
     </Tabs>
   );
 }

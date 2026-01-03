@@ -114,13 +114,12 @@ export default function ProfileScreen() {
                 styles.adminButton,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
-              disabled={true}
-              accessibilityState={{ disabled: true }}
-              accessibilityLabel="Create Employee (coming soon)"
+              onPress={() => router.push('/admin/items')}
+              accessibilityLabel="Item Management"
               accessibilityRole="button"
             >
               <Text style={[styles.adminButtonText, { color: colors.text }]}>
-                Create Employee (coming soon)
+                Item Management
               </Text>
             </TouchableOpacity>
           </>

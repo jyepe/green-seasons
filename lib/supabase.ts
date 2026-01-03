@@ -389,6 +389,153 @@ export async function toggleFavorite(
   }
 }
 
+// ============================================================================
+// Admin Item Management Functions
+// ============================================================================
+
+export type CreateItemParams = {
+  name: string;
+  description?: string | null;
+  price: number;
+  unit: string;
+  image_url?: string | null;
+};
+
+export type UpdateItemParams = {
+  name?: string;
+  description?: string | null;
+  price?: number;
+  unit?: string;
+  image_url?: string | null;
+};
+
+/**
+ * Get all items for admin (from base items table, not view)
+ */
+export async function getAllItemsForAdmin(): Promise<Item[]> {
+  const { data, error } = await supabase
+    .from('items')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching all items for admin:', error);
+    }
+    throw error;
+  }
+
+  // Map to Item type (without is_favorite since it's not in base table)
+  return (data || []).map(item => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: item.price,
+    unit: item.unit,
+    image_url: item.image_url,
+    is_favorite: false, // Not available in base table
+  }));
+}
+
+/**
+ * Create a new item (admin only)
+ */
+export async function createItem(params: CreateItemParams): Promise<Item> {
+  const { data, error } = await supabase
+    .from('items')
+    .insert({
+      name: params.name,
+      description: params.description ?? null,
+      price: params.price,
+      unit: params.unit,
+      image_url: params.image_url ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error creating item:', error);
+    }
+    throw error;
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    unit: data.unit,
+    image_url: data.image_url,
+    is_favorite: false, // Not available in base table
+  };
+}
+
+/**
+ * Update an existing item (admin only)
+ */
+export async function updateItem(
+  itemId: string,
+  params: UpdateItemParams
+): Promise<Item> {
+  const updates: {
+    name?: string;
+    description?: string | null;
+    price?: number;
+    unit?: string;
+    image_url?: string | null;
+  } = {};
+
+  if (params.name !== undefined) updates.name = params.name;
+  if (params.description !== undefined)
+    updates.description = params.description;
+  if (params.price !== undefined) updates.price = params.price;
+  if (params.unit !== undefined) updates.unit = params.unit;
+  if (params.image_url !== undefined) updates.image_url = params.image_url;
+
+  const { data, error } = await supabase
+    .from('items')
+    .update(updates)
+    .eq('id', itemId)
+    .select()
+    .single();
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating item:', error);
+    }
+    throw error;
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    unit: data.unit,
+    image_url: data.image_url,
+    is_favorite: false, // Not available in base table
+  };
+}
+
+/**
+ * Delete an item (admin only)
+ */
+export async function deleteItem(itemId: string): Promise<void> {
+  const { error } = await supabase.from('items').delete().eq('id', itemId);
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error deleting item:', error);
+    }
+    throw error;
+  }
+}
+
 export type CartItem = {
   cart_id: string;
   cart_created_at: string;
