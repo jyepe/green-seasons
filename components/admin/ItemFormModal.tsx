@@ -141,27 +141,29 @@ export function ItemFormModal({
     }
 
     const priceNum = parseFloat(formData.price);
+    const normalizedDescription = formData.description.trim() || null;
+    const normalizedImageUrl = formData.image_url.trim() || null;
 
     if (item) {
       // Edit mode: only send changed fields
       const updateParams: UpdateItemParams = {};
       if (formData.name !== item.name) updateParams.name = formData.name;
-      if (formData.description !== (item.description || ''))
-        updateParams.description = formData.description || null;
+      if (normalizedDescription !== item.description)
+        updateParams.description = normalizedDescription;
       if (priceNum !== item.price) updateParams.price = priceNum;
       if (formData.unit !== item.unit) updateParams.unit = formData.unit;
-      if (formData.image_url !== (item.image_url || ''))
-        updateParams.image_url = formData.image_url || null;
+      if (normalizedImageUrl !== item.image_url)
+        updateParams.image_url = normalizedImageUrl;
 
       onSave(updateParams);
     } else {
       // Create mode: send all required fields
       const createParams: CreateItemParams = {
         name: formData.name.trim(),
-        description: formData.description.trim() || null,
+        description: normalizedDescription,
         price: priceNum,
         unit: formData.unit.trim(),
-        image_url: formData.image_url.trim() || null,
+        image_url: normalizedImageUrl,
       };
 
       onSave(createParams);
