@@ -251,7 +251,13 @@ export default function AdminItemsScreen() {
                 colors={colors}
                 onEdit={() => handleEditItem(item)}
                 onDelete={() => handleDeleteItem(item)}
-                isDeleting={deleteItemMutation.isPending}
+                isDeleting={
+                  deleteItemMutation.isPending &&
+                  (
+                    deleteItemMutation.variables === item.id ||
+                    (deleteItemMutation.variables as any)?.id === item.id
+                  )
+                }
               />
             ))}
           </View>
