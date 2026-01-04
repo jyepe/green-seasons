@@ -489,11 +489,16 @@ export async function updateItem(
   } = {};
 
   if (params.name !== undefined) updates.name = params.name;
-  if (params.description !== undefined)
-    updates.description = params.description;
+  if (params.description !== undefined) {
+    updates.description =
+      params.description === '' ? null : params.description;
+  }
   if (params.price !== undefined) updates.price = params.price;
   if (params.unit !== undefined) updates.unit = params.unit;
-  if (params.image_url !== undefined) updates.image_url = params.image_url;
+  if (params.image_url !== undefined) {
+    updates.image_url =
+      params.image_url === '' ? null : params.image_url;
+  }
 
   const { data, error } = await supabase
     .from('items')
