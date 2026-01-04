@@ -91,7 +91,6 @@ export default function AdminLayout() {
         name="items"
         options={{
           href: null, // Hide from tab bar, accessible via navigation
-          tabBarStyle: { display: 'none' }, // Hide tab bar when on this screen
         }}
       />
     </Tabs>
