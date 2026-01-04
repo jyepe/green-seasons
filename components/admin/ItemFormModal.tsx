@@ -89,6 +89,21 @@ export function ItemFormModal({
         const priceNum = parseFloat(value);
         if (isNaN(priceNum) || priceNum <= 0)
           return 'Price must be a positive number';
+
+        // Enforce a realistic minimum price (e.g., 0.01)
+        if (priceNum < 0.01) {
+          return 'Price must be at least 0.01';
+        }
+
+        // Enforce a maximum of 2 decimal places
+        const trimmedValue = value.trim();
+        const decimalPointIndex = trimmedValue.indexOf('.');
+        if (decimalPointIndex !== -1) {
+          const decimalPart = trimmedValue.substring(decimalPointIndex + 1);
+          if (decimalPart.length > 2) {
+            return 'Price can have at most 2 decimal places';
+          }
+        }
         return '';
 
       case 'unit':
