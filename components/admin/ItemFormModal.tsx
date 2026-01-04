@@ -170,6 +170,13 @@ export function ItemFormModal({
       if (normalizedImageUrl !== item.image_url)
         updateParams.image_url = normalizedImageUrl;
 
+      // Check if any fields have actually changed
+      if (Object.keys(updateParams).length === 0) {
+        // No changes detected, close modal without saving
+        onClose();
+        return;
+      }
+
       onSave(updateParams);
     } else {
       // Create mode: send all required fields
@@ -212,9 +219,7 @@ export function ItemFormModal({
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.formGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                Name *
-              </Text>
+              <Text style={[styles.label, { color: colors.text }]}>Name *</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -351,9 +356,7 @@ export function ItemFormModal({
               onPress={onClose}
               disabled={isLoading}
             >
-              <Text
-                style={[styles.modalButtonText, { color: colors.text }]}
-              >
+              <Text style={[styles.modalButtonText, { color: colors.text }]}>
                 Cancel
               </Text>
             </TouchableOpacity>
