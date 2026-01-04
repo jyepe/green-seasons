@@ -93,8 +93,6 @@ export function ItemFormModal({
 
       case 'unit':
         if (!value.trim()) return 'Unit is required';
-        if (value.trim().length < 1)
-          return 'Unit must be at least 1 character';
         return '';
 
       default:
