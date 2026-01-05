@@ -290,6 +290,8 @@ export type EmployeesAndRestaurants = {
   restaurants: Pick<Restaurant, 'id' | 'name'>[];
   /** Mapping of employee ID to array of restaurant names assigned to that employee */
   employeeRestaurantNames: Record<string, string[]>;
+  /** Mapping of employee ID to array of restaurant IDs assigned to that employee */
+  employeeRestaurantIds: Record<string, string[]>;
 };
 
 export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaurants> {
@@ -334,10 +336,18 @@ export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaura
     restaurantNameById[r.id] = r.name;
   }
 
-  // Build mapping from employee_id to array of restaurant names
+  // Build mappings from employee_id to array of restaurant names and IDs
   const employeeRestaurantNames: Record<string, string[]> = {};
+  const employeeRestaurantIds: Record<string, string[]> = {};
   for (const relation of relationsRes.data || []) {
     const { employee_id, restaurant_id } = relation;
+    // Build IDs mapping
+    if (!employeeRestaurantIds[employee_id]) {
+      employeeRestaurantIds[employee_id] = [];
+    }
+    employeeRestaurantIds[employee_id].push(restaurant_id);
+
+    // Build names mapping
     const restaurantName = restaurantNameById[restaurant_id];
     if (restaurantName) {
       if (!employeeRestaurantNames[employee_id]) {
@@ -351,7 +361,28 @@ export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaura
     employees: employeesRes.data || [],
     restaurants: restaurantsRes.data || [],
     employeeRestaurantNames,
+    employeeRestaurantIds,
   };
+}
+
+/**
+ * Assign a restaurant to an employee by creating a relation
+ */
+export async function assignRestaurantToEmployee(
+  employeeId: string,
+  restaurantId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('employee_restaurant_relation')
+    .insert({ employee_id: employeeId, restaurant_id: restaurantId });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error assigning restaurant to employee:', error);
+    }
+    throw error;
+  }
 }
 
 export type OrderStatus = 'pending' | 'in_transit' | 'delivered';
