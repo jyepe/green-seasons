@@ -291,12 +291,15 @@ export type EmployeesAndRestaurants = {
 };
 
 export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaurants> {
-  const [employeesRes, restaurantsRes] = await Promise.all([
+  const [employeesRes, restaurantsRes, relationsRes] = await Promise.all([
     supabase
       .from('profiles')
       .select('id, first_name, last_name')
       .eq('role', 'employee'),
     supabase.from('restaurants').select('id, name'),
+    supabase
+      .from('employee_restaurant_relation')
+      .select('employee_id, restaurant_id'),
   ]);
 
   if (employeesRes.error) {
@@ -313,6 +316,14 @@ export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaura
       console.error('Error fetching restaurants:', restaurantsRes.error);
     }
     throw restaurantsRes.error;
+  }
+
+  if (relationsRes.error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching relations:', relationsRes.error);
+    }
+    throw relationsRes.error;
   }
 
   return {
