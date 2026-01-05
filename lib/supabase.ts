@@ -1036,6 +1036,75 @@ export type AdminChartRevenueByRestaurant = {
   revenue: number;
 };
 
+// ============================================================================
+// Employee Functions
+// ============================================================================
+
+/**
+ * Check if the current user has the employee role
+ */
+export async function isEmployee(): Promise<boolean> {
+  const userInfo = await getCurrentUserInfo();
+  return userInfo?.role === 'employee';
+}
+
+export type EmployeeOrder = {
+  id: string;
+  created_at: string;
+  status: string;
+  restaurant_id: string;
+  total: number;
+};
+
+export type EmployeeOrdersResult = {
+  orders: EmployeeOrder[];
+  nextCursor: { created_at: string; id: string } | null;
+};
+
+/**
+ * Get paginated list of orders for employees using cursor-based pagination
+ */
+export async function getEmployeeOrders(
+  limit: number = 25,
+  cursor: { created_at: string; id: string } | null = null
+): Promise<EmployeeOrdersResult> {
+  const { data, error } = await supabase.rpc('fn_employee_list_orders', {
+    p_limit: limit,
+    p_cursor_created_at: cursor?.created_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching employee orders:', error);
+    }
+    throw error;
+  }
+
+  const orders = (data || []).map((order: Record<string, unknown>) => ({
+    id: order.id as string,
+    created_at: order.created_at as string,
+    status: order.status as string,
+    restaurant_id: order.restaurant_id as string,
+    total: parseFloat(String(order.total ?? '0')),
+  }));
+
+  // Extract cursor from last order for next page
+  const nextCursor =
+    orders.length > 0 && orders.length === limit
+      ? {
+          created_at: orders[orders.length - 1].created_at,
+          id: orders[orders.length - 1].id,
+        }
+      : null;
+
+  return {
+    orders,
+    nextCursor,
+  };
+}
+
 /**
  * Get revenue by restaurant for charts
  */
