@@ -59,6 +59,7 @@ export default function EmployeeManagementScreen() {
 
   const employees = data?.employees ?? [];
   const restaurants = data?.restaurants ?? [];
+  const employeeRestaurantNames = data?.employeeRestaurantNames ?? {};
   const hasLoadedData = employees.length > 0 || restaurants.length > 0;
   const showErrorState = isError && !hasLoadedData;
 
@@ -335,6 +336,39 @@ export default function EmployeeManagementScreen() {
                       {selectedEmployee.email}
                     </Text>
                   ) : null}
+                  <Text
+                    style={[
+                      styles.selectionLabel,
+                      { color: colors.textSecondary, marginTop: 12 },
+                    ]}
+                  >
+                    Assigned restaurants
+                  </Text>
+                  {employeeRestaurantNames[selectedEmployee.id]?.length > 0 ? (
+                    employeeRestaurantNames[selectedEmployee.id].map(
+                      (restaurantName, index) => (
+                        <Text
+                          key={index}
+                          style={[
+                            styles.selectionSubValue,
+                            { color: colors.text, marginTop: index === 0 ? 6 : 2 },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          • {restaurantName}
+                        </Text>
+                      )
+                    )
+                  ) : (
+                    <Text
+                      style={[
+                        styles.selectionSubValue,
+                        { color: colors.textSecondary, marginTop: 6 },
+                      ]}
+                    >
+                      No restaurants assigned
+                    </Text>
+                  )}
                 </View>
               )}
             </View>

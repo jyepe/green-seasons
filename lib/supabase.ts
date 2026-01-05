@@ -288,6 +288,8 @@ export type EmployeeProfile = {
 export type EmployeesAndRestaurants = {
   employees: EmployeeProfile[];
   restaurants: Pick<Restaurant, 'id' | 'name'>[];
+  /** Mapping of employee ID to array of restaurant names assigned to that employee */
+  employeeRestaurantNames: Record<string, string[]>;
 };
 
 export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaurants> {
@@ -326,9 +328,29 @@ export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaura
     throw relationsRes.error;
   }
 
+  // Build a map from restaurant_id to restaurant name for efficient lookup
+  const restaurantNameById: Record<string, string> = {};
+  for (const r of restaurantsRes.data || []) {
+    restaurantNameById[r.id] = r.name;
+  }
+
+  // Build mapping from employee_id to array of restaurant names
+  const employeeRestaurantNames: Record<string, string[]> = {};
+  for (const relation of relationsRes.data || []) {
+    const { employee_id, restaurant_id } = relation;
+    const restaurantName = restaurantNameById[restaurant_id];
+    if (restaurantName) {
+      if (!employeeRestaurantNames[employee_id]) {
+        employeeRestaurantNames[employee_id] = [];
+      }
+      employeeRestaurantNames[employee_id].push(restaurantName);
+    }
+  }
+
   return {
     employees: employeesRes.data || [],
     restaurants: restaurantsRes.data || [],
+    employeeRestaurantNames,
   };
 }
 
