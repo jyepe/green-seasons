@@ -1,0 +1,643 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import {
+  getEmployeesAndRestaurants,
+  type EmployeeProfile,
+} from '@/lib/supabase';
+
+function formatEmployeeName(employee: EmployeeProfile) {
+  const parts = [employee.first_name, employee.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+
+  if (parts.length > 0) return parts;
+  if (employee.email) return employee.email;
+  return 'Employee';
+}
+
+export default function EmployeeManagementScreen() {
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
+  const [employeeDropdownVisible, setEmployeeDropdownVisible] = useState(false);
+  const [restaurantDropdownVisible, setRestaurantDropdownVisible] =
+    useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
+    null
+  );
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
+    string | null
+  >(null);
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['employees-and-restaurants'],
+    queryFn: getEmployeesAndRestaurants,
+    staleTime: 30 * 1000,
+  });
+
+  const employees = data?.employees ?? [];
+  const restaurants = data?.restaurants ?? [];
+  const hasLoadedData = employees.length > 0 || restaurants.length > 0;
+  const showErrorState = isError && !hasLoadedData;
+
+  const selectedEmployee = useMemo(
+    () => employees.find(employee => employee.id === selectedEmployeeId) || null,
+    [employees, selectedEmployeeId]
+  );
+
+  const selectedRestaurant = useMemo(
+    () => restaurants.find(rest => rest.id === selectedRestaurantId) || null,
+    [restaurants, selectedRestaurantId]
+  );
+
+  useEffect(() => {
+    if (selectedEmployeeId && !employees.find(e => e.id === selectedEmployeeId)) {
+      setSelectedEmployeeId(null);
+    }
+  }, [employees, selectedEmployeeId]);
+
+  useEffect(() => {
+    if (
+      selectedRestaurantId &&
+      !restaurants.find(r => r.id === selectedRestaurantId)
+    ) {
+      setSelectedRestaurantId(null);
+    }
+  }, [restaurants, selectedRestaurantId]);
+
+  const toggleEmployeeDropdown = () => {
+    setEmployeeDropdownVisible(visible => {
+      if (!visible) setRestaurantDropdownVisible(false);
+      return !visible;
+    });
+  };
+
+  const toggleRestaurantDropdown = () => {
+    setRestaurantDropdownVisible(visible => {
+      if (!visible) setEmployeeDropdownVisible(false);
+      return !visible;
+    });
+  };
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.headerButton}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
+        >
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
+        </TouchableOpacity>
+
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Employee Management
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => refetch()}
+          style={styles.headerButton}
+          accessibilityLabel="Refresh employees and restaurants"
+          accessibilityRole="button"
+          disabled={isLoading || isFetching}
+        >
+          <Ionicons
+            name="refresh"
+            size={22}
+            color={
+              isLoading || isFetching ? colors.textSecondary : colors.primary
+            }
+          />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Loading employees...
+            </Text>
+          </View>
+        ) : showErrorState ? (
+          <View
+            style={[
+              styles.errorContainer,
+              { borderColor: colors.border, backgroundColor: colors.surface },
+            ]}
+          >
+            <Text style={[styles.errorTitle, { color: colors.error }]}>
+              Unable to load employees and restaurants right now.
+            </Text>
+            <Text
+              style={[
+                styles.errorText,
+                { color: colors.textSecondary, marginBottom: 12 },
+              ]}
+            >
+              Please check your connection and try again.
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.retryButton,
+                { backgroundColor: colors.primary },
+              ]}
+              onPress={() => refetch()}
+              accessibilityLabel="Retry loading employees"
+              accessibilityRole="button"
+            >
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <View
+              style={[
+                styles.section,
+                { borderColor: colors.border, backgroundColor: colors.surface },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Employees
+              </Text>
+              <Text
+                style={[
+                  styles.sectionDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Select from all employee profiles pulled directly from the
+                profiles table.
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.selector,
+                  { borderColor: colors.border, backgroundColor: colors.inputBackground },
+                ]}
+                onPress={toggleEmployeeDropdown}
+                accessibilityLabel="Open employee selector"
+                accessibilityRole="button"
+              >
+                <View style={styles.selectorLabelContainer}>
+                  <Text
+                    style={[
+                      styles.selectorLabel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Employee
+                  </Text>
+                  <Text
+                    style={[
+                      styles.selectorValue,
+                      { color: colors.text },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {selectedEmployee
+                      ? formatEmployeeName(selectedEmployee)
+                      : employees.length > 0
+                        ? 'Choose an employee'
+                        : 'No employees available'}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={employeeDropdownVisible ? 'chevron-up' : 'chevron-down'}
+                  size={20}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+
+              {employeeDropdownVisible && (
+                employees.length > 0 ? (
+                  <ScrollView
+                    style={[
+                      styles.dropdown,
+                      { borderColor: colors.border, backgroundColor: colors.surface },
+                    ]}
+                    nestedScrollEnabled
+                  >
+                    {employees.map(employee => (
+                      <TouchableOpacity
+                        key={employee.id}
+                        style={[
+                          styles.dropdownItem,
+                          { borderBottomColor: colors.border },
+                        ]}
+                        onPress={() => {
+                          setSelectedEmployeeId(employee.id);
+                          setEmployeeDropdownVisible(false);
+                        }}
+                        accessibilityLabel={`Select ${formatEmployeeName(employee)}`}
+                        accessibilityRole="button"
+                      >
+                        <Text
+                          style={[
+                            styles.dropdownItemTitle,
+                            { color: colors.text },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {formatEmployeeName(employee)}
+                        </Text>
+                        {employee.email ? (
+                          <Text
+                            style={[
+                              styles.dropdownItemSubtitle,
+                              { color: colors.textSecondary },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {employee.email}
+                          </Text>
+                        ) : null}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : (
+                  <View
+                    style={[
+                      styles.emptyDropdown,
+                      { borderColor: colors.border, backgroundColor: colors.inputBackground },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.emptyDropdownText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      No employees found.
+                    </Text>
+                  </View>
+                )
+              )}
+
+              {selectedEmployee && (
+                <View
+                  style={[
+                    styles.selectionCard,
+                    { borderColor: colors.border, backgroundColor: colors.inputBackground },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.selectionLabel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Selected employee
+                  </Text>
+                  <Text
+                    style={[styles.selectionValue, { color: colors.text }]}
+                    numberOfLines={1}
+                  >
+                    {formatEmployeeName(selectedEmployee)}
+                  </Text>
+                  {selectedEmployee.email ? (
+                    <Text
+                      style={[
+                        styles.selectionSubValue,
+                        { color: colors.textSecondary },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {selectedEmployee.email}
+                    </Text>
+                  ) : null}
+                </View>
+              )}
+            </View>
+
+            <View
+              style={[
+                styles.section,
+                { borderColor: colors.border, backgroundColor: colors.surface },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Restaurants
+              </Text>
+              <Text
+                style={[
+                  styles.sectionDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Quickly browse all restaurants while managing employees.
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.selector,
+                  { borderColor: colors.border, backgroundColor: colors.inputBackground },
+                ]}
+                onPress={toggleRestaurantDropdown}
+                accessibilityLabel="Open restaurant selector"
+                accessibilityRole="button"
+              >
+                <View style={styles.selectorLabelContainer}>
+                  <Text
+                    style={[
+                      styles.selectorLabel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Restaurant
+                  </Text>
+                  <Text
+                    style={[
+                      styles.selectorValue,
+                      { color: colors.text },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {selectedRestaurant
+                      ? selectedRestaurant.name
+                      : restaurants.length > 0
+                        ? 'Choose a restaurant'
+                        : 'No restaurants available'}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={restaurantDropdownVisible ? 'chevron-up' : 'chevron-down'}
+                  size={20}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+
+              {restaurantDropdownVisible && (
+                restaurants.length > 0 ? (
+                  <ScrollView
+                    style={[
+                      styles.dropdown,
+                      { borderColor: colors.border, backgroundColor: colors.surface },
+                    ]}
+                    nestedScrollEnabled
+                  >
+                    {restaurants.map(restaurant => (
+                      <TouchableOpacity
+                        key={restaurant.id}
+                        style={[
+                          styles.dropdownItem,
+                          { borderBottomColor: colors.border },
+                        ]}
+                        onPress={() => {
+                          setSelectedRestaurantId(restaurant.id);
+                          setRestaurantDropdownVisible(false);
+                        }}
+                        accessibilityLabel={`Select ${restaurant.name}`}
+                        accessibilityRole="button"
+                      >
+                        <Text
+                          style={[
+                            styles.dropdownItemTitle,
+                            { color: colors.text },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {restaurant.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : (
+                  <View
+                    style={[
+                      styles.emptyDropdown,
+                      { borderColor: colors.border, backgroundColor: colors.inputBackground },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.emptyDropdownText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      No restaurants found.
+                    </Text>
+                  </View>
+                )
+              )}
+
+              {selectedRestaurant && (
+                <View
+                  style={[
+                    styles.selectionCard,
+                    { borderColor: colors.border, backgroundColor: colors.inputBackground },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.selectionLabel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Selected restaurant
+                  </Text>
+                  <Text
+                    style={[styles.selectionValue, { color: colors.text }]}
+                    numberOfLines={1}
+                  >
+                    {selectedRestaurant.name}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  headerButton: {
+    padding: 6,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  content: {
+    padding: 20,
+    gap: 16,
+    paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 80,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  errorContainer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+  },
+  errorTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 4,
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  section: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  sectionDescription: {
+    marginTop: 6,
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+  selector: {
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  selectorLabelContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  selectorLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
+  },
+  selectorValue: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  dropdown: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    maxHeight: 260,
+  },
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  dropdownItemTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  dropdownItemSubtitle: {
+    marginTop: 2,
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+  emptyDropdown: {
+    marginTop: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  emptyDropdownText: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+  selectionCard: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  selectionLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+  },
+  selectionValue: {
+    marginTop: 6,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  selectionSubValue: {
+    marginTop: 2,
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+});

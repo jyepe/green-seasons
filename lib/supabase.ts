@@ -279,6 +279,48 @@ export async function getAllRestaurants(): Promise<Restaurant[]> {
   return data || [];
 }
 
+export type EmployeeProfile = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+};
+
+export type EmployeesAndRestaurants = {
+  employees: EmployeeProfile[];
+  restaurants: Pick<Restaurant, 'id' | 'name'>[];
+};
+
+export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaurants> {
+  const [employeesRes, restaurantsRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .eq('role', 'employee'),
+    supabase.from('restaurants').select('id, name'),
+  ]);
+
+  if (employeesRes.error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching employees:', employeesRes.error);
+    }
+    throw employeesRes.error;
+  }
+
+  if (restaurantsRes.error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching restaurants:', restaurantsRes.error);
+    }
+    throw restaurantsRes.error;
+  }
+
+  return {
+    employees: employeesRes.data || [],
+    restaurants: restaurantsRes.data || [],
+  };
+}
+
 export type OrderStatus = 'pending' | 'in_transit' | 'delivered';
 
 export type Order = {
@@ -490,14 +532,12 @@ export async function updateItem(
 
   if (params.name !== undefined) updates.name = params.name;
   if (params.description !== undefined) {
-    updates.description =
-      params.description === '' ? null : params.description;
+    updates.description = params.description === '' ? null : params.description;
   }
   if (params.price !== undefined) updates.price = params.price;
   if (params.unit !== undefined) updates.unit = params.unit;
   if (params.image_url !== undefined) {
-    updates.image_url =
-      params.image_url === '' ? null : params.image_url;
+    updates.image_url = params.image_url === '' ? null : params.image_url;
   }
 
   const { data, error } = await supabase

@@ -93,6 +93,12 @@ export default function AdminLayout() {
           href: null, // Hide from tab bar, accessible via navigation
         }}
       />
+      <Tabs.Screen
+        name="employees"
+        options={{
+          href: null, // Hide from tab bar, accessible via navigation
+        }}
+      />
     </Tabs>
   );
 }

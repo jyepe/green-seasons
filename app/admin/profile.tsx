@@ -114,6 +114,20 @@ export default function ProfileScreen() {
                 styles.adminButton,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
+              onPress={() => router.push('/admin/employees')}
+              accessibilityLabel="Employee Management"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.adminButtonText, { color: colors.text }]}>
+                Employee Management
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.adminButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
               onPress={() => router.push('/admin/items')}
               accessibilityLabel="Item Management"
               accessibilityRole="button"
