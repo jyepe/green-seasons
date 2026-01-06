@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
@@ -11,6 +11,16 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 export default function EmployeeLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const segments = useSegments();
+
+  // Hide tab bar when on the orders screen
+  const isOrdersScreen = segments[segments.length - 1] === 'orders';
+  const baseTabBarStyle = Platform.select({
+    ios: {
+      position: 'absolute' as const,
+    },
+    default: {},
+  });
 
   return (
     <Tabs
@@ -22,12 +32,9 @@ export default function EmployeeLayout() {
         sceneStyle: {
           backgroundColor: colors.background,
         },
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
+        tabBarStyle: isOrdersScreen
+          ? { display: 'none' }
+          : baseTabBarStyle,
       }}
     >
       <Tabs.Screen

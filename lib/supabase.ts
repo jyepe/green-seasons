@@ -1175,16 +1175,6 @@ export async function getEmployeeTruckLoadSummary(
   }
 
   return (data || []).map((row: Record<string, unknown>) => {
-    // Debug: log the raw restaurants data
-    if (__DEV__ && row.restaurants) {
-      // eslint-disable-next-line no-console
-      console.log(
-        'Raw restaurants data:',
-        row.restaurants,
-        typeof row.restaurants
-      );
-    }
-
     // Parse restaurants JSONB array
     // Supabase may return JSONB as a string or already parsed object
     let restaurantsData:
