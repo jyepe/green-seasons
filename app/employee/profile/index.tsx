@@ -55,15 +55,11 @@ export default function EmployeeProfileScreen() {
               </Text>
             </View>
             <Text style={[styles.userName, { color: colors.text }]}>
-              {(() => {
-                const parts: string[] = [];
-                if (userInfo.first_name) parts.push(userInfo.first_name);
-                if (userInfo.last_name) parts.push(userInfo.last_name);
-                if (parts.length > 0) {
-                  return parts.join(' ');
-                }
-                return userInfo.email || 'User';
-              })()}
+              {[userInfo.first_name, userInfo.last_name]
+                .filter(Boolean)
+                .join(' ') ||
+                userInfo.email ||
+                'User'}
             </Text>
             <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
               {userInfo.email}
