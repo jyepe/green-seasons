@@ -1226,15 +1226,6 @@ export async function getEmployeeTruckLoadSummary(
         }))
       : [];
 
-    // Debug: log parsed restaurants
-    if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `Item ${row.item_name}: ${restaurants.length} restaurants parsed`,
-        restaurants
-      );
-    }
-
     return {
       item_id: row.item_id as string,
       item_name: row.item_name as string,
