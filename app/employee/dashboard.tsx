@@ -11,7 +11,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { ExpandableCard } from '@/components/admin';
 import { EmployeeOrdersCard } from '@/components/employee';
@@ -23,6 +24,7 @@ export default function EmployeeDashboardScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // Fetch only 5 most recent orders for dashboard
   const ordersQuery = useQuery({
@@ -41,6 +43,15 @@ export default function EmployeeDashboardScreen() {
   const onRefresh = useCallback(() => {
     ordersQuery.refetch();
   }, [ordersQuery]);
+
+  // Refresh recent orders when dashboard screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      queryClient.invalidateQueries({
+        queryKey: ['employee-dashboard-orders'],
+      });
+    }, [queryClient])
+  );
 
   const handleLogout = async () => {
     try {

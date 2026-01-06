@@ -4,7 +4,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { getEmployeeOrders } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -15,7 +15,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 
 type OrderStatus = 'pending' | 'in_transit' | 'delivered';
 type FilterStatus = 'all' | OrderStatus;
@@ -33,6 +34,7 @@ export default function EmployeeOrdersScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const queryClient = useQueryClient();
 
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all');
 
@@ -48,6 +50,13 @@ export default function EmployeeOrdersScreen() {
     initialPageParam: null as { created_at: string; id: string } | null,
     getNextPageParam: lastPage => lastPage.nextCursor,
   });
+
+  // Refresh orders when screen comes into focus to reflect latest statuses
+  useFocusEffect(
+    useCallback(() => {
+      queryClient.invalidateQueries({ queryKey: ['employee-all-orders'] });
+    }, [queryClient])
+  );
 
   const allOrders = useMemo(
     () => ordersQuery.data?.pages.flatMap(page => page.orders) ?? [],
