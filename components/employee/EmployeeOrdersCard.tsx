@@ -38,7 +38,8 @@ export function EmployeeOrdersCard({
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'Not scheduled';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -89,10 +90,15 @@ export function EmployeeOrdersCard({
               },
             ]}
           >
+            <View style={styles.orderInfo}>
+              <Text style={[styles.restaurantName, { color: colors.text }]}>
+                Order #{order.id.slice(0, 8)}
+              </Text>
+            </View>
             <View style={styles.orderHeader}>
               <View style={styles.orderInfo}>
-                <Text style={[styles.orderId, { color: colors.text }]}>
-                  Order #{order.id.slice(0, 8)}
+                <Text style={[styles.restaurantName, { color: colors.text }]}>
+                  {order.restaurant_name}
                 </Text>
               </View>
               <View
@@ -101,26 +107,47 @@ export function EmployeeOrdersCard({
                   { backgroundColor: statusColor + '20' },
                 ]}
               >
-                <Ionicons name={statusConfig.icon} size={14} color={statusColor} />
+                <Ionicons
+                  name={statusConfig.icon}
+                  size={14}
+                  color={statusColor}
+                />
                 <Text style={[styles.statusText, { color: statusColor }]}>
                   {statusConfig.label}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.orderDetails}>
+            <View style={styles.datesRow}>
+              <View style={styles.detailItem}>
+                <Ionicons
+                  name="time-outline"
+                  size={14}
+                  color={colors.textSecondary}
+                />
+                <Text
+                  style={[styles.detailText, { color: colors.textSecondary }]}
+                >
+                  Created: {formatDate(order.created_at)}
+                </Text>
+              </View>
               <View style={styles.detailItem}>
                 <Ionicons
                   name="calendar-outline"
                   size={14}
                   color={colors.textSecondary}
                 />
-                <Text style={[styles.detailText, { color: colors.textSecondary }]}>
-                  {formatDate(order.created_at)}
+                <Text
+                  style={[styles.detailText, { color: colors.textSecondary }]}
+                >
+                  Delivery: {formatDate(order.delivery_at)}
                 </Text>
               </View>
+            </View>
+
+            <View style={styles.orderFooter}>
               <Text style={[styles.totalAmount, { color: colors.primary }]}>
-                {formatCurrency(order.total)}
+                Total: {formatCurrency(order.total)}
               </Text>
             </View>
           </View>
@@ -172,7 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 12,
   },
-  orderId: {
+  restaurantName: {
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
   },
@@ -188,10 +215,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Inter_600SemiBold',
   },
-  orderDetails: {
+  datesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
+    marginBottom: 8,
   },
   detailItem: {
     flexDirection: 'row',
@@ -202,8 +230,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Inter_400Regular',
   },
+  orderFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
   totalAmount: {
-    marginLeft: 'auto',
     fontSize: 15,
     fontFamily: 'Inter_700Bold',
   },

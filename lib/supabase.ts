@@ -1051,8 +1051,10 @@ export async function isEmployee(): Promise<boolean> {
 export type EmployeeOrder = {
   id: string;
   created_at: string;
+  delivery_at: string | null;
   status: string;
   restaurant_id: string;
+  restaurant_name: string;
   total: number;
 };
 
@@ -1085,9 +1087,11 @@ export async function getEmployeeOrders(
   const orders = (data || []).map((order: Record<string, unknown>) => ({
     id: order.id as string,
     created_at: order.created_at as string,
+    delivery_at: (order.delivery_at as string | null) ?? null,
     status: order.status as string,
     restaurant_id: order.restaurant_id as string,
-    total: parseFloat(String(order.total ?? '0')),
+    restaurant_name: (order.restaurant_name as string) ?? 'Unknown',
+    total: parseFloat(String(order.total_amount ?? '0')),
   }));
 
   // Extract cursor from last order for next page

@@ -19,14 +19,14 @@ export function EmployeeOrderListItem({ order }: EmployeeOrderListItemProps) {
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {
-      return 'N/A';
+      return 'Not scheduled';
     }
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      return 'N/A';
+      return 'Not scheduled';
     }
     return date.toLocaleDateString('en-US', {
-      month: 'numeric',
+      month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
@@ -54,7 +54,7 @@ export function EmployeeOrderListItem({ order }: EmployeeOrderListItemProps) {
         })
       }
       activeOpacity={0.7}
-      accessibilityLabel={`View order details for order #${order.id.slice(0, 8)}`}
+      accessibilityLabel={`View order details for ${order.restaurant_name}`}
       accessibilityRole="button"
     >
       <View
@@ -66,8 +66,8 @@ export function EmployeeOrderListItem({ order }: EmployeeOrderListItemProps) {
       <View style={styles.orderContent}>
         <View style={styles.orderHeader}>
           <View style={styles.orderInfo}>
-            <Text style={[styles.orderId, { color: colors.text }]}>
-              Order #{order.id.slice(0, 8)}
+            <Text style={[styles.restaurantName, { color: colors.text }]}>
+              {order.restaurant_name}
             </Text>
           </View>
           <Ionicons
@@ -78,7 +78,12 @@ export function EmployeeOrderListItem({ order }: EmployeeOrderListItemProps) {
         </View>
         <View style={styles.orderDates}>
           <Text style={[styles.orderDate, { color: colors.textSecondary }]}>
-            Date: {formatDate(order.created_at)}
+            Created: {formatDate(order.created_at)}
+          </Text>
+        </View>
+        <View style={styles.orderDates}>
+          <Text style={[styles.orderDate, { color: colors.textSecondary }]}>
+            Delivery: {formatDate(order.delivery_at)}
           </Text>
           <Text style={[styles.orderTotal, { color: colors.primary }]}>
             ${order.total.toFixed(2)}
@@ -122,7 +127,7 @@ const styles = StyleSheet.create({
   orderInfo: {
     flex: 1,
   },
-  orderId: {
+  restaurantName: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
@@ -131,7 +136,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   orderDate: {
     fontSize: 14,
@@ -146,6 +151,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 4,
   },
   statusBadge: {
     paddingHorizontal: 12,
