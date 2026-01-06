@@ -37,6 +37,9 @@ export default function EmployeeOrdersScreen() {
   const queryClient = useQueryClient();
 
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all');
+  const [activeRestaurant, setActiveRestaurant] = useState<string | 'all'>(
+    'all'
+  );
 
   // Orders Query with cursor-based pagination
   const ordersQuery = useInfiniteQuery({
@@ -63,13 +66,24 @@ export default function EmployeeOrdersScreen() {
     [ordersQuery.data]
   );
 
-  // Client-side filtering since the RPC doesn't support status filter
+  const restaurantOptions = useMemo(() => {
+    const names = Array.from(
+      new Set(allOrders.map(order => order.restaurant_name).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+    return names;
+  }, [allOrders]);
+
+  // Client-side filtering since the RPC doesn't support status or restaurant filter
   const filteredOrders = useMemo(() => {
-    if (activeFilter === 'all') {
-      return allOrders;
-    }
-    return allOrders.filter(order => order.status === activeFilter);
-  }, [allOrders, activeFilter]);
+    return allOrders.filter(order => {
+      const matchesStatus =
+        activeFilter === 'all' || order.status === activeFilter;
+      const matchesRestaurant =
+        activeRestaurant === 'all' ||
+        order.restaurant_name === activeRestaurant;
+      return matchesStatus && matchesRestaurant;
+    });
+  }, [allOrders, activeFilter, activeRestaurant]);
 
   const loadMore = () => {
     if (ordersQuery.hasNextPage && !ordersQuery.isFetchingNextPage) {
@@ -97,7 +111,7 @@ export default function EmployeeOrdersScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Filter Tabs */}
+      {/* Status Filter Tabs */}
       <View style={styles.filterContainer}>
         <ScrollView
           horizontal
@@ -108,7 +122,7 @@ export default function EmployeeOrdersScreen() {
             <TouchableOpacity
               key={status}
               style={[
-                styles.filterTab,
+                styles.filterChip,
                 activeFilter === status && {
                   backgroundColor: colors.primary,
                   borderColor: colors.primary,
@@ -129,6 +143,71 @@ export default function EmployeeOrdersScreen() {
                 ]}
               >
                 {FILTER_LABELS[status]}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Restaurant Filter Chips */}
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContent}
+        >
+          <TouchableOpacity
+            key="all-restaurants"
+            style={[
+              styles.filterChip,
+              activeRestaurant === 'all' && {
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              },
+              activeRestaurant !== 'all' && {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+            onPress={() => setActiveRestaurant('all')}
+          >
+            <Text
+              style={[
+                styles.filterText,
+                activeRestaurant === 'all'
+                  ? { color: 'white' }
+                  : { color: colors.textSecondary },
+              ]}
+            >
+              All Restaurants
+            </Text>
+          </TouchableOpacity>
+
+          {restaurantOptions.map(name => (
+            <TouchableOpacity
+              key={name}
+              style={[
+                styles.filterChip,
+                activeRestaurant === name && {
+                  backgroundColor: colors.primary,
+                  borderColor: colors.primary,
+                },
+                activeRestaurant !== name && {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+              onPress={() => setActiveRestaurant(name)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  activeRestaurant === name
+                    ? { color: 'white' }
+                    : { color: colors.textSecondary },
+                ]}
+              >
+                {name}
               </Text>
             </TouchableOpacity>
           ))}
@@ -230,7 +309,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 8,
   },
-  filterTab: {
+  filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
