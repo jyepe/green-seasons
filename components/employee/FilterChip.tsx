@@ -1,16 +1,14 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/Colors';
+
+type ColorSchemeColors = (typeof Colors)['light'];
 
 interface FilterChipProps {
   label: string;
   isActive: boolean;
   onPress: () => void;
-  colors: {
-    primary: string;
-    surface: string;
-    border: string;
-    textSecondary: string;
-  };
+  colors: ColorSchemeColors;
 }
 
 export const FilterChip: React.FC<FilterChipProps> = ({
@@ -49,7 +47,6 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '500',
     fontFamily: 'Inter_600SemiBold',
   },
 });
