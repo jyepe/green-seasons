@@ -780,6 +780,27 @@ export async function getOrderDetails(
   return data || [];
 }
 
+/**
+ * Update the status of an order
+ */
+export async function updateOrderStatus(
+  orderId: string,
+  status: 'pending' | 'in_transit' | 'delivered'
+): Promise<void> {
+  const { error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', orderId);
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating order status:', error);
+    }
+    throw error;
+  }
+}
+
 // ============================================================================
 // Admin Dashboard Functions
 // ============================================================================
@@ -1035,6 +1056,183 @@ export type AdminChartRevenueByRestaurant = {
   orders_count: number;
   revenue: number;
 };
+
+// ============================================================================
+// Employee Functions
+// ============================================================================
+
+/**
+ * Check if the current user has the employee role
+ */
+export async function isEmployee(): Promise<boolean> {
+  const userInfo = await getCurrentUserInfo();
+  return userInfo?.role === 'employee';
+}
+
+export type EmployeeOrder = {
+  id: string;
+  created_at: string;
+  delivery_at: string | null;
+  status: string;
+  restaurant_id: string;
+  restaurant_name: string;
+  total: number;
+};
+
+export type EmployeeOrdersResult = {
+  orders: EmployeeOrder[];
+  nextCursor: { created_at: string; id: string } | null;
+};
+
+export type EmployeeTruckLoadRestaurant = {
+  restaurant_id: string;
+  restaurant_name: string;
+  quantity: number;
+};
+
+export type EmployeeTruckLoadItem = {
+  item_id: string;
+  item_name: string;
+  item_image_url: string | null;
+  total_quantity: number;
+  restaurants: EmployeeTruckLoadRestaurant[];
+};
+
+/**
+ * Get paginated list of orders for employees using cursor-based pagination
+ */
+export async function getEmployeeOrders(
+  limit: number = 25,
+  cursor: { created_at: string; id: string } | null = null
+): Promise<EmployeeOrdersResult> {
+  const { data, error } = await supabase.rpc('fn_employee_list_orders', {
+    p_limit: limit,
+    p_cursor_created_at: cursor?.created_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching employee orders:', error);
+    }
+    throw error;
+  }
+
+  const orders = (data || []).map((order: Record<string, unknown>) => ({
+    id: order.id as string,
+    created_at: order.created_at as string,
+    delivery_at: (order.delivery_at as string | null) ?? null,
+    status: order.status as string,
+    restaurant_id: order.restaurant_id as string,
+    restaurant_name: (order.restaurant_name as string) ?? 'Unknown',
+    total: parseFloat(String(order.total_amount ?? '0')),
+  }));
+
+  // Extract cursor from last order for next page
+  const nextCursor =
+    orders.length > 0 && orders.length === limit
+      ? {
+          created_at: orders[orders.length - 1].created_at,
+          id: orders[orders.length - 1].id,
+        }
+      : null;
+
+  return {
+    orders,
+    nextCursor,
+  };
+}
+
+/**
+ * Get today's truck load summary for the employee
+ */
+export async function getEmployeeTruckLoadSummary(
+  deliveryDate?: Date,
+  tz: string = 'America/New_York'
+): Promise<EmployeeTruckLoadItem[]> {
+  const params: { p_delivery_date?: string; p_tz?: string } = {};
+
+  if (deliveryDate) {
+    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+  }
+
+  params.p_tz = tz;
+
+  const { data, error } = await supabase.rpc(
+    'fn_employee_truck_load_summary',
+    params
+  );
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching employee truck load summary:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => {
+    // Parse restaurants JSONB array
+    // Supabase may return JSONB as a string or already parsed object
+    let restaurantsData:
+      | {
+          restaurant_id: string;
+          restaurant_name: string;
+          quantity: number;
+        }[]
+      | null
+      | undefined;
+
+    const rawRestaurants = row.restaurants;
+
+    if (rawRestaurants === null || rawRestaurants === undefined) {
+      restaurantsData = null;
+    } else if (typeof rawRestaurants === 'string') {
+      // If it's a string, try to parse it
+      try {
+        restaurantsData = JSON.parse(rawRestaurants) as {
+          restaurant_id: string;
+          restaurant_name: string;
+          quantity: number;
+        }[];
+      } catch (e) {
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.error('Error parsing restaurants JSON:', e);
+        }
+        restaurantsData = null;
+      }
+    } else if (Array.isArray(rawRestaurants)) {
+      // Already an array
+      restaurantsData = rawRestaurants as {
+        restaurant_id: string;
+        restaurant_name: string;
+        quantity: number;
+      }[];
+    } else {
+      restaurantsData = null;
+    }
+
+    const restaurants: EmployeeTruckLoadRestaurant[] = Array.isArray(
+      restaurantsData
+    )
+      ? restaurantsData.map(r => ({
+          restaurant_id: String(r.restaurant_id ?? ''),
+          restaurant_name: String(r.restaurant_name ?? ''),
+          quantity: parseInt(String(r.quantity ?? '0'), 10),
+        }))
+      : [];
+
+    return {
+      item_id: row.item_id as string,
+      item_name: row.item_name as string,
+      item_image_url: (row.item_image_url as string | null) ?? null,
+      total_quantity: parseInt(String(row.total_quantity ?? '0'), 10),
+      restaurants,
+    };
+  });
+}
 
 /**
  * Get revenue by restaurant for charts

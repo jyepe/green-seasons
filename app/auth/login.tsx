@@ -26,6 +26,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
+import { useSetEmployeeStatus } from '@/hooks/useEmployee';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,6 +37,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setAdminStatus = useSetAdminStatus();
+  const setEmployeeStatus = useSetEmployeeStatus();
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
@@ -82,8 +84,17 @@ export default function LoginScreen() {
         // This prevents blocking legitimate users due to transient issues
       }
 
-      // Get user info to check restaurant ownership
+      // Get user info to check role and restaurant ownership
       const userInfo = await getCurrentUserInfo();
+
+      // Check if user is an employee
+      if (userInfo?.role === 'employee') {
+        setEmployeeStatus(true);
+        router.replace('/employee/dashboard');
+        return;
+      }
+
+      setEmployeeStatus(false);
 
       if (userInfo && !userInfo.owned_restaurant_id) {
         // User doesn't have a restaurant - go to onboarding

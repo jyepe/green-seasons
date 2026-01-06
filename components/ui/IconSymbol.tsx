@@ -23,6 +23,7 @@ const MAPPING = {
   'chevron.right': 'chevron-right',
   'leaf.fill': 'eco',
   'cart.fill': 'shopping-cart',
+  'truck.fill': 'local-shipping',
   'person.fill': 'person',
 } as IconMapping;
 

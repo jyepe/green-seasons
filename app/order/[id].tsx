@@ -1,6 +1,13 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useOrderDetails } from '@/hooks/useOrderDetails';
+import {
+  useOrderDetails,
+  ORDER_DETAILS_QUERY_KEY,
+} from '@/hooks/useOrderDetails';
+import { useEmployee } from '@/hooks/useEmployee';
+import { updateOrderStatus } from '@/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
+import { Toast } from '@/components/ui/Toast';
 import {
   formatCurrency,
   formatDate,
@@ -16,6 +23,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -36,6 +44,41 @@ export default function OrderDetailsScreen() {
     isError,
     error,
   } = useOrderDetails(id);
+  const { data: isEmployee = false } = useEmployee();
+  const queryClient = useQueryClient();
+
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [showStatusToast, setShowStatusToast] = useState(false);
+
+  const handleChangeStatus = async (
+    newStatus: 'pending' | 'in_transit' | 'delivered'
+  ) => {
+    if (!orderSummary || isUpdatingStatus) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      setIsStatusDropdownOpen(false);
+      await updateOrderStatus(orderSummary.order_id, newStatus);
+
+      await queryClient.invalidateQueries({
+        queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+      });
+
+      setShowStatusToast(true);
+    } catch (err) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error updating order status:', err);
+      }
+      Alert.alert(
+        'Error',
+        'Failed to update order status. Please try again later.'
+      );
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
@@ -201,6 +244,12 @@ export default function OrderDetailsScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <Toast
+        message="Order status updated"
+        type="success"
+        visible={showStatusToast}
+        onHide={() => setShowStatusToast(false)}
+      />
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
@@ -238,16 +287,50 @@ export default function OrderDetailsScreen() {
             >
               Status
             </Text>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(orderSummary.order_status) },
-              ]}
-            >
-              <Text style={styles.statusText}>
-                {formatStatus(orderSummary.order_status)}
-              </Text>
-            </View>
+            {isEmployee ? (
+              <TouchableOpacity
+                style={[
+                  styles.statusDropdown,
+                  { borderColor: colors.border },
+                  isUpdatingStatus && styles.statusDropdownDisabled,
+                ]}
+                onPress={() => setIsStatusDropdownOpen(true)}
+                disabled={isUpdatingStatus}
+              >
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor: getStatusColor(
+                        orderSummary.order_status
+                      ),
+                    },
+                  ]}
+                >
+                  <Text style={styles.statusText}>
+                    {formatStatus(orderSummary.order_status)}
+                  </Text>
+                </View>
+                <Ionicons
+                  name="chevron-down"
+                  size={20}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            ) : (
+              <View
+                style={[
+                  styles.statusBadge,
+                  {
+                    backgroundColor: getStatusColor(orderSummary.order_status),
+                  },
+                ]}
+              >
+                <Text style={styles.statusText}>
+                  {formatStatus(orderSummary.order_status)}
+                </Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.summaryRow}>
@@ -405,6 +488,66 @@ export default function OrderDetailsScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Status Dropdown Modal */}
+      <Modal
+        visible={isStatusDropdownOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsStatusDropdownOpen(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setIsStatusDropdownOpen(false)}
+        >
+          <View
+            style={[styles.dropdownModal, { backgroundColor: colors.surface }]}
+            onStartShouldSetResponder={() => true}
+          >
+            <Text style={[styles.dropdownTitle, { color: colors.text }]}>
+              Select Status
+            </Text>
+            {(['pending', 'in_transit', 'delivered'] as const).map(status => {
+              const isActive = orderSummary.order_status === status;
+              return (
+                <TouchableOpacity
+                  key={status}
+                  style={[
+                    styles.dropdownOption,
+                    isActive && {
+                      backgroundColor: getStatusColor(status) + '20',
+                    },
+                    { borderBottomColor: colors.border },
+                  ]}
+                  onPress={() => handleChangeStatus(status)}
+                  disabled={isUpdatingStatus || isActive}
+                >
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      {
+                        backgroundColor: getStatusColor(status),
+                      },
+                    ]}
+                  >
+                    <Text style={styles.statusText}>
+                      {formatStatus(status)}
+                    </Text>
+                  </View>
+                  {isActive && (
+                    <Ionicons
+                      name="checkmark"
+                      size={20}
+                      color={getStatusColor(status)}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -474,6 +617,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  statusDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 4,
+  },
+  statusDropdownDisabled: {
+    opacity: 0.5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  dropdownModal: {
+    width: '100%',
+    maxWidth: 300,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 16,
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
   },
   divider: {
     height: 1,
