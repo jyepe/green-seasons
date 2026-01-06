@@ -143,6 +143,20 @@ export async function signOutUser() {
   if (error) throw error;
 }
 
+export type ChangePasswordParams = {
+  password: string;
+};
+
+export async function changePassword(params: ChangePasswordParams) {
+  const { password } = params;
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    password,
+  });
+
+  if (updateError) throw updateError;
+}
+
 export type UpdateUserInfoParams = {
   email?: string;
   first_name?: string;
