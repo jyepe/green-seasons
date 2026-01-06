@@ -25,6 +25,10 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         : { backgroundColor: colors.surface, borderColor: colors.border },
     ]}
     onPress={onPress}
+    accessibilityRole="button"
+    accessibilityState={{ selected: isActive }}
+    accessibilityLabel={`Filter by ${label}`}
+    accessibilityHint={isActive ? 'Currently active filter' : 'Tap to filter'}
   >
     <Text
       style={[
