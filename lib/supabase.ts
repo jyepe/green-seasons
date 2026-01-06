@@ -780,6 +780,27 @@ export async function getOrderDetails(
   return data || [];
 }
 
+/**
+ * Update the status of an order
+ */
+export async function updateOrderStatus(
+  orderId: string,
+  status: 'pending' | 'in_transit' | 'delivered'
+): Promise<void> {
+  const { error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', orderId);
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating order status:', error);
+    }
+    throw error;
+  }
+}
+
 // ============================================================================
 // Admin Dashboard Functions
 // ============================================================================
