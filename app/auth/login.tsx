@@ -306,29 +306,6 @@ export default function LoginScreen() {
                     </Text>
                   </TouchableOpacity>
                 </Animated.View>
-
-                <View style={styles.dividerRow}>
-                  <View style={styles.divider} />
-                  <Text style={styles.dividerText}>OR</Text>
-                  <View style={styles.divider} />
-                </View>
-
-                <View style={styles.socialRow}>
-                  <TouchableOpacity
-                    style={styles.socialButton}
-                    activeOpacity={0.85}
-                  >
-                    <Ionicons name="logo-google" size={18} color="#333" />
-                    <Text style={styles.socialText}>Google</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.socialButton}
-                    activeOpacity={0.85}
-                  >
-                    <Ionicons name="logo-apple" size={18} color="#333" />
-                    <Text style={styles.socialText}>Apple</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
 
@@ -509,45 +486,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  dividerText: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    color: '#666',
-  },
-  socialRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  socialButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  socialText: {
-    fontSize: 15,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#333',
   },
   footer: {
     flexDirection: 'row',
