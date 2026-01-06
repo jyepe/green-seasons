@@ -18,13 +18,15 @@ import { ExpandableCard } from '@/components/admin';
 import { EmployeeOrdersCard } from '@/components/employee';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { getEmployeeOrders, signOutUser } from '@/lib/supabase';
+import { useSignOut } from '@/hooks/useUserInfo';
+import { getEmployeeOrders } from '@/lib/supabase';
 
 export default function EmployeeDashboardScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
   const queryClient = useQueryClient();
+  const signOut = useSignOut();
 
   // Fetch only 5 most recent orders for dashboard
   const ordersQuery = useQuery({
@@ -55,7 +57,8 @@ export default function EmployeeDashboardScreen() {
 
   const handleLogout = async () => {
     try {
-      await signOutUser();
+      await signOut();
+      router.replace('/auth/login');
     } catch (error) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
@@ -64,9 +67,7 @@ export default function EmployeeDashboardScreen() {
       Alert.alert('Logout Failed', 'Unable to sign out. Please try again.', [
         { text: 'OK' },
       ]);
-      return;
     }
-    router.replace('/auth/login');
   };
 
   return (

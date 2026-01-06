@@ -237,17 +237,20 @@ export default function EmployeeOrdersScreen() {
           <Text
             style={[styles.emptyStateText, { color: colors.textSecondary }]}
           >
-            {activeFilter === 'all'
+            {activeFilter === 'all' && activeRestaurant === 'all'
               ? 'No orders assigned to you yet.'
-              : `No orders found with status "${FILTER_LABELS[activeFilter]}".`}
+              : 'No orders found matching the selected filters.'}
           </Text>
-          {activeFilter !== 'all' && (
+          {(activeFilter !== 'all' || activeRestaurant !== 'all') && (
             <TouchableOpacity
               style={[
                 styles.clearFilterButton,
                 { borderColor: colors.primary },
               ]}
-              onPress={() => setActiveFilter('all')}
+              onPress={() => {
+                setActiveFilter('all');
+                setActiveRestaurant('all');
+              }}
             >
               <Text
                 style={[
@@ -255,7 +258,7 @@ export default function EmployeeOrdersScreen() {
                   { color: colors.primary },
                 ]}
               >
-                Clear Filter
+                Clear Filters
               </Text>
             </TouchableOpacity>
           )}
