@@ -50,7 +50,7 @@ export default function EmployeeTruckLoadScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top']}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { borderColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           Truck Load
         </Text>
@@ -212,7 +212,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderColor: colors.border,
   },
   headerTitle: {
     fontSize: 24,
