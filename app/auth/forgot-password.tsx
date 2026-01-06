@@ -24,42 +24,20 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { changePassword } from '@/lib/supabase';
+import { resetPassword } from '@/lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
 
-  const validatePassword = (pwd: string): string | null => {
-    if (!pwd) {
-      return 'Password is required';
-    }
-    if (pwd.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    if (!/(?=.*[a-z])/.test(pwd)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!/(?=.*[A-Z])/.test(pwd)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!/(?=.*\d)/.test(pwd)) {
-      return 'Password must contain at least one number';
-    }
-    return null;
-  };
-
-  const handleChangePassword = async () => {
+  const handleResetPassword = async () => {
     if (!email) {
       Alert.alert('Error', 'Please enter your email address');
       return;
@@ -72,17 +50,6 @@ export default function ForgotPasswordScreen() {
       return;
     }
 
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      Alert.alert('Error', passwordError);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsLoading(true);
     buttonScale.value = withSpring(0.95, {}, () => {
@@ -90,18 +57,13 @@ export default function ForgotPasswordScreen() {
     });
 
     try {
-      await changePassword({ password });
-      Alert.alert('Success', 'Your password has been changed successfully.', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/auth/login'),
-        },
-      ]);
+      await resetPassword({ email });
+      setEmailSent(true);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Failed to change password. Please try again.';
+          : 'Failed to send reset email. Please try again.';
       Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
@@ -203,153 +165,84 @@ export default function ForgotPasswordScreen() {
                 <Text style={styles.titleOrange}>Password</Text>
               </Text>
               <Text style={styles.subtitle}>
-                Enter your email and new password to reset your account
+                {emailSent
+                  ? 'Check your email for reset instructions'
+                  : 'Enter your email to receive a password reset link'}
               </Text>
             </View>
 
             {/* Form */}
-            <View style={styles.formCard}>
-              <View style={styles.form}>
-                <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>Email</Text>
-                  <View style={styles.inputRow}>
-                    <Ionicons
-                      name="mail"
-                      size={18}
-                      color="#9E9E9E"
-                      style={styles.leftIcon}
-                    />
-                    <TextInput
-                      style={styles.inputField}
-                      placeholder="Enter your email"
-                      placeholderTextColor="#9E9E9E"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onFocus={() => {
-                        inputFocus.value = withTiming(1, { duration: 200 });
-                      }}
-                      onBlur={() => {
-                        inputFocus.value = withTiming(0, { duration: 200 });
-                      }}
-                    />
-                  </View>
-                </Animated.View>
-
-                <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>New Password</Text>
-                  <View style={styles.inputRow}>
-                    <Ionicons
-                      name="lock-closed"
-                      size={18}
-                      color="#9E9E9E"
-                      style={styles.leftIcon}
-                    />
-                    <TextInput
-                      style={styles.inputField}
-                      placeholder="Enter your new password"
-                      placeholderTextColor="#9E9E9E"
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onFocus={() => {
-                        inputFocus.value = withTiming(1, { duration: 200 });
-                      }}
-                      onBlur={() => {
-                        inputFocus.value = withTiming(0, { duration: 200 });
-                      }}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButtonInline}
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
+            {!emailSent ? (
+              <View style={styles.formCard}>
+                <View style={styles.form}>
+                  <Animated.View style={inputAnimatedStyle}>
+                    <Text style={styles.label}>Email</Text>
+                    <View style={styles.inputRow}>
                       <Ionicons
-                        name={showPassword ? 'eye-off' : 'eye'}
-                        size={20}
+                        name="mail"
+                        size={18}
                         color="#9E9E9E"
+                        style={styles.leftIcon}
                       />
-                    </TouchableOpacity>
-                  </View>
-                </Animated.View>
+                      <TextInput
+                        style={styles.inputField}
+                        placeholder="Enter your email"
+                        placeholderTextColor="#9E9E9E"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        editable={!isLoading}
+                        onFocus={() => {
+                          inputFocus.value = withTiming(1, { duration: 200 });
+                        }}
+                        onBlur={() => {
+                          inputFocus.value = withTiming(0, { duration: 200 });
+                        }}
+                      />
+                    </View>
+                  </Animated.View>
 
-                <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>Confirm Password</Text>
-                  <View style={styles.inputRow}>
-                    <Ionicons
-                      name="lock-closed"
-                      size={18}
-                      color="#9E9E9E"
-                      style={styles.leftIcon}
-                    />
-                    <TextInput
-                      style={styles.inputField}
-                      placeholder="Confirm your new password"
-                      placeholderTextColor="#9E9E9E"
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      secureTextEntry={!showConfirmPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onFocus={() => {
-                        inputFocus.value = withTiming(1, { duration: 200 });
-                      }}
-                      onBlur={() => {
-                        inputFocus.value = withTiming(0, { duration: 200 });
-                      }}
-                    />
+                  <Animated.View style={buttonAnimatedStyle}>
                     <TouchableOpacity
-                      style={styles.eyeButtonInline}
-                      onPress={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
+                      style={[
+                        styles.resetButton,
+                        {
+                          opacity: isLoading ? 0.7 : 1,
+                        },
+                      ]}
+                      onPress={handleResetPassword}
+                      disabled={isLoading}
                     >
-                      <Ionicons
-                        name={showConfirmPassword ? 'eye-off' : 'eye'}
-                        size={20}
-                        color="#9E9E9E"
-                      />
+                      <Text style={styles.resetButtonText}>
+                        {isLoading ? 'Sending...' : 'Send Reset Link'}
+                      </Text>
                     </TouchableOpacity>
-                  </View>
-                </Animated.View>
-
-                <View style={styles.passwordHint}>
-                  <Text style={styles.passwordHintText}>
-                    Password must be at least 8 characters and contain:
-                  </Text>
-                  <Text style={styles.passwordHintText}>
-                    • One uppercase letter
-                  </Text>
-                  <Text style={styles.passwordHintText}>
-                    • One lowercase letter
-                  </Text>
-                  <Text style={styles.passwordHintText}>• One number</Text>
+                  </Animated.View>
                 </View>
-
-                <Animated.View style={buttonAnimatedStyle}>
-                  <TouchableOpacity
-                    style={[
-                      styles.resetButton,
-                      {
-                        opacity: isLoading ? 0.7 : 1,
-                      },
-                    ]}
-                    onPress={handleChangePassword}
-                    disabled={isLoading}
-                  >
-                    <Text style={styles.resetButtonText}>
-                      {isLoading ? 'Changing...' : 'Change Password'}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
               </View>
-            </View>
+            ) : (
+              <View style={styles.formCard}>
+                <View style={styles.successContainer}>
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={64}
+                    color="#4CAF50"
+                    style={styles.successIcon}
+                  />
+                  <Text style={styles.successTitle}>Email Sent!</Text>
+                  <Text style={styles.successText}>
+                    We&apos;ve sent a password reset link to{' '}
+                    <Text style={styles.emailText}>{email}</Text>
+                  </Text>
+                  <Text style={styles.successSubtext}>
+                    Please check your inbox and follow the instructions to reset
+                    your password.
+                  </Text>
+                </View>
+              </View>
+            )}
 
             {/* Footer */}
             <View style={styles.footer}>
@@ -506,6 +399,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  successContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  successIcon: {
+    marginBottom: 16,
+  },
+  successTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  successText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  emailText: {
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    color: '#333',
+  },
+  successSubtext: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    color: '#999',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginTop: 8,
   },
   footer: {
     flexDirection: 'row',
