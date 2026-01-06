@@ -1,4 +1,4 @@
-import { EmployeeOrderListItem } from '@/components/employee';
+import { EmployeeOrderListItem, FilterChip } from '@/components/employee';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { getEmployeeOrders } from '@/lib/supabase';
@@ -119,32 +119,13 @@ export default function EmployeeOrdersScreen() {
           contentContainerStyle={styles.filterContent}
         >
           {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
-            <TouchableOpacity
+            <FilterChip
               key={status}
-              style={[
-                styles.filterChip,
-                activeFilter === status && {
-                  backgroundColor: colors.primary,
-                  borderColor: colors.primary,
-                },
-                activeFilter !== status && {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
+              label={FILTER_LABELS[status]}
+              isActive={activeFilter === status}
               onPress={() => setActiveFilter(status)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === status
-                    ? { color: 'white' }
-                    : { color: colors.textSecondary },
-                ]}
-              >
-                {FILTER_LABELS[status]}
-              </Text>
-            </TouchableOpacity>
+              colors={colors}
+            />
           ))}
         </ScrollView>
       </View>
@@ -156,60 +137,22 @@ export default function EmployeeOrdersScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterContent}
         >
-          <TouchableOpacity
+          <FilterChip
             key="all-restaurants"
-            style={[
-              styles.filterChip,
-              activeRestaurant === 'all' && {
-                backgroundColor: colors.primary,
-                borderColor: colors.primary,
-              },
-              activeRestaurant !== 'all' && {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
+            label="All Restaurants"
+            isActive={activeRestaurant === 'all'}
             onPress={() => setActiveRestaurant('all')}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                activeRestaurant === 'all'
-                  ? { color: 'white' }
-                  : { color: colors.textSecondary },
-              ]}
-            >
-              All Restaurants
-            </Text>
-          </TouchableOpacity>
+            colors={colors}
+          />
 
           {restaurantOptions.map(name => (
-            <TouchableOpacity
+            <FilterChip
               key={name}
-              style={[
-                styles.filterChip,
-                activeRestaurant === name && {
-                  backgroundColor: colors.primary,
-                  borderColor: colors.primary,
-                },
-                activeRestaurant !== name && {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
+              label={name}
+              isActive={activeRestaurant === name}
               onPress={() => setActiveRestaurant(name)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeRestaurant === name
-                    ? { color: 'white' }
-                    : { color: colors.textSecondary },
-                ]}
-              >
-                {name}
-              </Text>
-            </TouchableOpacity>
+              colors={colors}
+            />
           ))}
         </ScrollView>
       </View>
@@ -311,18 +254,6 @@ const styles = StyleSheet.create({
   filterContent: {
     paddingHorizontal: 20,
     gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'Inter_600SemiBold',
   },
   listContent: {
     padding: 20,
