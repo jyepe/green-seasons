@@ -1231,7 +1231,7 @@ export async function getEmployeeTruckLoadSummary(
       item_name: row.item_name as string,
       item_image_url: (row.item_image_url as string | null) ?? null,
       total_quantity: parseInt(String(row.total_quantity ?? '0'), 10),
-      restaurants: restaurants || [],
+      restaurants,
     };
   });
 }
