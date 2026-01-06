@@ -1157,9 +1157,7 @@ export async function getEmployeeTruckLoadSummary(
     params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
   }
 
-  if (tz) {
-    params.p_tz = tz;
-  }
+  params.p_tz = tz;
 
   const { data, error } = await supabase.rpc(
     'fn_employee_truck_load_summary',
