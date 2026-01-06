@@ -1084,6 +1084,15 @@ export type EmployeeOrdersResult = {
   nextCursor: { created_at: string; id: string } | null;
 };
 
+export type EmployeeTruckLoadItem = {
+  item_id: string;
+  item_name: string;
+  item_image_url: string | null;
+  total_quantity: number;
+  orders_count: number;
+  restaurants_count: number;
+};
+
 /**
  * Get paginated list of orders for employees using cursor-based pagination
  */
@@ -1128,6 +1137,46 @@ export async function getEmployeeOrders(
     orders,
     nextCursor,
   };
+}
+
+/**
+ * Get today's truck load summary for the employee
+ */
+export async function getEmployeeTruckLoadSummary(
+  deliveryDate?: Date,
+  tz: string = 'America/New_York'
+): Promise<EmployeeTruckLoadItem[]> {
+  const params: { p_delivery_date?: string; p_tz?: string } = {};
+
+  if (deliveryDate) {
+    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+  }
+
+  if (tz) {
+    params.p_tz = tz;
+  }
+
+  const { data, error } = await supabase.rpc(
+    'fn_employee_truck_load_summary',
+    params
+  );
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching employee truck load summary:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    item_id: row.item_id as string,
+    item_name: row.item_name as string,
+    item_image_url: (row.item_image_url as string | null) ?? null,
+    total_quantity: parseInt(String(row.total_quantity ?? '0'), 10),
+    orders_count: parseInt(String(row.orders_count ?? '0'), 10),
+    restaurants_count: parseInt(String(row.restaurants_count ?? '0'), 10),
+  }));
 }
 
 /**
