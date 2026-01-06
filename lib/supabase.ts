@@ -1084,13 +1084,18 @@ export type EmployeeOrdersResult = {
   nextCursor: { created_at: string; id: string } | null;
 };
 
+export type EmployeeTruckLoadRestaurant = {
+  restaurant_id: string;
+  restaurant_name: string;
+  quantity: number;
+};
+
 export type EmployeeTruckLoadItem = {
   item_id: string;
   item_name: string;
   item_image_url: string | null;
   total_quantity: number;
-  orders_count: number;
-  restaurants_count: number;
+  restaurants: EmployeeTruckLoadRestaurant[];
 };
 
 /**
@@ -1169,14 +1174,85 @@ export async function getEmployeeTruckLoadSummary(
     throw error;
   }
 
-  return (data || []).map((row: Record<string, unknown>) => ({
-    item_id: row.item_id as string,
-    item_name: row.item_name as string,
-    item_image_url: (row.item_image_url as string | null) ?? null,
-    total_quantity: parseInt(String(row.total_quantity ?? '0'), 10),
-    orders_count: parseInt(String(row.orders_count ?? '0'), 10),
-    restaurants_count: parseInt(String(row.restaurants_count ?? '0'), 10),
-  }));
+  return (data || []).map((row: Record<string, unknown>) => {
+    // Debug: log the raw restaurants data
+    if (__DEV__ && row.restaurants) {
+      // eslint-disable-next-line no-console
+      console.log(
+        'Raw restaurants data:',
+        row.restaurants,
+        typeof row.restaurants
+      );
+    }
+
+    // Parse restaurants JSONB array
+    // Supabase may return JSONB as a string or already parsed object
+    let restaurantsData:
+      | {
+          restaurant_id: string;
+          restaurant_name: string;
+          quantity: number;
+        }[]
+      | null
+      | undefined;
+
+    const rawRestaurants = row.restaurants;
+
+    if (rawRestaurants === null || rawRestaurants === undefined) {
+      restaurantsData = null;
+    } else if (typeof rawRestaurants === 'string') {
+      // If it's a string, try to parse it
+      try {
+        restaurantsData = JSON.parse(rawRestaurants) as {
+          restaurant_id: string;
+          restaurant_name: string;
+          quantity: number;
+        }[];
+      } catch (e) {
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.error('Error parsing restaurants JSON:', e);
+        }
+        restaurantsData = null;
+      }
+    } else if (Array.isArray(rawRestaurants)) {
+      // Already an array
+      restaurantsData = rawRestaurants as {
+        restaurant_id: string;
+        restaurant_name: string;
+        quantity: number;
+      }[];
+    } else {
+      restaurantsData = null;
+    }
+
+    const restaurants: EmployeeTruckLoadRestaurant[] = Array.isArray(
+      restaurantsData
+    )
+      ? restaurantsData.map(r => ({
+          restaurant_id: String(r.restaurant_id ?? ''),
+          restaurant_name: String(r.restaurant_name ?? ''),
+          quantity: parseInt(String(r.quantity ?? '0'), 10),
+        }))
+      : [];
+
+    // Debug: log parsed restaurants
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Item ${row.item_name}: ${restaurants.length} restaurants parsed`,
+        restaurants
+      );
+    }
+
+    return {
+      item_id: row.item_id as string,
+      item_name: row.item_name as string,
+      item_image_url: (row.item_image_url as string | null) ?? null,
+      total_quantity: parseInt(String(row.total_quantity ?? '0'), 10),
+      restaurants: restaurants || [],
+    };
+  });
 }
 
 /**

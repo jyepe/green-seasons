@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +20,7 @@ import { getEmployeeTruckLoadSummary } from '@/lib/supabase';
 export default function EmployeeTruckLoadScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const truckLoadQuery = useQuery({
     queryKey: ['employee-truck-load-summary'],
@@ -30,6 +32,18 @@ export default function EmployeeTruckLoadScreen() {
   }, [truckLoadQuery]);
 
   const items = truckLoadQuery.data ?? [];
+
+  const toggleItem = (itemId: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  };
 
   return (
     <SafeAreaView
@@ -79,49 +93,111 @@ export default function EmployeeTruckLoadScreen() {
             />
           }
         >
-          {items.map(item => (
-            <View key={item.item_id} style={styles.itemCard}>
-              {item.item_image_url ? (
-                <Image
-                  source={{ uri: item.item_image_url }}
-                  style={styles.itemImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.itemImagePlaceholder,
-                    { backgroundColor: colors.border },
-                  ]}
-                >
-                  <Ionicons
-                    name="image-outline"
-                    size={28}
-                    color={colors.textTertiary}
-                  />
-                </View>
-              )}
+          {items.map(item => {
+            const isExpanded = expandedItems.has(item.item_id);
+            return (
+              <View
+                key={item.item_id}
+                style={[
+                  styles.itemCard,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.itemHeader}>
+                  {item.item_image_url ? (
+                    <Image
+                      source={{ uri: item.item_image_url }}
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.itemImagePlaceholder,
+                        { backgroundColor: colors.border },
+                      ]}
+                    >
+                      <Ionicons
+                        name="image-outline"
+                        size={28}
+                        color={colors.textTertiary}
+                      />
+                    </View>
+                  )}
 
-              <View style={styles.itemInfo}>
-                <Text style={[styles.itemName, { color: colors.text }]}>
-                  {item.item_name}
-                </Text>
-                <Text
-                  style={[styles.itemMeta, { color: colors.textSecondary }]}
-                >
-                  {item.total_quantity} units
-                </Text>
-                <Text
-                  style={[styles.itemMeta, { color: colors.textSecondary }]}
-                >
-                  {item.orders_count} order
-                  {item.orders_count === 1 ? '' : 's'} across{' '}
-                  {item.restaurants_count} restaurant
-                  {item.restaurants_count === 1 ? '' : 's'}
-                </Text>
+                  <View style={styles.itemInfo}>
+                    <Text style={[styles.itemName, { color: colors.text }]}>
+                      {item.item_name}
+                    </Text>
+                    <Text
+                      style={[styles.itemMeta, { color: colors.textSecondary }]}
+                    >
+                      {item.total_quantity} unit
+                      {item.total_quantity === 1 ? '' : 's'} total
+                    </Text>
+                    <Text
+                      style={[styles.itemMeta, { color: colors.textSecondary }]}
+                    >
+                      {item.restaurants?.length ?? 0} restaurant
+                      {(item.restaurants?.length ?? 0) === 1 ? '' : 's'}
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => toggleItem(item.item_id)}
+                    style={styles.expandButton}
+                  >
+                    <Ionicons
+                      name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                      size={24}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {isExpanded && item.restaurants && item.restaurants.length > 0 && (
+                  <View
+                    style={[
+                      styles.restaurantsList,
+                      { borderTopColor: colors.border },
+                    ]}
+                  >
+                    {item.restaurants.map(restaurant => (
+                      <View
+                        key={restaurant.restaurant_id}
+                        style={styles.restaurantRow}
+                      >
+                        <View style={styles.restaurantInfo}>
+                          <Ionicons
+                            name="restaurant-outline"
+                            size={18}
+                            color={colors.textSecondary}
+                          />
+                          <Text
+                            style={[
+                              styles.restaurantName,
+                              { color: colors.text },
+                            ]}
+                          >
+                            {restaurant.restaurant_name}
+                          </Text>
+                        </View>
+                        <Text
+                          style={[
+                            styles.restaurantQuantity,
+                            { color: colors.primary },
+                          ]}
+                        >
+                          {restaurant.quantity} unit
+                          {restaurant.quantity === 1 ? '' : 's'}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
     </SafeAreaView>
@@ -186,11 +262,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   itemCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
     borderRadius: 12,
-    backgroundColor: '#F9FAFB',
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -199,6 +272,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+    overflow: 'hidden',
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
   },
   itemImage: {
     width: 64,
@@ -226,6 +305,37 @@ const styles = StyleSheet.create({
   itemMeta: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
+  },
+  expandButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  restaurantsList: {
+    borderTopWidth: 1,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  restaurantRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  restaurantInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  restaurantName: {
+    fontSize: 14,
+    fontFamily: 'Inter_500Medium',
+    flex: 1,
+  },
+  restaurantQuantity: {
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
   },
 });
 
