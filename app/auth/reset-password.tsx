@@ -48,10 +48,15 @@ export default function ResetPasswordScreen() {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
-        router.replace('/auth/forgot-password');
         Alert.alert(
           'Error',
-          'Invalid or expired reset link. Please request a new password reset.'
+          'Invalid or expired reset link. Please request a new password reset.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/auth/forgot-password'),
+            },
+          ]
         );
       }
     };

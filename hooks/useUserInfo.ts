@@ -37,19 +37,19 @@ export function useUpdateUserInfo() {
 
   return useMutation({
     mutationFn: async (params: UpdateUserInfoParams) => {
-      const { email, ...profile } = params;
+      const { email, first_name, last_name, phone } = params;
 
       if (email !== undefined) {
         await updateUserEmail(email);
       }
 
       const hasProfileUpdates =
-        profile.first_name !== undefined ||
-        profile.last_name !== undefined ||
-        profile.phone !== undefined;
+        first_name !== undefined ||
+        last_name !== undefined ||
+        phone !== undefined;
 
       if (hasProfileUpdates) {
-        return updateUserProfile(profile as UpdateUserProfileParams);
+        return updateUserProfile({ first_name, last_name, phone });
       }
 
       // If only email was updated, return current user info
