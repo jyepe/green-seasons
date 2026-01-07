@@ -33,6 +33,8 @@ export default function AuthCallback() {
   const [message, setMessage] = useState('Verifying...');
 
   useEffect(() => {
+    const timeoutIds: ReturnType<typeof setTimeout>[] = [];
+
     const run = async () => {
       try {
         if (!url) return;
@@ -50,7 +52,9 @@ export default function AuthCallback() {
             setMessage(
               'Invalid or expired reset link. Please request a new one.'
             );
-            setTimeout(() => router.replace('/auth/forgot-password'), 1500);
+            timeoutIds.push(
+              setTimeout(() => router.replace('/auth/forgot-password'), 1500)
+            );
             return;
           }
 
@@ -67,7 +71,9 @@ export default function AuthCallback() {
             setMessage(
               'Invalid or expired reset link. Please request a new one.'
             );
-            setTimeout(() => router.replace('/auth/forgot-password'), 1500);
+            timeoutIds.push(
+              setTimeout(() => router.replace('/auth/forgot-password'), 1500)
+            );
             return;
           }
 
@@ -85,7 +91,9 @@ export default function AuthCallback() {
 
           if (error) {
             setMessage(error.message);
-            setTimeout(() => router.replace('/auth/forgot-password'), 1500);
+            timeoutIds.push(
+              setTimeout(() => router.replace('/auth/forgot-password'), 1500)
+            );
             return;
           }
 
@@ -95,14 +103,18 @@ export default function AuthCallback() {
         }
 
         setMessage('Invalid callback. Missing required parameters.');
-        setTimeout(() => router.replace('/auth/login'), 1500);
+        timeoutIds.push(setTimeout(() => router.replace('/auth/login'), 1500));
       } catch (e) {
         setMessage(e instanceof Error ? e.message : 'Callback error.');
-        setTimeout(() => router.replace('/auth/login'), 1500);
+        timeoutIds.push(setTimeout(() => router.replace('/auth/login'), 1500));
       }
     };
 
     run();
+
+    return () => {
+      timeoutIds.forEach(clearTimeout);
+    };
   }, [url, router]);
 
   return (

@@ -196,15 +196,19 @@ export async function updateUserProfile(params: UpdateUserProfileParams) {
   if (!user) throw new Error('Not authenticated');
 
   const updates: {
-    first_name?: string;
-    last_name?: string;
+    first_name?: string | null;
+    last_name?: string | null;
     phone?: string | null;
   } = {};
 
-  if (params.first_name !== undefined) updates.first_name = params.first_name;
-  if (params.last_name !== undefined) updates.last_name = params.last_name;
+  if (params.first_name !== undefined) {
+    updates.first_name = params.first_name || null;
+  }
+  if (params.last_name !== undefined) {
+    updates.last_name = params.last_name || null;
+  }
   if (params.phone !== undefined) {
-    updates.phone = params.phone === '' ? null : params.phone;
+    updates.phone = params.phone || null;
   }
 
   if (Object.keys(updates).length > 0) {

@@ -125,9 +125,7 @@ export function EmployeeOrderRow({
             size={14}
             color={colors.textSecondary}
           />
-          <Text
-            style={[styles.detailText, { color: colors.textSecondary }]}
-          >
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
             Created: {formatDate(order.created_at)}
           </Text>
         </View>
@@ -137,9 +135,7 @@ export function EmployeeOrderRow({
             size={14}
             color={colors.textSecondary}
           />
-          <Text
-            style={[styles.detailText, { color: colors.textSecondary }]}
-          >
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
             Delivery: {formatDate(order.delivery_at)}
           </Text>
         </View>
@@ -218,4 +214,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
   },
 });
-
