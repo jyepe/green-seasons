@@ -60,7 +60,7 @@ export default function AdminOrdersScreen() {
       );
     },
     initialPageParam: null as { created_at: string; id: string } | null,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       return lastPage.nextCursor;
     },
   });
@@ -295,4 +295,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-

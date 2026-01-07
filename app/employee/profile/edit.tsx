@@ -84,7 +84,7 @@ export default function EditEmployeeProfileScreen() {
 
     try {
       await updateUserInfoMutation.mutateAsync(updatedFields);
-      
+
       // Show different messages based on what was updated
       if (updatedFields.email) {
         Alert.alert(
@@ -98,7 +98,10 @@ export default function EditEmployeeProfileScreen() {
         ]);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile. Please try again.';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to update profile. Please try again.';
       Alert.alert('Error', errorMessage);
     }
   };

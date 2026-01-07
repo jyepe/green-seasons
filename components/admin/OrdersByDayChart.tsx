@@ -1,5 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { CartesianChart, Line, useChartPressState } from 'victory-native';
 import { Circle, matchFont } from '@shopify/react-native-skia';
 
@@ -28,7 +35,10 @@ const CHART_HEIGHT = 200;
 export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { state, isActive } = useChartPressState({ x: 0, y: { orders_count: 0 } });
+  const { state, isActive } = useChartPressState({
+    x: 0,
+    y: { orders_count: 0 },
+  });
 
   if (isLoading) {
     return (
@@ -77,7 +87,10 @@ export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
             {(() => {
               const rawIndex = state.x.value.value;
               const safeIndex = Number.isFinite(rawIndex)
-                ? Math.min(chartData.length - 1, Math.max(0, Math.round(rawIndex)))
+                ? Math.min(
+                    chartData.length - 1,
+                    Math.max(0, Math.round(rawIndex))
+                  )
                 : 0;
               const label = chartData[safeIndex]?.label ?? '';
               const value = state.y.orders_count.value.value;
@@ -95,7 +108,7 @@ export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
         axisOptions={{
           font,
           tickCount: { x: Math.min(6, data.length), y: 5 },
-          formatXLabel: (value) => chartData[Math.round(value)]?.label ?? '',
+          formatXLabel: value => chartData[Math.round(value)]?.label ?? '',
           labelColor: colors.textSecondary,
           lineColor: colors.border,
         }}

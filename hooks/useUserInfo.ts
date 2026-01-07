@@ -2,9 +2,11 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import {
   getCurrentUserInfo,
   signOutUser,
-  updateUserInfo,
+  updateUserEmail,
+  updateUserProfile,
   type UserInfo,
   type UpdateUserInfoParams,
+  type UpdateUserProfileParams,
 } from '@/lib/supabase';
 
 export const USER_INFO_QUERY_KEY = ['userInfo'] as const;
@@ -34,7 +36,29 @@ export function useUpdateUserInfo() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (params: UpdateUserInfoParams) => updateUserInfo(params),
+    mutationFn: async (params: UpdateUserInfoParams) => {
+      const { email, first_name, last_name, phone } = params;
+
+      if (email !== undefined) {
+        await updateUserEmail(email);
+      }
+
+      const hasProfileUpdates =
+        first_name !== undefined ||
+        last_name !== undefined ||
+        phone !== undefined;
+
+      if (hasProfileUpdates) {
+        const profileParams: UpdateUserProfileParams = {};
+        if (first_name !== undefined) profileParams.first_name = first_name;
+        if (last_name !== undefined) profileParams.last_name = last_name;
+        if (phone !== undefined) profileParams.phone = phone;
+        return updateUserProfile(profileParams);
+      }
+
+      // If only email was updated, return current user info
+      return getCurrentUserInfo();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USER_INFO_QUERY_KEY });
     },

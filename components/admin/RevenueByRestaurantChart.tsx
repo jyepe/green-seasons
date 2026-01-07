@@ -1,5 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { CartesianChart, Bar, useChartPressState } from 'victory-native';
 import { matchFont } from '@shopify/react-native-skia';
 
@@ -107,7 +114,8 @@ export function RevenueByRestaurantChart({
               const safeIndex = Number.isFinite(rawIndex)
                 ? Math.min(data.length - 1, Math.max(0, Math.round(rawIndex)))
                 : -1;
-              const hoveredRestaurant = safeIndex >= 0 ? data[safeIndex] : undefined;
+              const hoveredRestaurant =
+                safeIndex >= 0 ? data[safeIndex] : undefined;
               if (!hoveredRestaurant) return '';
               const value = state.y.revenue.value.value;
               return `${hoveredRestaurant.restaurant_name}: ${formatCurrency(value)}`;
@@ -124,7 +132,7 @@ export function RevenueByRestaurantChart({
         axisOptions={{
           font,
           tickCount: { x: data.length, y: 5 },
-          formatXLabel: (value) => chartData[Math.round(value)]?.label ?? '',
+          formatXLabel: value => chartData[Math.round(value)]?.label ?? '',
           formatYLabel: formatCurrency,
           labelColor: colors.textSecondary,
           lineColor: colors.border,

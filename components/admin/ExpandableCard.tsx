@@ -19,7 +19,10 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -63,12 +66,14 @@ export function ExpandableCard({
       >
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         <Animated.View style={chevronStyle}>
-          <Ionicons name="chevron-down" size={24} color={colors.textSecondary} />
+          <Ionicons
+            name="chevron-down"
+            size={24}
+            color={colors.textSecondary}
+          />
         </Animated.View>
       </TouchableOpacity>
-      {isExpanded && (
-        <View style={styles.content}>{children}</View>
-      )}
+      {isExpanded && <View style={styles.content}>{children}</View>}
     </View>
   );
 }
@@ -100,4 +105,3 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 });
-

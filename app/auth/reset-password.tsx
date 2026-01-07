@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Image,
@@ -22,26 +22,56 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
-import { useSetAdminStatus } from '@/hooks/useAdmin';
-import { useSetEmployeeStatus } from '@/hooks/useEmployee';
+import { supabase, updateUserPassword } from '@/lib/supabase';
+import { validatePassword } from '@/utils/validation';
 import AuthBackground from './AuthBackground';
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState('');
+export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
-  const setAdminStatus = useSetAdminStatus();
-  const setEmployeeStatus = useSetEmployeeStatus();
 
   const buttonScale = useSharedValue(1);
   const inputFocus = useSharedValue(0);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+  useEffect(() => {
+    // Check if user is authenticated (from password reset link)
+    const checkAuth = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        Alert.alert(
+          'Error',
+          'Invalid or expired reset link. Please request a new password reset.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/auth/forgot-password'),
+            },
+          ]
+        );
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  const handleResetPassword = async () => {
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      Alert.alert('Error', passwordError);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
@@ -52,71 +82,23 @@ export default function LoginScreen() {
     });
 
     try {
-      // Sign in user
-      await signInUser({
-        email,
-        password,
-      });
+      await updateUserPassword(password);
 
-      // Check if user is an admin and cache the result
-      let userIsAdmin = false;
-      try {
-        userIsAdmin = await isAdmin();
-        // Cache the admin status
-        setAdminStatus(userIsAdmin);
-        if (userIsAdmin) {
-          // Admin user - go to admin dashboard
-          router.replace('/admin/dashboard');
-          return;
-        }
-      } catch (adminCheckError) {
-        // Log the error but don't block user flow
-        if (__DEV__) {
-          // eslint-disable-next-line no-console
-          console.error('Failed to check admin status:', adminCheckError);
-        }
-        // Cache as non-admin if check fails
-        setAdminStatus(false);
-        // If admin check fails, treat user as non-admin and continue
-        // This prevents blocking legitimate users due to transient issues
-      }
-
-      // Get user info to check role and restaurant ownership
-      const userInfo = await getCurrentUserInfo();
-
-      // Check if user is an employee
-      if (userInfo?.role === 'employee') {
-        setEmployeeStatus(true);
-        router.replace('/employee/dashboard');
-        return;
-      }
-
-      setEmployeeStatus(false);
-
-      if (userInfo && !userInfo.owned_restaurant_id) {
-        // User doesn't have a restaurant - go to onboarding
-        router.replace('/onboarding/restaurant');
-      } else {
-        // User has a restaurant - go to main app
-        router.replace('/(tabs)');
-      }
+      Alert.alert('Success', 'Your password has been reset successfully.', [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/auth/login'),
+        },
+      ]);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Failed to sign in. Please check your credentials and try again.';
+          : 'Failed to reset password. Please try again.';
       Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSignupPress = () => {
-    router.push('/auth/signup');
-  };
-
-  const handleForgotPasswordPress = () => {
-    router.push('/auth/forgot-password');
   };
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
@@ -130,6 +112,18 @@ export default function LoginScreen() {
       },
     ],
   }));
+
+  if (isAuthenticated !== true) {
+    return (
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Verifying...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -154,47 +148,17 @@ export default function LoginScreen() {
                 />
               </View>
               <Text style={styles.title}>
-                <Text style={styles.titleGreen}>Green</Text>{' '}
-                <Text style={styles.titleOrange}>Seasons</Text>
+                <Text style={styles.titleGreen}>New</Text>{' '}
+                <Text style={styles.titleOrange}>Password</Text>
               </Text>
-              <Text style={styles.subtitle}>
-                Fresh produce for your restaurant
-              </Text>
+              <Text style={styles.subtitle}>Enter your new password below</Text>
             </View>
 
             {/* Form */}
             <View style={styles.formCard}>
               <View style={styles.form}>
                 <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>Email</Text>
-                  <View style={styles.inputRow}>
-                    <Ionicons
-                      name="mail"
-                      size={18}
-                      color="#9E9E9E"
-                      style={styles.leftIcon}
-                    />
-                    <TextInput
-                      style={styles.inputField}
-                      placeholder="Enter your email"
-                      placeholderTextColor="#9E9E9E"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      onFocus={() => {
-                        inputFocus.value = withTiming(1, { duration: 200 });
-                      }}
-                      onBlur={() => {
-                        inputFocus.value = withTiming(0, { duration: 200 });
-                      }}
-                    />
-                  </View>
-                </Animated.View>
-
-                <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>Password</Text>
+                  <Text style={styles.label}>New Password</Text>
                   <View style={styles.inputRow}>
                     <Ionicons
                       name="lock-closed"
@@ -204,13 +168,14 @@ export default function LoginScreen() {
                     />
                     <TextInput
                       style={styles.inputField}
-                      placeholder="Enter your password"
+                      placeholder="Enter your new password"
                       placeholderTextColor="#9E9E9E"
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
                       autoCapitalize="none"
                       autoCorrect={false}
+                      editable={!isLoading}
                       onFocus={() => {
                         inputFocus.value = withTiming(1, { duration: 200 });
                       }}
@@ -231,44 +196,77 @@ export default function LoginScreen() {
                   </View>
                 </Animated.View>
 
-                <View style={styles.forgotPasswordContainer}>
-                  <TouchableOpacity
-                    style={styles.forgotPassword}
-                    onPress={handleForgotPasswordPress}
-                  >
-                    <Text style={styles.forgotPasswordText}>
-                      Forgot Password?
-                    </Text>
-                  </TouchableOpacity>
+                <Animated.View style={inputAnimatedStyle}>
+                  <Text style={styles.label}>Confirm Password</Text>
+                  <View style={styles.inputRow}>
+                    <Ionicons
+                      name="lock-closed"
+                      size={18}
+                      color="#9E9E9E"
+                      style={styles.leftIcon}
+                    />
+                    <TextInput
+                      style={styles.inputField}
+                      placeholder="Confirm your new password"
+                      placeholderTextColor="#9E9E9E"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirmPassword}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      editable={!isLoading}
+                      onFocus={() => {
+                        inputFocus.value = withTiming(1, { duration: 200 });
+                      }}
+                      onBlur={() => {
+                        inputFocus.value = withTiming(0, { duration: 200 });
+                      }}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButtonInline}
+                      onPress={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      <Ionicons
+                        name={showConfirmPassword ? 'eye-off' : 'eye'}
+                        size={20}
+                        color="#9E9E9E"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+
+                <View style={styles.passwordHint}>
+                  <Text style={styles.passwordHintText}>
+                    Password must be at least 8 characters and contain:
+                  </Text>
+                  <Text style={styles.passwordHintText}>
+                    • One uppercase letter
+                  </Text>
+                  <Text style={styles.passwordHintText}>
+                    • One lowercase letter
+                  </Text>
+                  <Text style={styles.passwordHintText}>• One number</Text>
                 </View>
 
                 <Animated.View style={buttonAnimatedStyle}>
                   <TouchableOpacity
                     style={[
-                      styles.loginButton,
+                      styles.resetButton,
                       {
                         opacity: isLoading ? 0.7 : 1,
                       },
                     ]}
-                    onPress={handleLogin}
+                    onPress={handleResetPassword}
                     disabled={isLoading}
                   >
-                    <Text style={styles.loginButtonText}>
-                      {isLoading ? 'Signing In...' : 'Sign In'}
+                    <Text style={styles.resetButtonText}>
+                      {isLoading ? 'Resetting...' : 'Reset Password'}
                     </Text>
                   </TouchableOpacity>
                 </Animated.View>
               </View>
-            </View>
-
-            {/* Footer */}
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                Don&apos;t have an account?{' '}
-              </Text>
-              <TouchableOpacity onPress={handleSignupPress}>
-                <Text style={styles.signupLink}>Sign Up</Text>
-              </TouchableOpacity>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -280,7 +278,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9', // Light background matching SVG
+    backgroundColor: '#F9F9F9',
   },
   svgBackground: {
     position: 'absolute',
@@ -300,6 +298,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 40,
     paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    color: '#666',
   },
   header: {
     alignItems: 'center',
@@ -343,6 +351,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     color: '#666',
+    paddingHorizontal: 20,
   },
   formCard: {
     backgroundColor: 'white',
@@ -389,70 +398,34 @@ const styles = StyleSheet.create({
   leftIcon: {
     marginRight: 10,
   },
-  passwordContainer: {
-    position: 'relative',
-    marginBottom: 20,
-  },
-  passwordInput: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingRight: 50,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 14,
-    padding: 4,
-  },
   eyeButtonInline: {
     padding: 6,
     marginLeft: 6,
   },
-  forgotPasswordContainer: {
-    alignItems: 'flex-end',
-    marginBottom: 24,
+  passwordHint: {
+    marginBottom: 20,
+    padding: 12,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
   },
-  forgotPassword: {
-    padding: 4,
+  passwordHintText: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    color: '#666',
+    lineHeight: 18,
   },
-  forgotPasswordText: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    color: '#4CAF50',
-  },
-  loginButton: {
+  resetButton: {
     height: 48,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#4CAF50',
-    marginBottom: 20,
+    marginTop: 8,
   },
-  loginButtonText: {
+  resetButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    color: '#666',
-  },
-  signupLink: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    color: '#4CAF50',
   },
 });

@@ -1,5 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { CartesianChart, Area, useChartPressState } from 'victory-native';
 import { matchFont } from '@shopify/react-native-skia';
 
@@ -84,7 +91,10 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
             {(() => {
               const rawIndex = state.x.value.value;
               const safeIndex = Number.isFinite(rawIndex)
-                ? Math.min(chartData.length - 1, Math.max(0, Math.round(rawIndex)))
+                ? Math.min(
+                    chartData.length - 1,
+                    Math.max(0, Math.round(rawIndex))
+                  )
                 : 0;
               const label = chartData[safeIndex]?.label ?? '';
               const value = state.y.revenue.value.value;
@@ -102,7 +112,7 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
         axisOptions={{
           font,
           tickCount: { x: Math.min(6, data.length), y: 5 },
-          formatXLabel: (value) => chartData[Math.round(value)]?.label ?? '',
+          formatXLabel: value => chartData[Math.round(value)]?.label ?? '',
           formatYLabel: formatCurrency,
           labelColor: colors.textSecondary,
           lineColor: colors.border,

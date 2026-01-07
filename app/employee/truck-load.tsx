@@ -68,11 +68,7 @@ export default function EmployeeTruckLoadScreen() {
         </View>
       ) : items.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons
-            name="cube-outline"
-            size={64}
-            color={colors.textTertiary}
-          />
+          <Ionicons name="cube-outline" size={64} color={colors.textTertiary} />
           <Text style={[styles.emptyTitle, { color: colors.text }]}>
             Nothing to deliver
           </Text>
@@ -98,10 +94,7 @@ export default function EmployeeTruckLoadScreen() {
             return (
               <View
                 key={item.item_id}
-                style={[
-                  styles.itemCard,
-                  { backgroundColor: colors.surface },
-                ]}
+                style={[styles.itemCard, { backgroundColor: colors.surface }]}
               >
                 <View style={styles.itemHeader}>
                   {item.item_image_url ? (
@@ -155,46 +148,48 @@ export default function EmployeeTruckLoadScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {isExpanded && item.restaurants && item.restaurants.length > 0 && (
-                  <View
-                    style={[
-                      styles.restaurantsList,
-                      { borderTopColor: colors.border },
-                    ]}
-                  >
-                    {item.restaurants.map(restaurant => (
-                      <View
-                        key={restaurant.restaurant_id}
-                        style={styles.restaurantRow}
-                      >
-                        <View style={styles.restaurantInfo}>
-                          <Ionicons
-                            name="restaurant-outline"
-                            size={18}
-                            color={colors.textSecondary}
-                          />
+                {isExpanded &&
+                  item.restaurants &&
+                  item.restaurants.length > 0 && (
+                    <View
+                      style={[
+                        styles.restaurantsList,
+                        { borderTopColor: colors.border },
+                      ]}
+                    >
+                      {item.restaurants.map(restaurant => (
+                        <View
+                          key={restaurant.restaurant_id}
+                          style={styles.restaurantRow}
+                        >
+                          <View style={styles.restaurantInfo}>
+                            <Ionicons
+                              name="restaurant-outline"
+                              size={18}
+                              color={colors.textSecondary}
+                            />
+                            <Text
+                              style={[
+                                styles.restaurantName,
+                                { color: colors.text },
+                              ]}
+                            >
+                              {restaurant.restaurant_name}
+                            </Text>
+                          </View>
                           <Text
                             style={[
-                              styles.restaurantName,
-                              { color: colors.text },
+                              styles.restaurantQuantity,
+                              { color: colors.primary },
                             ]}
                           >
-                            {restaurant.restaurant_name}
+                            {restaurant.quantity} unit
+                            {restaurant.quantity === 1 ? '' : 's'}
                           </Text>
                         </View>
-                        <Text
-                          style={[
-                            styles.restaurantQuantity,
-                            { color: colors.primary },
-                          ]}
-                        >
-                          {restaurant.quantity} unit
-                          {restaurant.quantity === 1 ? '' : 's'}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
+                      ))}
+                    </View>
+                  )}
               </View>
             );
           })}
@@ -337,4 +332,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
   },
 });
-

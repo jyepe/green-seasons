@@ -37,16 +37,40 @@ export function TopItemsCard({ items, isLoading }: TopItemsCardProps) {
     <View style={styles.container}>
       {/* Header */}
       <View style={[styles.row, styles.headerRow]}>
-        <Text style={[styles.headerCell, styles.rankCell, { color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.headerCell,
+            styles.rankCell,
+            { color: colors.textSecondary },
+          ]}
+        >
           #
         </Text>
-        <Text style={[styles.headerCell, styles.nameCell, { color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.headerCell,
+            styles.nameCell,
+            { color: colors.textSecondary },
+          ]}
+        >
           Item
         </Text>
-        <Text style={[styles.headerCell, styles.qtyCell, { color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.headerCell,
+            styles.qtyCell,
+            { color: colors.textSecondary },
+          ]}
+        >
           Qty
         </Text>
-        <Text style={[styles.headerCell, styles.revenueCell, { color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.headerCell,
+            styles.revenueCell,
+            { color: colors.textSecondary },
+          ]}
+        >
           Revenue
         </Text>
       </View>
@@ -94,7 +118,9 @@ export function TopItemsCard({ items, isLoading }: TopItemsCardProps) {
           <Text style={[styles.cell, styles.qtyCell, { color: colors.text }]}>
             {item.quantity.toLocaleString()}
           </Text>
-          <Text style={[styles.cell, styles.revenueCell, { color: colors.primary }]}>
+          <Text
+            style={[styles.cell, styles.revenueCell, { color: colors.primary }]}
+          >
             {formatCurrency(item.revenue)}
           </Text>
         </View>
@@ -176,4 +202,3 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
-

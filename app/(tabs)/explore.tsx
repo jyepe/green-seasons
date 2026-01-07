@@ -188,10 +188,11 @@ export default function ProductsScreen() {
       toggleFavoriteMutation.mutate(
         { itemId, currentlyFavorite },
         {
-          onError: (error) => {
-            const errorMessage = error instanceof Error 
-              ? error.message 
-              : 'Failed to update favorite status. Please try again.';
+          onError: error => {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : 'Failed to update favorite status. Please try again.';
             Alert.alert('Error', errorMessage);
           },
         }
