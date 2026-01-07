@@ -178,7 +178,7 @@ export default function ForgotPasswordScreen() {
                   />
                   <Text style={styles.successTitle}>Email Sent!</Text>
                   <Text style={styles.successText}>
-                    We've sent a password reset link to{' '}
+                    We&apos;ve sent a password reset link to{' '}
                     <Text style={styles.emailText}>{email}</Text>
                   </Text>
                   <Text style={styles.successSubtext}>
