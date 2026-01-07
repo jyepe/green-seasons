@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -12,19 +14,27 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { getEmployeeTruckLoadSummary } from '@/lib/supabase';
+import { generateLoadingSheetHtml, pluralize } from '@/utils/invoice';
 
 export default function EmployeeTruckLoadScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
 
   const truckLoadQuery = useQuery({
     queryKey: ['employee-truck-load-summary'],
     queryFn: () => getEmployeeTruckLoadSummary(),
+    staleTime: 0, // Always consider data stale for loading sheet (needs to be current)
+    refetchOnMount: true, // Refetch when component mounts (navigating to tab)
+    refetchOnWindowFocus: false, // Don't refetch when window/tab gains focus
   });
 
   const onRefresh = useCallback(() => {
@@ -45,18 +55,132 @@ export default function EmployeeTruckLoadScreen() {
     });
   };
 
+  // Generic PDF action handler
+  const handlePdfAction = async (actionType: 'preview' | 'download') => {
+    if (!items || items.length === 0) {
+      Alert.alert(
+        'No Items',
+        'There are no items to generate a loading sheet for.'
+      );
+      return;
+    }
+
+    const isPreview = actionType === 'preview';
+    const setLoading = isPreview ? setIsPreviewingPdf : setIsDownloadingPdf;
+
+    try {
+      setLoading(true);
+      const deliveryDate = new Date();
+      const html = generateLoadingSheetHtml(items, deliveryDate);
+
+      if (isPreview) {
+        // Direct print preview
+        await Print.printAsync({ html });
+      } else {
+        // Generate PDF file for download/share
+        const { uri } = await Print.printToFileAsync({
+          html,
+          base64: false,
+        });
+
+        // Check if sharing is available
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'application/pdf',
+            dialogTitle: `Loading Sheet - ${deliveryDate.toLocaleDateString()}`,
+            UTI: 'com.adobe.pdf',
+          });
+        } else {
+          // Fallback for web or unsupported platforms
+          if (Platform.OS === 'web') {
+            // On web, open in new tab
+            window.open(uri, '_blank');
+          } else {
+            Alert.alert('Download Complete', `Loading sheet saved to: ${uri}`, [
+              { text: 'OK' },
+            ]);
+          }
+        }
+      }
+    } catch (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error(
+          `Error ${isPreview ? 'previewing' : 'downloading'} loading sheet:`,
+          error
+        );
+      }
+      Alert.alert(
+        'Error',
+        `Failed to ${isPreview ? 'preview' : 'download'} loading sheet. Please try again.`
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle PDF preview (direct print)
+  const handlePreviewLoadingSheet = () => handlePdfAction('preview');
+
+  // Handle PDF download/share
+  const handleDownloadLoadingSheet = () => handlePdfAction('download');
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top']}
     >
       <View style={[styles.header, { borderColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          Truck Load
-        </Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-          Items you need to deliver today
-        </Text>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              Truck Load
+            </Text>
+            <Text
+              style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+            >
+              Items you need to deliver today
+            </Text>
+          </View>
+          {items.length > 0 && (
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={handlePreviewLoadingSheet}
+                disabled={isPreviewingPdf || isDownloadingPdf}
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: colors.primary,
+                    opacity: isPreviewingPdf || isDownloadingPdf ? 0.6 : 1,
+                  },
+                ]}
+              >
+                {isPreviewingPdf ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="print-outline" size={20} color="#fff" />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDownloadLoadingSheet}
+                disabled={isPreviewingPdf || isDownloadingPdf}
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: colors.primary,
+                    opacity: isPreviewingPdf || isDownloadingPdf ? 0.6 : 1,
+                  },
+                ]}
+              >
+                {isDownloadingPdf ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="download-outline" size={20} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
 
       {truckLoadQuery.isLoading && items.length === 0 ? (
@@ -125,14 +249,14 @@ export default function EmployeeTruckLoadScreen() {
                     <Text
                       style={[styles.itemMeta, { color: colors.textSecondary }]}
                     >
-                      {item.total_quantity} unit
-                      {item.total_quantity === 1 ? '' : 's'} total
+                      {item.total_quantity}{' '}
+                      {pluralize('unit', item.total_quantity)} total
                     </Text>
                     <Text
                       style={[styles.itemMeta, { color: colors.textSecondary }]}
                     >
-                      {item.restaurants?.length ?? 0} restaurant
-                      {(item.restaurants?.length ?? 0) === 1 ? '' : 's'}
+                      {item.restaurants?.length ?? 0}{' '}
+                      {pluralize('restaurant', item.restaurants?.length ?? 0)}
                     </Text>
                   </View>
 
@@ -183,8 +307,8 @@ export default function EmployeeTruckLoadScreen() {
                               { color: colors.primary },
                             ]}
                           >
-                            {restaurant.quantity} unit
-                            {restaurant.quantity === 1 ? '' : 's'}
+                            {restaurant.quantity}{' '}
+                            {pluralize('unit', restaurant.quantity)}
                           </Text>
                         </View>
                       ))}
@@ -208,6 +332,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
@@ -217,6 +346,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     marginTop: 4,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
