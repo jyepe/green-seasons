@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import {
   Alert,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -15,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -25,8 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, updateUserPassword } from '@/lib/supabase';
-
-const { width, height } = Dimensions.get('window');
+import AuthBackground from './AuthBackground';
 
 export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
@@ -147,59 +144,7 @@ export default function ResetPasswordScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Background with radial gradients */}
-      <Svg
-        width={width}
-        height={height}
-        style={styles.svgBackground}
-        pointerEvents="none"
-      >
-        <Defs>
-          {/* Top-left gradient */}
-          <RadialGradient
-            id="gradient1"
-            cx="0"
-            cy="0"
-            r={Math.max(width, height) * 0.55}
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop offset="0%" stopColor="#7FD8B5" stopOpacity="0.7" />
-            <Stop offset="25%" stopColor="#7FD8B5" stopOpacity="0.45" />
-            <Stop offset="45%" stopColor="#7FD8B5" stopOpacity="0.25" />
-            <Stop offset="60%" stopColor="#7FD8B5" stopOpacity="0.1" />
-            <Stop offset="75%" stopColor="#7FD8B5" stopOpacity="0" />
-          </RadialGradient>
-          {/* Bottom-right gradient */}
-          <RadialGradient
-            id="gradient2"
-            cx={width}
-            cy={height}
-            r={Math.max(width, height) * 0.55}
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop offset="0%" stopColor="#FFBE88" stopOpacity="0.7" />
-            <Stop offset="25%" stopColor="#FFBE88" stopOpacity="0.45" />
-            <Stop offset="45%" stopColor="#FFBE88" stopOpacity="0.25" />
-            <Stop offset="60%" stopColor="#FFBE88" stopOpacity="0.1" />
-            <Stop offset="75%" stopColor="#FFBE88" stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-        <Rect x="0" y="0" width={width} height={height} fill="#F9F9F9" />
-        <Rect
-          x="0"
-          y="0"
-          width={width}
-          height={height}
-          fill="url(#gradient1)"
-        />
-        <Rect
-          x="0"
-          y="0"
-          width={width}
-          height={height}
-          fill="url(#gradient2)"
-        />
-      </Svg>
+      <AuthBackground style={styles.svgBackground} />
 
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
