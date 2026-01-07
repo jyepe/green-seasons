@@ -98,7 +98,9 @@ export function OrdersCard({
                 <Text style={[styles.restaurantName, { color: colors.text }]}>
                   {order.restaurant_name}
                 </Text>
-                <Text style={[styles.buyerName, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.buyerName, { color: colors.textSecondary }]}
+                >
                   by {buyerName}
                 </Text>
               </View>
@@ -108,7 +110,11 @@ export function OrdersCard({
                   { backgroundColor: statusColor + '20' },
                 ]}
               >
-                <Ionicons name={statusConfig.icon} size={14} color={statusColor} />
+                <Ionicons
+                  name={statusConfig.icon}
+                  size={14}
+                  color={statusColor}
+                />
                 <Text style={[styles.statusText, { color: statusColor }]}>
                   {statusConfig.label}
                 </Text>
@@ -122,7 +128,9 @@ export function OrdersCard({
                   size={14}
                   color={colors.textSecondary}
                 />
-                <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.detailText, { color: colors.textSecondary }]}
+                >
                   {formatDate(order.created_at)}
                 </Text>
               </View>
@@ -132,7 +140,9 @@ export function OrdersCard({
                   size={14}
                   color={colors.textSecondary}
                 />
-                <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.detailText, { color: colors.textSecondary }]}
+                >
                   {order.items_count} items
                 </Text>
               </View>

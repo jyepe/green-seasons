@@ -23,6 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, updateUserPassword } from '@/lib/supabase';
+import { validatePassword } from '@/utils/validation';
 import AuthBackground from './AuthBackground';
 
 export default function ResetPasswordScreen() {
@@ -60,25 +61,6 @@ export default function ResetPasswordScreen() {
     };
     checkAuth();
   }, [router]);
-
-  const validatePassword = (pwd: string): string | null => {
-    if (!pwd) {
-      return 'Password is required';
-    }
-    if (pwd.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    if (!/(?=.*[a-z])/.test(pwd)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!/(?=.*[A-Z])/.test(pwd)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!/(?=.*\d)/.test(pwd)) {
-      return 'Password must contain at least one number';
-    }
-    return null;
-  };
 
   const handleResetPassword = async () => {
     const passwordError = validatePassword(password);

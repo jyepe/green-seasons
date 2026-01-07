@@ -32,9 +32,7 @@ export default function EmployeeLayout() {
         sceneStyle: {
           backgroundColor: colors.background,
         },
-        tabBarStyle: isOrdersScreen
-          ? { display: 'none' }
-          : baseTabBarStyle,
+        tabBarStyle: isOrdersScreen ? { display: 'none' } : baseTabBarStyle,
       }}
     >
       <Tabs.Screen

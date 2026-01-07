@@ -3,9 +3,9 @@ name: EAS Android Preview Build (tag)
 on:
   push:
     tags:
-      - "preview-*"
-      - "v*-preview*"
-      - "v*-rc*"
+      - 'preview-*'
+      - 'v*-preview*'
+      - 'v*-rc*'
 
 jobs:
   build:

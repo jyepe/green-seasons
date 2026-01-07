@@ -1,14 +1,19 @@
 import React from 'react';
-import { Dimensions, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  useWindowDimensions,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
-
-const { width, height } = Dimensions.get('window');
 
 type AuthBackgroundProps = {
   style?: StyleProp<ViewStyle>;
 };
 
 export default function AuthBackground({ style }: AuthBackgroundProps) {
+  const { width, height } = useWindowDimensions();
+
   return (
     <Svg
       width={width}
@@ -61,4 +66,3 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 });
-

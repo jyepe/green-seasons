@@ -49,8 +49,7 @@ export default function AdminItemsScreen() {
     return items.filter(
       item =>
         item.name.toLowerCase().includes(query) ||
-        (item.description &&
-          item.description.toLowerCase().includes(query)) ||
+        (item.description && item.description.toLowerCase().includes(query)) ||
         item.unit.toLowerCase().includes(query)
     );
   }, [items, searchQuery]);
@@ -114,9 +113,7 @@ export default function AdminItemsScreen() {
     );
   };
 
-  const handleSaveItem = async (
-    data: CreateItemParams | UpdateItemParams
-  ) => {
+  const handleSaveItem = async (data: CreateItemParams | UpdateItemParams) => {
     try {
       if (editingItem) {
         // Update existing item
@@ -176,7 +173,9 @@ export default function AdminItemsScreen() {
       </View>
 
       {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[styles.searchContainer, { backgroundColor: colors.surface }]}
+      >
         <Ionicons
           name="search"
           size={20}
@@ -195,7 +194,11 @@ export default function AdminItemsScreen() {
             onPress={() => setSearchQuery('')}
             style={styles.clearButton}
           >
-            <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.textSecondary}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -253,10 +256,8 @@ export default function AdminItemsScreen() {
                 onDelete={() => handleDeleteItem(item)}
                 isDeleting={
                   deleteItemMutation.isPending &&
-                  (
-                    deleteItemMutation.variables === item.id ||
-                    (deleteItemMutation.variables as any)?.id === item.id
-                  )
+                  (deleteItemMutation.variables === item.id ||
+                    (deleteItemMutation.variables as any)?.id === item.id)
                 }
               />
             ))}
@@ -371,7 +372,10 @@ function ItemListItem({
       )}
 
       <View style={styles.itemContent}>
-        <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.itemName, { color: colors.text }]}
+          numberOfLines={1}
+        >
           {item.name}
         </Text>
         {item.description && (

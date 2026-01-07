@@ -12,7 +12,11 @@ type KPICardProps = {
   isLoading?: boolean;
 };
 
-export function KPICard({ ordersCount, totalRevenue, isLoading }: KPICardProps) {
+export function KPICard({
+  ordersCount,
+  totalRevenue,
+  isLoading,
+}: KPICardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -27,7 +31,9 @@ export function KPICard({ ordersCount, totalRevenue, isLoading }: KPICardProps) 
   return (
     <View style={styles.container}>
       <View style={[styles.kpiBox, { backgroundColor: colors.primary + '15' }]}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.primary }]}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: colors.primary }]}
+        >
           <Ionicons name="receipt-outline" size={24} color="#fff" />
         </View>
         <View style={styles.kpiContent}>
@@ -41,7 +47,9 @@ export function KPICard({ ordersCount, totalRevenue, isLoading }: KPICardProps) 
       </View>
 
       <View style={[styles.kpiBox, { backgroundColor: colors.accent + '15' }]}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.accent }]}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: colors.accent }]}
+        >
           <Ionicons name="cash-outline" size={24} color="#fff" />
         </View>
         <View style={styles.kpiContent}>
@@ -96,4 +104,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
   },
 });
-

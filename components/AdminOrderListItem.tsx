@@ -71,7 +71,9 @@ export function AdminOrderListItem({ order }: AdminOrderListItemProps) {
             <Text style={[styles.orderId, { color: colors.text }]}>
               Order #{order.order_id.slice(0, 8)}
             </Text>
-            <Text style={[styles.restaurantName, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.restaurantName, { color: colors.textSecondary }]}
+            >
               {order.restaurant_name}
             </Text>
             <Text style={[styles.buyerName, { color: colors.textSecondary }]}>

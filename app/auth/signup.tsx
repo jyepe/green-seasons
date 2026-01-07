@@ -25,6 +25,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signUpUser } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
+import { validatePassword } from '@/utils/validation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -133,11 +134,8 @@ export default function SignupScreen() {
         return '';
 
       case 'password':
-        if (!value) return 'Password is required';
-        if (value.length < 6) return 'Password must be at least 6 characters';
-        if (value.length > 50)
-          return 'Password must be less than 50 characters';
-        return '';
+        const passwordError = validatePassword(value);
+        return passwordError || '';
 
       case 'confirmPassword':
         if (!value) return 'Please confirm your password';

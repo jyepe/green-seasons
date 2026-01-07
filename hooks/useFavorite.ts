@@ -11,9 +11,9 @@ type ToggleFavoriteParams = {
 
 /**
  * Hook to fetch the current user's favorite items.
- * 
+ *
  * @returns A query result containing the list of favorite items, loading state, and error state.
- * 
+ *
  * @example
  * ```tsx
  * const { data: favoriteItems, isLoading, error } = useFavoriteItems();
@@ -30,16 +30,16 @@ export function useFavoriteItems() {
 
 /**
  * Hook to toggle an item's favorite status with optimistic updates.
- * 
+ *
  * Automatically updates both the items list and favorites list in the cache optimistically,
  * then refetches the data to ensure consistency. If the mutation fails, the cache is rolled back.
- * 
+ *
  * @returns A mutation object with a `mutate` function to toggle favorite status.
- * 
+ *
  * @example
  * ```tsx
  * const toggleFavoriteMutation = useToggleFavorite();
- * 
+ *
  * const handleToggleFavorite = (itemId: string, isFavorite: boolean) => {
  *   toggleFavoriteMutation.mutate({ itemId, currentlyFavorite: isFavorite });
  * };
@@ -93,7 +93,9 @@ export function useToggleFavorite() {
           } else {
             // If we can't find the item in the items cache, explicitly refetch
             // to avoid leaving the UI in a stale state.
-            queryClient.invalidateQueries({ queryKey: FAVORITE_ITEMS_QUERY_KEY });
+            queryClient.invalidateQueries({
+              queryKey: FAVORITE_ITEMS_QUERY_KEY,
+            });
           }
         }
       }
