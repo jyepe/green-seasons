@@ -20,7 +20,7 @@ import * as Sharing from 'expo-sharing';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { getEmployeeTruckLoadSummary } from '@/lib/supabase';
-import { generateLoadingSheetHtml } from '@/utils/invoice';
+import { generateLoadingSheetHtml, pluralize } from '@/utils/invoice';
 
 export default function EmployeeTruckLoadScreen() {
   const colorScheme = useColorScheme();
@@ -55,8 +55,8 @@ export default function EmployeeTruckLoadScreen() {
     });
   };
 
-  // Handle PDF preview (direct print)
-  const handlePreviewLoadingSheet = async () => {
+  // Generic PDF action handler
+  const handlePdfAction = async (actionType: 'preview' | 'download') => {
     if (!items || items.length === 0) {
       Alert.alert(
         'No Items',
@@ -65,77 +65,65 @@ export default function EmployeeTruckLoadScreen() {
       return;
     }
 
-    try {
-      setIsPreviewingPdf(true);
-      const deliveryDate = new Date();
-      const html = generateLoadingSheetHtml(items, deliveryDate);
-      await Print.printAsync({ html });
-    } catch (error) {
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('Error previewing loading sheet:', error);
-      }
-      Alert.alert(
-        'Error',
-        'Failed to preview loading sheet. Please try again.'
-      );
-    } finally {
-      setIsPreviewingPdf(false);
-    }
-  };
-
-  // Handle PDF download/share
-  const handleDownloadLoadingSheet = async () => {
-    if (!items || items.length === 0) {
-      Alert.alert(
-        'No Items',
-        'There are no items to generate a loading sheet for.'
-      );
-      return;
-    }
+    const isPreview = actionType === 'preview';
+    const setLoading = isPreview ? setIsPreviewingPdf : setIsDownloadingPdf;
 
     try {
-      setIsDownloadingPdf(true);
+      setLoading(true);
       const deliveryDate = new Date();
       const html = generateLoadingSheetHtml(items, deliveryDate);
 
-      // Generate PDF file
-      const { uri } = await Print.printToFileAsync({
-        html,
-        base64: false,
-      });
-
-      // Check if sharing is available
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: `Loading Sheet - ${deliveryDate.toLocaleDateString()}`,
-          UTI: 'com.adobe.pdf',
-        });
+      if (isPreview) {
+        // Direct print preview
+        await Print.printAsync({ html });
       } else {
-        // Fallback for web or unsupported platforms
-        if (Platform.OS === 'web') {
-          // On web, open in new tab
-          window.open(uri, '_blank');
+        // Generate PDF file for download/share
+        const { uri } = await Print.printToFileAsync({
+          html,
+          base64: false,
+        });
+
+        // Check if sharing is available
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'application/pdf',
+            dialogTitle: `Loading Sheet - ${deliveryDate.toLocaleDateString()}`,
+            UTI: 'com.adobe.pdf',
+          });
         } else {
-          Alert.alert('Download Complete', `Loading sheet saved to: ${uri}`, [
-            { text: 'OK' },
-          ]);
+          // Fallback for web or unsupported platforms
+          if (Platform.OS === 'web') {
+            // On web, open in new tab
+            window.open(uri, '_blank');
+          } else {
+            Alert.alert('Download Complete', `Loading sheet saved to: ${uri}`, [
+              { text: 'OK' },
+            ]);
+          }
         }
       }
     } catch (error) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
-        console.error('Error downloading loading sheet:', error);
+        console.error(
+          `Error ${isPreview ? 'previewing' : 'downloading'} loading sheet:`,
+          error
+        );
       }
       Alert.alert(
         'Error',
-        'Failed to download loading sheet. Please try again.'
+        `Failed to ${isPreview ? 'preview' : 'download'} loading sheet. Please try again.`
       );
     } finally {
-      setIsDownloadingPdf(false);
+      setLoading(false);
     }
   };
+
+  // Handle PDF preview (direct print)
+  const handlePreviewLoadingSheet = () => handlePdfAction('preview');
+
+  // Handle PDF download/share
+  const handleDownloadLoadingSheet = () => handlePdfAction('download');
 
   return (
     <SafeAreaView
@@ -160,7 +148,7 @@ export default function EmployeeTruckLoadScreen() {
                 onPress={handlePreviewLoadingSheet}
                 disabled={isPreviewingPdf || isDownloadingPdf}
                 style={[
-                  styles.printButton,
+                  styles.actionButton,
                   {
                     backgroundColor: colors.primary,
                     opacity: isPreviewingPdf || isDownloadingPdf ? 0.6 : 1,
@@ -177,7 +165,7 @@ export default function EmployeeTruckLoadScreen() {
                 onPress={handleDownloadLoadingSheet}
                 disabled={isPreviewingPdf || isDownloadingPdf}
                 style={[
-                  styles.downloadButton,
+                  styles.actionButton,
                   {
                     backgroundColor: colors.primary,
                     opacity: isPreviewingPdf || isDownloadingPdf ? 0.6 : 1,
@@ -261,14 +249,14 @@ export default function EmployeeTruckLoadScreen() {
                     <Text
                       style={[styles.itemMeta, { color: colors.textSecondary }]}
                     >
-                      {item.total_quantity} unit
-                      {item.total_quantity === 1 ? '' : 's'} total
+                      {item.total_quantity}{' '}
+                      {pluralize('unit', item.total_quantity)} total
                     </Text>
                     <Text
                       style={[styles.itemMeta, { color: colors.textSecondary }]}
                     >
-                      {item.restaurants?.length ?? 0} restaurant
-                      {(item.restaurants?.length ?? 0) === 1 ? '' : 's'}
+                      {item.restaurants?.length ?? 0}{' '}
+                      {pluralize('restaurant', item.restaurants?.length ?? 0)}
                     </Text>
                   </View>
 
@@ -319,8 +307,8 @@ export default function EmployeeTruckLoadScreen() {
                               { color: colors.primary },
                             ]}
                           >
-                            {restaurant.quantity} unit
-                            {restaurant.quantity === 1 ? '' : 's'}
+                            {restaurant.quantity}{' '}
+                            {pluralize('unit', restaurant.quantity)}
                           </Text>
                         </View>
                       ))}
@@ -363,14 +351,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  printButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  downloadButton: {
+  actionButton: {
     width: 40,
     height: 40,
     borderRadius: 8,
