@@ -24,7 +24,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '@/lib/supabase';
+import { supabase, updateUserPassword } from '@/lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -102,22 +102,14 @@ export default function ResetPasswordScreen() {
     });
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password,
-      });
+      await updateUserPassword(password);
 
-      if (error) throw error;
-
-      Alert.alert(
-        'Success',
-        'Your password has been reset successfully.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.replace('/auth/login'),
-          },
-        ]
-      );
+      Alert.alert('Success', 'Your password has been reset successfully.', [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/auth/login'),
+        },
+      ]);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -231,9 +223,7 @@ export default function ResetPasswordScreen() {
                 <Text style={styles.titleGreen}>New</Text>{' '}
                 <Text style={styles.titleOrange}>Password</Text>
               </Text>
-              <Text style={styles.subtitle}>
-                Enter your new password below
-              </Text>
+              <Text style={styles.subtitle}>Enter your new password below</Text>
             </View>
 
             {/* Form */}

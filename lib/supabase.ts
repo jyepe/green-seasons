@@ -2,6 +2,7 @@ import 'react-native-url-polyfill/auto';
 import 'react-native-get-random-values';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ENV } from '@/config/env';
+import * as Linking from 'expo-linking';
 
 const supabaseUrl = ENV.SUPABASE_URL;
 const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;
@@ -149,12 +150,84 @@ export type ResetPasswordParams = {
 
 export async function resetPassword(params: ResetPasswordParams) {
   const { email } = params;
-  const redirectTo = 'greenseasons://auth/callback';
+  const redirectTo = Linking.createURL('auth/callback');
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
   });
 
   if (error) throw error;
+}
+
+// Dedicated helpers for updating different parts of the user
+export async function updateUserPassword(password: string) {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
+export async function updateUserEmail(email: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('Not authenticated');
+
+  if (email && email !== user.email) {
+    const { error: authError } = await supabase.auth.updateUser({
+      email,
+    });
+    if (authError) throw authError;
+
+    // Note: If email confirmation is required, Supabase will send a confirmation email
+    // The user's email won't change until they confirm via the link
+  }
+}
+
+export type UpdateUserProfileParams = {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+};
+
+export async function updateUserProfile(params: UpdateUserProfileParams) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('Not authenticated');
+
+  const updates: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string | null;
+  } = {};
+
+  if (params.first_name !== undefined) updates.first_name = params.first_name;
+  if (params.last_name !== undefined) updates.last_name = params.last_name;
+  if (params.phone !== undefined) {
+    updates.phone = params.phone === '' ? null : params.phone;
+  }
+
+  if (Object.keys(updates).length > 0) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // If no profile fields were provided, return current profile data
+  const { data, error } = await supabase
+    .from('profiles')
+    .select()
+    .eq('id', user.id)
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
 export type UpdateUserInfoParams = {
@@ -172,13 +245,7 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
   if (!user) throw new Error('Not authenticated');
 
   if (params.email && params.email !== user.email) {
-    const { error: authError } = await supabase.auth.updateUser({
-      email: params.email,
-    });
-    if (authError) throw authError;
-
-    // Note: If email confirmation is required, Supabase will send a confirmation email
-    // The user's email won't change until they confirm via the link
+    await updateUserEmail(params.email);
   }
 
   const updates: {
