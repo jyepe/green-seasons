@@ -20,7 +20,7 @@ function parseSupabaseCallbackUrl(url: string) {
 
   const queryParams = Object.fromEntries(u.searchParams.entries());
 
-  const hash = (u.hash || '').replace(/^#/, '').replace(/&amp;/g, '&');
+  const hash = (u.hash || '').replace(/^#/, '');
   const hashParams = Object.fromEntries(new URLSearchParams(hash).entries());
 
   // hash params should override query params if both exist
@@ -34,6 +34,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const timeoutIds: ReturnType<typeof setTimeout>[] = [];
+    let isMounted = true;
 
     const run = async () => {
       try {
@@ -48,17 +49,31 @@ export default function AuthCallback() {
             refresh_token: String(p.refresh_token),
           });
 
+          const isRecoveryFlow = p.type === 'recovery';
+
           if (error) {
-            setMessage(
-              'Invalid or expired reset link. Please request a new one.'
-            );
-            timeoutIds.push(
-              setTimeout(() => router.replace('/auth/forgot-password'), 1500)
-            );
+            if (isMounted) {
+              setMessage(
+                isRecoveryFlow
+                  ? 'Invalid or expired reset link. Please request a new one.'
+                  : 'Authentication failed. Please try again.'
+              );
+              timeoutIds.push(
+                setTimeout(() => {
+                  if (isMounted) {
+                    router.replace(
+                      isRecoveryFlow ? '/auth/forgot-password' : '/auth/login'
+                    );
+                  }
+                }, 1500)
+              );
+            }
             return;
           }
 
-          router.replace('/auth/reset-password');
+          if (isMounted) {
+            router.replace(isRecoveryFlow ? '/auth/reset-password' : '/');
+          }
           return;
         }
 
@@ -68,17 +83,25 @@ export default function AuthCallback() {
             String(p.code)
           );
           if (error) {
-            setMessage(
-              'Invalid or expired reset link. Please request a new one.'
-            );
-            timeoutIds.push(
-              setTimeout(() => router.replace('/auth/forgot-password'), 1500)
-            );
+            if (isMounted) {
+              setMessage(
+                'Invalid or expired authentication link. Please try signing in again.'
+              );
+              timeoutIds.push(
+                setTimeout(() => {
+                  if (isMounted) {
+                    router.replace('/auth/login');
+                  }
+                }, 1500)
+              );
+            }
             return;
           }
 
-          if (p.type === 'recovery') router.replace('/auth/reset-password');
-          else router.replace('/auth/login');
+          if (isMounted) {
+            if (p.type === 'recovery') router.replace('/auth/reset-password');
+            else router.replace('/auth/login');
+          }
           return;
         }
 
@@ -90,29 +113,54 @@ export default function AuthCallback() {
           });
 
           if (error) {
-            setMessage(error.message);
-            timeoutIds.push(
-              setTimeout(() => router.replace('/auth/forgot-password'), 1500)
-            );
+            if (isMounted) {
+              setMessage(error.message);
+              timeoutIds.push(
+                setTimeout(() => {
+                  if (isMounted) {
+                    router.replace('/auth/forgot-password');
+                  }
+                }, 1500)
+              );
+            }
             return;
           }
 
-          if (p.type === 'recovery') router.replace('/auth/reset-password');
-          else router.replace('/auth/login');
+          if (isMounted) {
+            if (p.type === 'recovery') router.replace('/auth/reset-password');
+            else router.replace('/auth/login');
+          }
           return;
         }
 
-        setMessage('Invalid callback. Missing required parameters.');
-        timeoutIds.push(setTimeout(() => router.replace('/auth/login'), 1500));
+        if (isMounted) {
+          setMessage('Invalid callback. Missing required parameters.');
+          timeoutIds.push(
+            setTimeout(() => {
+              if (isMounted) {
+                router.replace('/auth/login');
+              }
+            }, 1500)
+          );
+        }
       } catch (e) {
-        setMessage(e instanceof Error ? e.message : 'Callback error.');
-        timeoutIds.push(setTimeout(() => router.replace('/auth/login'), 1500));
+        if (isMounted) {
+          setMessage(e instanceof Error ? e.message : 'Callback error.');
+          timeoutIds.push(
+            setTimeout(() => {
+              if (isMounted) {
+                router.replace('/auth/login');
+              }
+            }, 1500)
+          );
+        }
       }
     };
 
     run();
 
     return () => {
+      isMounted = false;
       timeoutIds.forEach(clearTimeout);
     };
   }, [url, router]);

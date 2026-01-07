@@ -178,7 +178,7 @@ export default function ForgotPasswordScreen() {
                   />
                   <Text style={styles.successTitle}>Email Sent!</Text>
                   <Text style={styles.successText}>
-                    We&apos;ve sent a password reset link to{' '}
+                    We've sent a password reset link to{' '}
                     <Text style={styles.emailText}>{email}</Text>
                   </Text>
                   <Text style={styles.successSubtext}>
@@ -314,22 +314,6 @@ const styles = StyleSheet.create({
   },
   leftIcon: {
     marginRight: 10,
-  },
-  eyeButtonInline: {
-    padding: 6,
-    marginLeft: 6,
-  },
-  passwordHint: {
-    marginBottom: 20,
-    padding: 12,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-  },
-  passwordHintText: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#666',
-    lineHeight: 18,
   },
   resetButton: {
     height: 48,

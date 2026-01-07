@@ -32,7 +32,7 @@ export default function ResetPasswordScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
 
   const buttonScale = useSharedValue(1);
@@ -47,6 +47,7 @@ export default function ResetPasswordScreen() {
       if (user) {
         setIsAuthenticated(true);
       } else {
+        setIsAuthenticated(false);
         Alert.alert(
           'Error',
           'Invalid or expired reset link. Please request a new password reset.',
@@ -112,7 +113,7 @@ export default function ResetPasswordScreen() {
     ],
   }));
 
-  if (!isAuthenticated) {
+  if (isAuthenticated !== true) {
     return (
       <View style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
