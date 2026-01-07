@@ -2,7 +2,6 @@ import 'react-native-url-polyfill/auto';
 import 'react-native-get-random-values';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ENV } from '@/config/env';
-import * as Linking from 'expo-linking';
 
 const supabaseUrl = ENV.SUPABASE_URL;
 const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;
@@ -150,7 +149,7 @@ export type ResetPasswordParams = {
 
 export async function resetPassword(params: ResetPasswordParams) {
   const { email } = params;
-  const redirectTo = Linking.createURL('auth/callback');
+  const redirectTo = 'greenseasons://auth/callback';
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
   });

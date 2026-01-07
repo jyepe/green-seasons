@@ -24,6 +24,20 @@ export default function AuthLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="callback"
+        options={{
+          title: 'Verifying',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="reset-password"
+        options={{
+          title: 'Reset Password',
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
