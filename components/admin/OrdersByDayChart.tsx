@@ -58,15 +58,20 @@ export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
     );
   }
 
+  const parseLocalDate = (dayStr: string) => {
+    const [y, m, d] = dayStr.split('-').map(Number);
+    return new Date(y, m - 1, d); // local midnight
+  };
+
   // Format data for Victory Native
-  const chartData = data.map((item, index) => ({
-    x: index,
-    orders_count: item.orders_count,
-    label: new Date(item.day).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }),
-  }));
+  const chartData = data.map((item, index) => {
+    const dt = parseLocalDate(item.day);
+    return {
+      x: index,
+      orders_count: item.orders_count,
+      label: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    };
+  });
 
   return (
     <View style={styles.container}>
