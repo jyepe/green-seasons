@@ -44,9 +44,9 @@ export function useUpdateUserInfo() {
       }
 
       const hasProfileUpdates =
-        (profile as UpdateUserProfileParams).first_name !== undefined ||
-        (profile as UpdateUserProfileParams).last_name !== undefined ||
-        (profile as UpdateUserProfileParams).phone !== undefined;
+        profile.first_name !== undefined ||
+        profile.last_name !== undefined ||
+        profile.phone !== undefined;
 
       if (hasProfileUpdates) {
         return updateUserProfile(profile as UpdateUserProfileParams);
