@@ -49,7 +49,11 @@ export function useUpdateUserInfo() {
         phone !== undefined;
 
       if (hasProfileUpdates) {
-        return updateUserProfile({ first_name, last_name, phone });
+        const profileParams: UpdateUserProfileParams = {};
+        if (first_name !== undefined) profileParams.first_name = first_name;
+        if (last_name !== undefined) profileParams.last_name = last_name;
+        if (phone !== undefined) profileParams.phone = phone;
+        return updateUserProfile(profileParams);
       }
 
       // If only email was updated, return current user info

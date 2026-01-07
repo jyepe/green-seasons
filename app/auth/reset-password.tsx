@@ -118,9 +118,7 @@ export default function ResetPasswordScreen() {
       <View style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>
-              {isAuthenticated === null ? 'Verifying...' : 'Redirecting...'}
-            </Text>
+            <Text style={styles.loadingText}>Verifying...</Text>
           </View>
         </SafeAreaView>
       </View>
