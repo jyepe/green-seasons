@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { CartesianChart, Area, useChartPressState } from 'victory-native';
+import { CartesianChart, Bar, useChartPressState } from 'victory-native';
 import { matchFont } from '@shopify/react-native-skia';
 
 import { Colors } from '@/constants/Colors';
@@ -55,15 +55,26 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
     );
   }
 
+  const parseLocalDate = (dayStr: string) => {
+    const [y, m, d] = dayStr.split('-').map(Number);
+    return new Date(y, m - 1, d); // local midnight
+  };
+
   // Format data for Victory Native
-  const chartData = data.map((item, index) => ({
-    x: index,
-    revenue: item.revenue,
-    label: new Date(item.day).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }),
-  }));
+  const chartData = data.map((item, index) => {
+    const dt = parseLocalDate(item.day);
+    return {
+      x: index,
+      revenue: item.revenue,
+      label: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    };
+  });
+
+  const maxY = Math.max(...chartData.map(d => d.revenue));
+  const desiredTicks = 5; // how many labels you want
+  const step = Math.max(1, Math.ceil(maxY / (desiredTicks - 1)));
+  const top = Math.ceil(maxY / step) * step;
+  const yTicks = Array.from({ length: top / step + 1 }, (_, i) => i * step);
 
   const formatCurrency = (value: number) => {
     if (value >= 1000) {
@@ -107,24 +118,24 @@ export function RevenueByDayChart({ data, isLoading }: RevenueByDayChartProps) {
         data={chartData}
         xKey="x"
         yKeys={['revenue']}
-        domainPadding={{ left: 20, right: 20, top: 20 }}
+        domainPadding={{ left: 20, right: 20, top: 20, bottom: 20 }}
         chartPressState={state}
         axisOptions={{
           font,
-          tickCount: { x: Math.min(6, data.length), y: 5 },
+          tickCount: { x: Math.min(6, data.length), y: yTicks.length },
+          tickValues: { x: chartData.map(d => d.x), y: yTicks },
           formatXLabel: value => chartData[Math.round(value)]?.label ?? '',
           formatYLabel: formatCurrency,
           labelColor: colors.textSecondary,
           lineColor: colors.border,
         }}
       >
-        {({ points }) => (
-          <Area
+        {({ points, chartBounds }) => (
+          <Bar
             points={points.revenue}
-            y0={CHART_HEIGHT - 40}
+            chartBounds={chartBounds}
             color={colors.accent}
-            curveType="natural"
-            opacity={0.3}
+            roundedCorners={{ topLeft: 4, topRight: 4 }}
           />
         )}
       </CartesianChart>
