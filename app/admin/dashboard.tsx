@@ -301,6 +301,15 @@ export default function AdminDashboardScreen() {
           <TopItemsCard
             items={topItemsQuery.data ?? []}
             isLoading={topItemsQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/top-items',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 

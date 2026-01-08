@@ -1,5 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -9,9 +15,14 @@ import { formatCurrency } from '@/utils/currency';
 type TopItemsCardProps = {
   items: AdminTopItem[];
   isLoading?: boolean;
+  onViewAll?: () => void;
 };
 
-export function TopItemsCard({ items, isLoading }: TopItemsCardProps) {
+export function TopItemsCard({
+  items,
+  isLoading,
+  onViewAll,
+}: TopItemsCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -125,6 +136,19 @@ export function TopItemsCard({ items, isLoading }: TopItemsCardProps) {
           </Text>
         </View>
       ))}
+
+      {onViewAll && (
+        <TouchableOpacity
+          style={[styles.viewAllButton, { borderColor: colors.primary }]}
+          onPress={onViewAll}
+          accessibilityLabel="View all items"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.viewAllText, { color: colors.primary }]}>
+            View All Items
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -200,5 +224,16 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'Inter_400Regular',
     marginTop: 2,
+  },
+  viewAllButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
   },
 });
