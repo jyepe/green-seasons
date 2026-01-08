@@ -127,7 +127,7 @@ export function RevenueByRestaurantChart({
         data={chartData}
         xKey="x"
         yKeys={['revenue']}
-        domainPadding={{ left: 20, right: 20, top: 20, bottom: 20 }}
+        domainPadding={{ left: 50, right: 50, top: 20, bottom: 20 }}
         chartPressState={state}
         axisOptions={{
           font,
