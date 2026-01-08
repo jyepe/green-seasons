@@ -152,7 +152,7 @@ export default function AdminItemsScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
-          onPress={() => router.navigate('/admin/profile')}
+          onPress={() => router.back()}
           style={styles.backButton}
           accessibilityLabel="Go back"
           accessibilityRole="button"
