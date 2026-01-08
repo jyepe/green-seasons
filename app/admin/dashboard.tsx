@@ -309,6 +309,15 @@ export default function AdminDashboardScreen() {
           <OrdersByDayChart
             data={ordersByDayQuery.data ?? []}
             isLoading={ordersByDayQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/orders-by-day',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 

@@ -113,6 +113,13 @@ export default function AdminLayout() {
           tabBarStyle: { display: 'none' },
         }}
       />
+      <Tabs.Screen
+        name="orders-by-day"
+        options={{
+          href: null, // Hide from tab bar, accessible via navigation
+          tabBarStyle: { display: 'none' },
+        }}
+      />
     </Tabs>
   );
 }

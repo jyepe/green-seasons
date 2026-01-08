@@ -1083,11 +1083,13 @@ export type AdminChartOrdersByDay = {
  */
 export async function getAdminChartOrdersByDay(
   from: Date,
-  to: Date
+  to: Date,
+  limit: number = 5
 ): Promise<AdminChartOrdersByDay[]> {
   const { data, error } = await supabase.rpc('fn_admin_chart_orders_by_day', {
     p_from: from.toISOString(),
     p_to: to.toISOString(),
+    p_limit: limit,
   });
 
   if (error) {
