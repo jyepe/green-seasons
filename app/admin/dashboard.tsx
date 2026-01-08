@@ -153,7 +153,7 @@ export default function AdminDashboardScreen() {
       dateRange.start.toISOString(),
     ],
     queryFn: () =>
-      getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 10),
+      getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 5),
   });
 
   // Refresh all data
@@ -325,6 +325,15 @@ export default function AdminDashboardScreen() {
           <RevenueByRestaurantChart
             data={revenueByRestaurantQuery.data ?? []}
             isLoading={revenueByRestaurantQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/restaurants',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 

@@ -1325,7 +1325,7 @@ export async function getEmployeeTruckLoadSummary(
 export async function getAdminChartRevenueByRestaurant(
   from: Date,
   to: Date,
-  limit: number = 10
+  limit: number
 ): Promise<AdminChartRevenueByRestaurant[]> {
   const { data, error } = await supabase.rpc(
     'fn_admin_chart_revenue_by_restaurant',

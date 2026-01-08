@@ -1,44 +1,38 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
-  Platform,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import { CartesianChart, Bar, useChartPressState } from 'victory-native';
-import { matchFont } from '@shopify/react-native-skia';
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByRestaurant } from '@/lib/supabase';
 
-const fontFamily = Platform.select({ ios: 'Helvetica', default: 'sans-serif' });
-const fontStyle = {
-  fontFamily,
-  fontSize: 11,
-  fontWeight: '400' as const,
-};
-const font = matchFont(fontStyle);
-
 type RevenueByRestaurantChartProps = {
   data: AdminChartRevenueByRestaurant[];
   isLoading?: boolean;
+  onViewAll?: () => void;
 };
-
-const { width } = Dimensions.get('window');
-const HORIZONTAL_PADDING = 32;
-const CHART_WIDTH = width - HORIZONTAL_PADDING * 2;
-const BAR_HEIGHT = 40;
 
 export function RevenueByRestaurantChart({
   data,
   isLoading,
+  onViewAll,
 }: RevenueByRestaurantChartProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { state, isActive } = useChartPressState({ x: 0, y: { revenue: 0 } });
+
+  // Sort by revenue descending (RPC already limits results)
+  const topRestaurants = useMemo(() => {
+    return [...data].sort((a, b) => b.revenue - a.revenue);
+  }, [data]);
+
+  const formatCurrency = (value: number) => {
+    return `$${value.toFixed(2)}`;
+  };
 
   if (isLoading) {
     return (
@@ -58,110 +52,118 @@ export function RevenueByRestaurantChart({
     );
   }
 
-  // Format data for Victory Native
-  const MAX_LABEL_LENGTH = 18;
-
-  const createRestaurantLabel = (name: string): string => {
-    if (name.length <= MAX_LABEL_LENGTH) {
-      return name;
-    }
-
-    // Preserve both the beginning and end of the name to reduce ambiguity,
-    // e.g., "Starbucks…1st Ave"
-    const startLength = 10;
-    const endLength = MAX_LABEL_LENGTH - startLength - 1; // 1 for the ellipsis
-
-    if (endLength <= 0) {
-      return name.slice(0, MAX_LABEL_LENGTH - 1) + '…';
-    }
-
-    return `${name.slice(0, startLength)}…${name.slice(-endLength)}`;
-  };
-
-  const chartData = data.map((item, index) => ({
-    x: index,
-    revenue: item.revenue,
-    label: createRestaurantLabel(item.restaurant_name),
-  }));
-
-  const chartHeight = Math.max(200, data.length * BAR_HEIGHT + 60);
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000) {
-      return `$${(value / 1000).toFixed(1)}k`;
-    }
-    return `$${value.toFixed(0)}`;
-  };
-
   return (
-    <View style={[styles.container, { height: chartHeight }]}>
-      {isActive && (
-        <View style={styles.tooltip}>
-          <Text
-            style={[
-              styles.tooltipText,
-              {
-                color: colors.text,
-                backgroundColor:
-                  colorScheme === 'dark'
-                    ? 'rgba(0,0,0,0.9)'
-                    : 'rgba(255,255,255,0.9)',
-              },
-            ]}
-          >
-            {(() => {
-              const rawIndex = state.x.value.value;
-              const safeIndex = Number.isFinite(rawIndex)
-                ? Math.min(data.length - 1, Math.max(0, Math.round(rawIndex)))
-                : -1;
-              const hoveredRestaurant =
-                safeIndex >= 0 ? data[safeIndex] : undefined;
-              if (!hoveredRestaurant) return '';
-              const value = state.y.revenue.value.value;
-              return `${hoveredRestaurant.restaurant_name}: ${formatCurrency(value)}`;
-            })()}
-          </Text>
+    <View style={styles.container}>
+      {topRestaurants.map((restaurant, index) => (
+        <View
+          key={restaurant.restaurant_id}
+          style={[
+            styles.restaurantRow,
+            index < topRestaurants.length - 1 && {
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
+          <View style={styles.restaurantInfo}>
+            <Text style={[styles.rank, { color: colors.textSecondary }]}>
+              #{index + 1}
+            </Text>
+            <View style={styles.restaurantDetails}>
+              <Text style={[styles.restaurantName, { color: colors.text }]}>
+                {restaurant.restaurant_name}
+              </Text>
+              <View style={styles.statsRow}>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Revenue:{' '}
+                </Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>
+                  {formatCurrency(restaurant.revenue)}
+                </Text>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: colors.textSecondary, marginLeft: 16 },
+                  ]}
+                >
+                  Orders:{' '}
+                </Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>
+                  {restaurant.orders_count}
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
+      ))}
+
+      {onViewAll && (
+        <TouchableOpacity
+          style={[styles.viewAllButton, { borderColor: colors.primary }]}
+          onPress={onViewAll}
+          accessibilityLabel="View all restaurants"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.viewAllText, { color: colors.primary }]}>
+            View All Restaurants
+          </Text>
+        </TouchableOpacity>
       )}
-      <CartesianChart
-        data={chartData}
-        xKey="x"
-        yKeys={['revenue']}
-        domainPadding={{ left: 50, right: 50, top: 20, bottom: 20 }}
-        chartPressState={state}
-        axisOptions={{
-          font,
-          tickCount: { x: data.length, y: 5 },
-          formatXLabel: value => chartData[Math.round(value)]?.label ?? '',
-          formatYLabel: formatCurrency,
-          labelColor: colors.textSecondary,
-          lineColor: colors.border,
-        }}
-      >
-        {({ points, chartBounds }) => (
-          <Bar
-            points={points.revenue}
-            chartBounds={chartBounds}
-            color={colors.primary}
-            roundedCorners={{ topLeft: 4, topRight: 4 }}
-          />
-        )}
-      </CartesianChart>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: CHART_WIDTH,
+    paddingVertical: 8,
+  },
+  restaurantRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  restaurantInfo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  rank: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginRight: 12,
+    minWidth: 32,
+  },
+  restaurantDetails: {
+    flex: 1,
+  },
+  restaurantName: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 6,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  statLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   loadingContainer: {
-    height: 200,
+    paddingVertical: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptyContainer: {
-    height: 100,
+    paddingVertical: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -169,19 +171,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
   },
-  tooltip: {
-    position: 'absolute',
-    top: -10,
-    left: 0,
-    right: 0,
+  viewAllButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 8,
     alignItems: 'center',
-    zIndex: 1,
   },
-  tooltipText: {
-    fontSize: 12,
+  viewAllText: {
+    fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
   },
 });

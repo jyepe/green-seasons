@@ -99,6 +99,13 @@ export default function AdminLayout() {
           href: null, // Hide from tab bar, accessible via navigation
         }}
       />
+      <Tabs.Screen
+        name="restaurants"
+        options={{
+          href: null, // Hide from tab bar, accessible via navigation
+          tabBarStyle: { display: 'none' },
+        }}
+      />
     </Tabs>
   );
 }
