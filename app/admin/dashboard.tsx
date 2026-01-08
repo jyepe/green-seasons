@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -31,7 +30,6 @@ import {
   getAdminMonthKPIs,
   getAdminOrders,
   getAdminTopItems,
-  signOutUser,
 } from '@/lib/supabase';
 
 const ORDERS_PAGE_SIZE = 10;
@@ -186,25 +184,6 @@ export default function AdminDashboardScreen() {
     }
   };
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      await signOutUser();
-    } catch (error) {
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('Error signing out:', error);
-      }
-      Alert.alert('Logout Failed', 'Unable to sign out. Please try again.', [
-        { text: 'OK' },
-      ]);
-      return;
-    }
-
-    // Only navigate if sign out was successful
-    router.replace('/auth/login');
-  };
-
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -222,18 +201,6 @@ export default function AdminDashboardScreen() {
             Manage your business
           </Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.logoutButton,
-            { backgroundColor: colors.error + '15' },
-          ]}
-          onPress={handleLogout}
-          accessibilityLabel="Logout"
-          accessibilityRole="button"
-          accessibilityHint="Double tap to sign out of your admin account"
-        >
-          <Ionicons name="log-out-outline" size={20} color={colors.error} />
-        </TouchableOpacity>
       </View>
 
       {/* Month Selector */}
@@ -403,13 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     marginTop: 2,
-  },
-  logoutButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   monthSelector: {
     flexDirection: 'row',
