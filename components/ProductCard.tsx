@@ -65,6 +65,12 @@ export function ProductCard({
           style={styles.favoriteButton}
           onPress={() => onToggleFavorite(item.id, item.is_favorite)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel={
+            item.is_favorite
+              ? `Remove ${item.name} from favorites`
+              : `Add ${item.name} to favorites`
+          }
+          accessibilityRole="button"
         >
           <Ionicons
             name={item.is_favorite ? 'heart' : 'heart-outline'}
@@ -113,6 +119,9 @@ export function ProductCard({
             ]}
             onPress={() => onAddToCart(item.id)}
             disabled={isPending}
+            accessibilityRole="button"
+            accessibilityLabel={`Add ${item.name} to cart`}
+            accessibilityState={{ disabled: isPending, busy: isPending }}
           >
             {isPending ? (
               <ActivityIndicator size="small" color="white" />
@@ -139,6 +148,9 @@ export function ProductCard({
               ]}
               onPress={() => onUpdateQuantity(item.id, -1)}
               disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={`Decrease quantity of ${item.name}`}
+              accessibilityState={{ disabled: isPending || stepperQuantity <= 0 }}
             >
               <Ionicons name="remove" size={18} color={colors.text} />
             </TouchableOpacity>
@@ -170,6 +182,9 @@ export function ProductCard({
               ]}
               onPress={() => onUpdateQuantity(item.id, 1)}
               disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={`Increase quantity of ${item.name}`}
+              accessibilityState={{ disabled: isPending }}
             >
               <Ionicons name="add" size={18} color={colors.text} />
             </TouchableOpacity>
