@@ -11,21 +11,21 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByRestaurant } from '@/lib/supabase';
 
-type RevenueByRestaurantChartProps = {
+type RevenueByRestaurantListProps = {
   data: AdminChartRevenueByRestaurant[];
   isLoading?: boolean;
   onViewAll?: () => void;
 };
 
-export function RevenueByRestaurantChart({
+export function RevenueByRestaurantList({
   data,
   isLoading,
   onViewAll,
-}: RevenueByRestaurantChartProps) {
+}: RevenueByRestaurantListProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  // Sort by revenue descending (RPC already limits results)
+  // Sort by revenue descending to ensure proper ranking even if RPC ordering changes
   const topRestaurants = useMemo(() => {
     return [...data].sort((a, b) => b.revenue - a.revenue);
   }, [data]);

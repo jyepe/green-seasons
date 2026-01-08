@@ -9,34 +9,25 @@ import {
 
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import type { AdminChartOrdersByDay } from '@/lib/supabase';
+import type { AdminChartRevenueByDay } from '@/lib/supabase';
+import { formatDate } from '@/lib/utils/dateUtils';
 
-type OrdersByDayChartProps = {
-  data: AdminChartOrdersByDay[];
+type RevenueByDayListProps = {
+  data: AdminChartRevenueByDay[];
   isLoading?: boolean;
   onViewAll?: () => void;
 };
 
-export function OrdersByDayChart({
+export function RevenueByDayList({
   data,
   isLoading,
   onViewAll,
-}: OrdersByDayChartProps) {
+}: RevenueByDayListProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const parseLocalDate = (dayStr: string) => {
-    const [y, m, d] = dayStr.split('-').map(Number);
-    return new Date(y, m - 1, d); // local midnight
-  };
-
-  const formatDate = (dayStr: string) => {
-    const date = parseLocalDate(dayStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
+  const formatCurrency = (value: number) => {
+    return `$${value.toFixed(2)}`;
   };
 
   if (isLoading) {
@@ -51,7 +42,7 @@ export function OrdersByDayChart({
     return (
       <View style={styles.emptyContainer}>
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-          No order data for this period
+          No revenue data for this period
         </Text>
       </View>
     );
@@ -73,8 +64,8 @@ export function OrdersByDayChart({
           <Text style={[styles.dayLabel, { color: colors.text }]}>
             {formatDate(item.day)}
           </Text>
-          <Text style={[styles.ordersValue, { color: colors.text }]}>
-            {item.orders_count} {item.orders_count === 1 ? 'order' : 'orders'}
+          <Text style={[styles.revenueValue, { color: colors.text }]}>
+            {formatCurrency(item.revenue)}
           </Text>
         </View>
       ))}
@@ -110,7 +101,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Inter_500Medium',
   },
-  ordersValue: {
+  revenueValue: {
     fontSize: 15,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',

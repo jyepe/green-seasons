@@ -15,10 +15,10 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
   ExpandableCard,
   KPICard,
-  OrdersByDayChart,
+  OrdersByDayList,
   OrdersCard,
-  RevenueByDayChart,
-  RevenueByRestaurantChart,
+  RevenueByDayList,
+  RevenueByRestaurantList,
   TopItemsCard,
 } from '@/components/admin';
 import { Colors } from '@/constants/Colors';
@@ -282,7 +282,7 @@ export default function AdminDashboardScreen() {
 
         {/* Orders by Day Chart */}
         <ExpandableCard title="Orders by Day" defaultExpanded>
-          <OrdersByDayChart
+          <OrdersByDayList
             data={ordersByDayQuery.data ?? []}
             isLoading={ordersByDayQuery.isLoading}
             onViewAll={() =>
@@ -299,7 +299,7 @@ export default function AdminDashboardScreen() {
 
         {/* Revenue by Day Chart */}
         <ExpandableCard title="Revenue by Day" defaultExpanded>
-          <RevenueByDayChart
+          <RevenueByDayList
             data={revenueByDayQuery.data ?? []}
             isLoading={revenueByDayQuery.isLoading}
             onViewAll={() =>
@@ -316,7 +316,7 @@ export default function AdminDashboardScreen() {
 
         {/* Revenue by Restaurant Chart */}
         <ExpandableCard title="Revenue by Restaurant" defaultExpanded>
-          <RevenueByRestaurantChart
+          <RevenueByRestaurantList
             data={revenueByRestaurantQuery.data ?? []}
             isLoading={revenueByRestaurantQuery.isLoading}
             onViewAll={() =>
