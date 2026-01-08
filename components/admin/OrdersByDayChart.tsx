@@ -73,6 +73,12 @@ export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
     };
   });
 
+  const maxY = Math.max(...chartData.map(d => d.orders_count));
+  const desiredTicks = 5; // how many labels you want
+  const step = Math.max(1, Math.ceil(maxY / (desiredTicks - 1)));
+  const top = Math.ceil(maxY / step) * step;
+  const yTicks = Array.from({ length: top / step + 1 }, (_, i) => i * step);
+
   return (
     <View style={styles.container}>
       {isActive && (
@@ -112,8 +118,10 @@ export function OrdersByDayChart({ data, isLoading }: OrdersByDayChartProps) {
         chartPressState={state}
         axisOptions={{
           font,
-          tickCount: { x: Math.min(6, data.length), y: 5 },
+          tickCount: { x: Math.min(6, data.length), y: yTicks.length },
+          tickValues: { x: chartData.map(d => d.x), y: yTicks },
           formatXLabel: value => chartData[Math.round(value)]?.label ?? '',
+          formatYLabel: v => `${Math.round(v)}`,
           labelColor: colors.textSecondary,
           lineColor: colors.border,
         }}
