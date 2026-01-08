@@ -166,7 +166,7 @@ export default function RestaurantOnboardingScreen() {
             text: 'Continue',
             onPress: () => {
               if (isUserAdmin) {
-                router.replace('/admin/dashboard');
+                router.replace('/admin/');
               } else {
                 router.replace('/(tabs)');
               }

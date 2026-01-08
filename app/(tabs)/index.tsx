@@ -32,7 +32,7 @@ export default function HomeScreen() {
   useEffect(() => {
     // Only redirect if we have a definitive answer (not loading) and user is admin
     if (!isAdminLoading && isUserAdmin === true) {
-      router.replace('/admin/dashboard');
+      router.replace('/admin/');
     }
   }, [isUserAdmin, isAdminLoading, router]);
 

@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -16,10 +15,10 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
   ExpandableCard,
   KPICard,
-  OrdersByDayChart,
+  OrdersByDayList,
   OrdersCard,
-  RevenueByDayChart,
-  RevenueByRestaurantChart,
+  RevenueByDayList,
+  RevenueByRestaurantList,
   TopItemsCard,
 } from '@/components/admin';
 import { Colors } from '@/constants/Colors';
@@ -31,7 +30,6 @@ import {
   getAdminMonthKPIs,
   getAdminOrders,
   getAdminTopItems,
-  signOutUser,
 } from '@/lib/supabase';
 
 const ORDERS_PAGE_SIZE = 10;
@@ -153,7 +151,7 @@ export default function AdminDashboardScreen() {
       dateRange.start.toISOString(),
     ],
     queryFn: () =>
-      getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 10),
+      getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 5),
   });
 
   // Refresh all data
@@ -186,25 +184,6 @@ export default function AdminDashboardScreen() {
     }
   };
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      await signOutUser();
-    } catch (error) {
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('Error signing out:', error);
-      }
-      Alert.alert('Logout Failed', 'Unable to sign out. Please try again.', [
-        { text: 'OK' },
-      ]);
-      return;
-    }
-
-    // Only navigate if sign out was successful
-    router.replace('/auth/login');
-  };
-
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -222,18 +201,6 @@ export default function AdminDashboardScreen() {
             Manage your business
           </Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.logoutButton,
-            { backgroundColor: colors.error + '15' },
-          ]}
-          onPress={handleLogout}
-          accessibilityLabel="Logout"
-          accessibilityRole="button"
-          accessibilityHint="Double tap to sign out of your admin account"
-        >
-          <Ionicons name="log-out-outline" size={20} color={colors.error} />
-        </TouchableOpacity>
       </View>
 
       {/* Month Selector */}
@@ -301,30 +268,66 @@ export default function AdminDashboardScreen() {
           <TopItemsCard
             items={topItemsQuery.data ?? []}
             isLoading={topItemsQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/top-items',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 
         {/* Orders by Day Chart */}
         <ExpandableCard title="Orders by Day" defaultExpanded>
-          <OrdersByDayChart
+          <OrdersByDayList
             data={ordersByDayQuery.data ?? []}
             isLoading={ordersByDayQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/orders-by-day',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 
         {/* Revenue by Day Chart */}
         <ExpandableCard title="Revenue by Day" defaultExpanded>
-          <RevenueByDayChart
+          <RevenueByDayList
             data={revenueByDayQuery.data ?? []}
             isLoading={revenueByDayQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/revenue-by-day',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 
         {/* Revenue by Restaurant Chart */}
         <ExpandableCard title="Revenue by Restaurant" defaultExpanded>
-          <RevenueByRestaurantChart
+          <RevenueByRestaurantList
             data={revenueByRestaurantQuery.data ?? []}
             isLoading={revenueByRestaurantQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/restaurants',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 
@@ -367,13 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     marginTop: 2,
-  },
-  logoutButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   monthSelector: {
     flexDirection: 'row',
