@@ -10,6 +10,7 @@ import {
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
+import { formatDate } from '@/lib/utils/dateUtils';
 
 type RevenueByDayListProps = {
   data: AdminChartRevenueByDay[];
@@ -24,20 +25,6 @@ export function RevenueByDayList({
 }: RevenueByDayListProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-
-  const parseLocalDate = (dayStr: string) => {
-    const [y, m, d] = dayStr.split('-').map(Number);
-    return new Date(y, m - 1, d); // local midnight
-  };
-
-  const formatDate = (dayStr: string) => {
-    const date = parseLocalDate(dayStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   const formatCurrency = (value: number) => {
     return `$${value.toFixed(2)}`;

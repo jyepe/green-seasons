@@ -10,6 +10,7 @@ import {
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
+import { formatDate } from '@/lib/utils/dateUtils';
 
 type OrdersByDayListProps = {
   data: AdminChartOrdersByDay[];
@@ -24,20 +25,6 @@ export function OrdersByDayList({
 }: OrdersByDayListProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-
-  const parseLocalDate = (dayStr: string) => {
-    const [y, m, d] = dayStr.split('-').map(Number);
-    return new Date(y, m - 1, d); // local midnight
-  };
-
-  const formatDate = (dayStr: string) => {
-    const date = parseLocalDate(dayStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   if (isLoading) {
     return (

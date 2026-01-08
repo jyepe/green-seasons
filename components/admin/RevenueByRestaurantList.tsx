@@ -25,7 +25,7 @@ export function RevenueByRestaurantList({
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  // Sort by revenue descending (RPC already limits results)
+  // Sort by revenue descending to ensure proper ranking even if RPC ordering changes
   const topRestaurants = useMemo(() => {
     return [...data].sort((a, b) => b.revenue - a.revenue);
   }, [data]);
