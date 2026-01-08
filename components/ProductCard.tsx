@@ -71,6 +71,7 @@ export function ProductCard({
               : `Add ${item.name} to favorites`
           }
           accessibilityRole="button"
+          accessibilityState={{ selected: item.is_favorite }}
         >
           <Ionicons
             name={item.is_favorite ? 'heart' : 'heart-outline'}
@@ -150,7 +151,9 @@ export function ProductCard({
               disabled={isPending}
               accessibilityRole="button"
               accessibilityLabel={`Decrease quantity of ${item.name}`}
-              accessibilityState={{ disabled: isPending || stepperQuantity <= 0 }}
+              accessibilityState={{
+                disabled: isPending || stepperQuantity <= 0,
+              }}
             >
               <Ionicons name="remove" size={18} color={colors.text} />
             </TouchableOpacity>

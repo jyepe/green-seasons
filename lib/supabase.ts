@@ -110,8 +110,6 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
 
 /**
  * Get user info by ID (admin only)
- * Note: This requires an RPC function or view that includes email
- * For now, we'll get what we can from profiles
  */
 export async function getUserInfoById(
   userId: string
@@ -130,12 +128,9 @@ export async function getUserInfoById(
     return null;
   }
 
-  // Email is not in profiles table, we'll need to get it from auth
-  // For now, return what we have - email will need to be handled separately
-  // or via an RPC function that joins with auth.users
   return {
     ...data,
-    email: '', // Email will need to be fetched separately or via RPC
+    email: 'N/A', // Email will default to N/A since it is the admin creating the order
   };
 }
 
