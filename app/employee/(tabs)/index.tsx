@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
 import {
-  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -18,7 +17,6 @@ import { ExpandableCard } from '@/components/admin';
 import { EmployeeOrdersCard } from '@/components/employee';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useSignOut } from '@/hooks/useUserInfo';
 import { getEmployeeOrders } from '@/lib/supabase';
 
 export default function EmployeeDashboardScreen() {
@@ -26,7 +24,6 @@ export default function EmployeeDashboardScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
   const queryClient = useQueryClient();
-  const signOut = useSignOut();
 
   // Fetch only 5 most recent orders for dashboard
   const ordersQuery = useQuery({
@@ -55,21 +52,6 @@ export default function EmployeeDashboardScreen() {
     }, [queryClient])
   );
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      router.replace('/auth/login');
-    } catch (error) {
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('Error signing out:', error);
-      }
-      Alert.alert('Logout Failed', 'Unable to sign out. Please try again.', [
-        { text: 'OK' },
-      ]);
-    }
-  };
-
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -87,18 +69,6 @@ export default function EmployeeDashboardScreen() {
             View and manage orders
           </Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.logoutButton,
-            { backgroundColor: colors.error + '15' },
-          ]}
-          onPress={handleLogout}
-          accessibilityLabel="Logout"
-          accessibilityRole="button"
-          accessibilityHint="Double tap to sign out"
-        >
-          <Ionicons name="log-out-outline" size={20} color={colors.error} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -151,13 +121,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
     marginTop: 2,
-  },
-  logoutButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
