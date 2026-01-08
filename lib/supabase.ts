@@ -1114,11 +1114,13 @@ export type AdminChartRevenueByDay = {
  */
 export async function getAdminChartRevenueByDay(
   from: Date,
-  to: Date
+  to: Date,
+  limit: number = 5
 ): Promise<AdminChartRevenueByDay[]> {
   const { data, error } = await supabase.rpc('fn_admin_chart_revenue_by_day', {
     p_from: from.toISOString(),
     p_to: to.toISOString(),
+    p_limit: limit,
   });
 
   if (error) {

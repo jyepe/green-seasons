@@ -317,6 +317,15 @@ export default function AdminDashboardScreen() {
           <RevenueByDayChart
             data={revenueByDayQuery.data ?? []}
             isLoading={revenueByDayQuery.isLoading}
+            onViewAll={() =>
+              router.push({
+                pathname: '/admin/revenue-by-day',
+                params: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                },
+              })
+            }
           />
         </ExpandableCard>
 
