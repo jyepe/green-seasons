@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AnalyticsScreenLayout, RevenueByRestaurantChart } from '@/components/admin';
+import { AnalyticsScreenLayout, RevenueByRestaurantList } from '@/components/admin';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { getAdminChartRevenueByRestaurant } from '@/lib/supabase';
 import type { AdminChartRevenueByRestaurant } from '@/lib/supabase';
@@ -20,7 +20,7 @@ export default function AdminRestaurantsScreen() {
       onRefresh={onRefresh}
       contentPadding={false}
     >
-      <RevenueByRestaurantChart
+      <RevenueByRestaurantList
         data={query.data ?? []}
         isLoading={query.isLoading}
       />

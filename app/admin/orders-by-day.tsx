@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AnalyticsScreenLayout, OrdersByDayChart } from '@/components/admin';
+import { AnalyticsScreenLayout, OrdersByDayList } from '@/components/admin';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { getAdminChartOrdersByDay } from '@/lib/supabase';
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
@@ -19,7 +19,7 @@ export default function AdminOrdersByDayScreen() {
       isRefreshing={query.isRefetching}
       onRefresh={onRefresh}
     >
-      <OrdersByDayChart
+      <OrdersByDayList
         data={query.data ?? []}
         isLoading={query.isLoading}
       />

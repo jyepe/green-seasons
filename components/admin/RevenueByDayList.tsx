@@ -11,17 +11,17 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
 
-type RevenueByDayChartProps = {
+type RevenueByDayListProps = {
   data: AdminChartRevenueByDay[];
   isLoading?: boolean;
   onViewAll?: () => void;
 };
 
-export function RevenueByDayChart({
+export function RevenueByDayList({
   data,
   isLoading,
   onViewAll,
-}: RevenueByDayChartProps) {
+}: RevenueByDayListProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
