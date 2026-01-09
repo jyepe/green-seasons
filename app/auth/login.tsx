@@ -66,7 +66,7 @@ export default function LoginScreen() {
         setAdminStatus(userIsAdmin);
         if (userIsAdmin) {
           // Admin user - go to admin dashboard
-          router.replace('/admin/');
+          router.replace('/admin/(tabs)');
           return;
         }
       } catch (adminCheckError) {
@@ -87,7 +87,7 @@ export default function LoginScreen() {
       // Check if user is an employee
       if (userInfo?.role === 'employee') {
         setEmployeeStatus(true);
-        router.replace('/employee/');
+        router.replace('/employee/(tabs)');
         return;
       }
 

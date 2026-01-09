@@ -2,6 +2,7 @@ import 'react-native-url-polyfill/auto';
 import 'react-native-get-random-values';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ENV } from '@/config/env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 
 const supabaseUrl = ENV.SUPABASE_URL;
@@ -25,6 +26,7 @@ export const supabase: SupabaseClient = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
+      storage: AsyncStorage,
       detectSessionInUrl: false,
     },
   }
