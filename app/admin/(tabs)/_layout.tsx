@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { Tabs } from 'expo-router';
 import { Platform, StyleSheet, View } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
@@ -8,20 +8,20 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useCart } from '@/hooks/useCart';
 
 export default function AdminTabsLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useAppColorScheme();
   const { data: cartItems } = useCart();
   const hasItems = cartItems && cartItems.length > 0;
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors[colorScheme];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: colors.tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         sceneStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          backgroundColor: colors.background,
         },
         tabBarStyle: Platform.select({
           ios: {

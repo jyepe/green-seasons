@@ -1,6 +1,6 @@
 import { EmployeeOrderListItem, FilterChip } from '@/components/employee';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { getEmployeeOrders } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -32,8 +32,8 @@ const ORDERS_PAGE_SIZE = 25;
 
 export default function EmployeeOrdersScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const queryClient = useQueryClient();
 
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all');

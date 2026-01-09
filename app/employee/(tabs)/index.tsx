@@ -16,12 +16,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { ExpandableCard } from '@/components/admin';
 import { EmployeeOrdersCard } from '@/components/employee';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { getEmployeeOrders } from '@/lib/supabase';
 
 export default function EmployeeDashboardScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const router = useRouter();
   const queryClient = useQueryClient();
 

@@ -10,7 +10,7 @@ import {
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { withSpring } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useSwipeToDelete } from '@/hooks/useSwipeToDelete';
 import type { CartItem } from '@/lib/supabase';
 
@@ -34,8 +34,8 @@ export function SwipeableRow({
   onDeleteItem,
   onItemPress,
 }: SwipeableRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const { panGesture, animatedRowStyle, animatedDeleteStyle, translateX } =
     useSwipeToDelete({

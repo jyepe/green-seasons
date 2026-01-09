@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import {
   assignRestaurantToEmployee,
   getEmployeesAndRestaurants,
@@ -33,8 +33,8 @@ function formatEmployeeName(employee: EmployeeProfile) {
 
 export default function EmployeeManagementScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const queryClient = useQueryClient();
 
   const [employeeDropdownVisible, setEmployeeDropdownVisible] = useState(false);

@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { Item, CreateItemParams, UpdateItemParams } from '@/lib/supabase';
 
 type ItemFormData = {
@@ -37,8 +37,8 @@ export function ItemFormModal({
   onClose,
   onSave,
 }: ItemFormModalProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const [formData, setFormData] = React.useState<ItemFormData>({
     name: '',

@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
 import { useToggleFavorite } from '@/hooks/useFavorite';
@@ -27,8 +27,8 @@ export default function ProductsScreen() {
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const { data: items, isLoading, error } = useItems();
   const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();

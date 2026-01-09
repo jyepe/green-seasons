@@ -1,15 +1,16 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useSignOut, useUserInfo } from '@/hooks/useUserInfo';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function EmployeeProfileScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const signOut = useSignOut();
   const { data: userInfo } = useUserInfo();
 
@@ -72,6 +73,8 @@ export default function EmployeeProfileScreen() {
             </Text>
           </View>
         )}
+
+        <ThemeToggle colors={colors} />
 
         <TouchableOpacity
           style={[

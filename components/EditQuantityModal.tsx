@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 
 export type EditingItem = {
   item_id: string;
@@ -35,8 +35,8 @@ export function EditQuantityModal({
   onSave,
   setEditQuantity,
 }: EditQuantityModalProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   return (
     <Modal

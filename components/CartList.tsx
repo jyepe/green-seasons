@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { SwipeableRow } from './SwipeableRow';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { CartItem } from '@/lib/supabase';
 
 type CartListProps = {
@@ -32,8 +32,8 @@ export function CartList({
   onDeleteItem,
   onItemPress,
 }: CartListProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   if (isLoading) {
     return (

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils/dateUtils';
 
@@ -23,8 +23,8 @@ export function RevenueByDayList({
   isLoading,
   onViewAll,
 }: RevenueByDayListProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const formatCurrency = (value: number) => {
     return `$${value.toFixed(2)}`;

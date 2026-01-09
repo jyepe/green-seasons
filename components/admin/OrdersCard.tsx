@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { AdminOrder, OrderStatus } from '@/lib/supabase';
 import { formatCurrency } from '@/utils/currency';
 
@@ -37,8 +37,8 @@ export function OrdersCard({
   onLoadMore,
   onViewAll,
 }: OrdersCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);

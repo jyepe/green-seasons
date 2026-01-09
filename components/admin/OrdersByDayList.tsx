@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils/dateUtils';
 
@@ -23,8 +23,8 @@ export function OrdersByDayList({
   isLoading,
   onViewAll,
 }: OrdersByDayListProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   if (isLoading) {
     return (

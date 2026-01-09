@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { AdminChartRevenueByRestaurant } from '@/lib/supabase';
 
 type RevenueByRestaurantListProps = {
@@ -22,8 +22,8 @@ export function RevenueByRestaurantList({
   isLoading,
   onViewAll,
 }: RevenueByRestaurantListProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   // Sort by revenue descending to ensure proper ranking even if RPC ordering changes
   const topRestaurants = useMemo(() => {

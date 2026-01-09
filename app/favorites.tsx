@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useFavoriteItems, useToggleFavorite } from '@/hooks/useFavorite';
 import { ProductCard } from '@/components/ProductCard';
@@ -24,8 +24,8 @@ export default function FavoritesScreen() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Item added to cart!');
   const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const { data: favoriteItems, isLoading, error } = useFavoriteItems();
   const { data: cartItems } = useCart();
   const addToCartMutation = useAddToCart();

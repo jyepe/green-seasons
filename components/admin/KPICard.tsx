@@ -3,7 +3,7 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { formatCurrency } from '@/utils/currency';
 
 type KPICardProps = {
@@ -17,8 +17,8 @@ export function KPICard({
   totalRevenue,
   isLoading,
 }: KPICardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   if (isLoading) {
     return (

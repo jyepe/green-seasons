@@ -18,13 +18,13 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { getEmployeeTruckLoadSummary } from '@/lib/supabase';
 import { generateLoadingSheetHtml, pluralize } from '@/utils/invoice';
 
 export default function EmployeeTruckLoadScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);

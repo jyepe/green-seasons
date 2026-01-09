@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { AdminTopItem } from '@/lib/supabase';
 import { formatCurrency } from '@/utils/currency';
 
@@ -23,8 +23,8 @@ export function TopItemsCard({
   isLoading,
   onViewAll,
 }: TopItemsCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   if (isLoading) {
     return (

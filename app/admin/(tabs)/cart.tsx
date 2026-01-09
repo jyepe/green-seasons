@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useCart, useClearCart, useAddToCart } from '@/hooks/useCart';
 import { useItems } from '@/hooks/useItems';
 import { useUserInfo } from '@/hooks/useUserInfo';
@@ -25,8 +25,8 @@ import { EditQuantityModal, EditingItem } from '@/components/EditQuantityModal';
 
 export default function CartScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const { data: cartItems, isLoading, error } = useCart();
   const { data: items } = useItems();
   const { data: userInfo } = useUserInfo();

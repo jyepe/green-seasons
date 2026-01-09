@@ -6,7 +6,7 @@ import {
 import {
   DarkTheme,
   DefaultTheme,
-  ThemeProvider,
+  ThemeProvider as NavigationThemeProvider,
   Theme,
 } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect, useMemo } from 'react';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemeProvider, useAppColorScheme } from '@/hooks/useTheme';
 import { Colors } from '@/constants/Colors';
 
 // Create a client
@@ -32,13 +32,31 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     Inter_400Regular,
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  if (!loaded) {
+    // Async font loading only occurs in development.
+    return null;
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </QueryClientProvider>
+  );
+}
+
+function AppContent() {
+  const colorScheme = useAppColorScheme();
 
   // Create custom themes based on our Colors constants (memoized to prevent recreation on every render)
   const CustomDefaultTheme: Theme = useMemo(
@@ -81,84 +99,73 @@ export default function RootLayout() {
   );
 
   useEffect(() => {
-    if (loaded) {
-      // Set the native root view background color to match our theme
-      // This prevents white flashes during deep navigation transitions
-      SystemUI.setBackgroundColorAsync(backgroundColor);
-    }
-  }, [loaded, backgroundColor]);
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+    // Set the native root view background color to match our theme
+    // This prevents white flashes during deep navigation transitions
+    SystemUI.setBackgroundColorAsync(backgroundColor);
+  }, [backgroundColor]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <ThemeProvider
-          value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}
-        >
-          <Stack
-            screenOptions={{
-              animation: 'slide_from_right',
-              animationDuration: 250,
-              gestureEnabled: true,
-              gestureDirection: 'horizontal',
-              contentStyle: {
-                backgroundColor,
-              },
-            }}
-          >
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="admin"
-              options={{
-                headerShown: false,
-                animation: 'fade',
-              }}
-            />
-            <Stack.Screen
-              name="employee"
-              options={{
-                headerShown: false,
-                animation: 'fade',
-              }}
-            />
-            <Stack.Screen
-              name="(tabs)"
-              options={{
-                headerShown: false,
-                animation: 'fade',
-              }}
-            />
-            <Stack.Screen
-              name="order/[id]"
-              options={{
-                headerShown: false,
-                animation: 'slide_from_right',
-              }}
-            />
-            <Stack.Screen
-              name="favorites"
-              options={{
-                headerShown: false,
-                animation: 'slide_from_right',
-              }}
-            />
-            <Stack.Screen
-              name="orders"
-              options={{
-                headerShown: false,
-                animation: 'slide_from_right',
-              }}
-            />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </QueryClientProvider>
+    <NavigationThemeProvider
+      value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}
+    >
+      <Stack
+        screenOptions={{
+          animation: 'slide_from_right',
+          animationDuration: 250,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          contentStyle: {
+            backgroundColor,
+          },
+        }}
+      >
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="admin"
+          options={{
+            headerShown: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="employee"
+          options={{
+            headerShown: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="order/[id]"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="favorites"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="orders"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    </NavigationThemeProvider>
   );
 }

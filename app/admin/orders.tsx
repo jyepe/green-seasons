@@ -1,6 +1,6 @@
 import { AdminOrderListItem } from '@/components/AdminOrderListItem';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { getAdminOrders, OrderStatus } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -30,8 +30,8 @@ const ORDERS_PAGE_SIZE = 50;
 
 export default function AdminOrdersScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all');
 
