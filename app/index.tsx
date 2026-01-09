@@ -1,4 +1,5 @@
 import { Colors } from '@/constants/Colors';
+import { ROUTES, USER_ROLES } from '@/constants/Routes';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
 import { useSetEmployeeStatus } from '@/hooks/useEmployee';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -16,35 +17,47 @@ export default function IndexScreen() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      // eslint-disable-next-line no-console
-      console.log('Auth Check: Starting...');
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('Auth Check: Starting...');
+      }
 
       try {
         // Initial session check
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        // eslint-disable-next-line no-console
-        console.log('Auth Check: Session found?', !!session);
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.log('Auth Check: Session found?', !!session);
+        }
 
         if (!session) {
-          // eslint-disable-next-line no-console
-          console.log('Auth Check: No session, redirecting to login');
-          router.replace('/auth/login');
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log('Auth Check: No session, redirecting to login');
+          }
+          router.replace(ROUTES.AUTH_LOGIN);
           return;
         }
 
         // Fetch detailed user info
-        // eslint-disable-next-line no-console
-        console.log('Auth Check: Fetching user profile...');
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.log('Auth Check: Fetching user profile...');
+        }
         const userInfo = await getCurrentUserInfo();
-        // eslint-disable-next-line no-console
-        console.log('Auth Check: Profile loaded', userInfo?.email);
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.log('Auth Check: Profile loaded', userInfo?.email);
+        }
 
         if (!userInfo) {
-          // eslint-disable-next-line no-console
-          console.log('Auth Check: Profile missing (unexpected), to login');
-          router.replace('/auth/login');
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log('Auth Check: Profile missing (unexpected), to login');
+          }
+          router.replace(ROUTES.AUTH_LOGIN);
           return;
         }
 
@@ -53,9 +66,11 @@ export default function IndexScreen() {
           const userIsAdmin = await isAdmin();
           setAdminStatus(userIsAdmin);
           if (userIsAdmin) {
-            // eslint-disable-next-line no-console
-            console.log('Auth Check: User is Admin, redirecting to Admin Dashboard');
-            router.replace('/admin/(tabs)');
+            if (__DEV__) {
+              // eslint-disable-next-line no-console
+              console.log('Auth Check: User is Admin, redirecting to Admin Dashboard');
+            }
+            router.replace(ROUTES.ADMIN_DASHBOARD);
             return;
           }
         } catch (error) {
@@ -67,31 +82,37 @@ export default function IndexScreen() {
         }
 
         // Check Employee
-        if (userInfo.role === 'employee') {
+        if (userInfo.role === USER_ROLES.EMPLOYEE) {
           setEmployeeStatus(true);
-          // eslint-disable-next-line no-console
-          console.log('Auth Check: User is Employee, redirecting to Employee Dashboard');
-          router.replace('/employee/(tabs)');
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log('Auth Check: User is Employee, redirecting to Employee Dashboard');
+          }
+          router.replace(ROUTES.EMPLOYEE_DASHBOARD);
           return;
         }
         setEmployeeStatus(false);
 
         // Check Restaurant Owner
         if (!userInfo.owned_restaurant_id) {
-          // eslint-disable-next-line no-console
-          console.log('Auth Check: No restaurant, redirecting to onboarding');
-          router.replace('/onboarding/restaurant');
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log('Auth Check: No restaurant, redirecting to onboarding');
+          }
+          router.replace(ROUTES.ONBOARDING_RESTAURANT);
         } else {
-          // eslint-disable-next-line no-console
-          console.log('Auth Check: Restaurant owner, redirecting to main app');
-          router.replace('/(tabs)');
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log('Auth Check: Restaurant owner, redirecting to main app');
+          }
+          router.replace(ROUTES.RESTAURANT_OWNER_DASHBOARD);
         }
       } catch (error) {
         if (__DEV__) {
           // eslint-disable-next-line no-console
           console.error('Auth check failed:', error);
         }
-        router.replace('/auth/login');
+        router.replace(ROUTES.AUTH_LOGIN);
       }
     };
 
