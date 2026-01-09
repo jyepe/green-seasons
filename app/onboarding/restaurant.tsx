@@ -32,7 +32,7 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 const { width, height } = Dimensions.get('window');
 
 const SUPPORTED_CITIES = ['miami'];
-const UNSUPPORTED_CITY_ERROR = 'We currently only service the Miami area.';
+const UNSUPPORTED_CITY_ERROR = `We currently only service the ${SUPPORTED_CITIES.map(city => city.charAt(0).toUpperCase() + city.slice(1)).join(', ')} area.`;
 
 export default function RestaurantOnboardingScreen() {
   const [formData, setFormData] = useState<CreateRestaurantParams>({
