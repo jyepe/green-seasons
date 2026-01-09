@@ -532,15 +532,9 @@ export default function SignupScreen() {
                       />
                     </TouchableOpacity>
                   </View>
-                  {errors.password ? (
+                  {errors.password && (
                     <Text style={[styles.errorText, { color: colors.error }]}>
                       {errors.password}
-                    </Text>
-                  ) : (
-                    <Text
-                      style={[styles.helpText, { color: colors.textTertiary }]}
-                    >
-                      Must be at least 6 characters
                     </Text>
                   )}
                 </Animated.View>
@@ -601,6 +595,19 @@ export default function SignupScreen() {
                     </Text>
                   )}
                 </Animated.View>
+
+                <View style={[styles.passwordHint, { backgroundColor: colors.inputBackground }]}>
+                  <Text style={[styles.passwordHintText, { color: colors.textSecondary }]}>
+                    Password must be at least 8 characters and contain:
+                  </Text>
+                  {['One uppercase letter', 'One lowercase letter', 'One number'].map(
+                    (requirement, index) => (
+                      <Text key={index} style={[styles.passwordHintText, { color: colors.textSecondary }]}>
+                        {`• ${requirement}`}
+                      </Text>
+                    )
+                  )}
+                </View>
 
                 <Animated.View style={buttonAnimatedStyle}>
                   <TouchableOpacity
@@ -826,5 +833,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  passwordHint: {
+    marginBottom: 20,
+    padding: 12,
+    borderRadius: 8,
+  },
+  passwordHintText: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 18,
   },
 });
