@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import {
   useOrderDetails,
   ORDER_DETAILS_QUERY_KEY,
@@ -36,8 +36,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function OrderDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const {
     data: orderDetails = [],
     isLoading,

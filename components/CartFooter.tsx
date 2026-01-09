@@ -8,7 +8,7 @@ import {
 import type { AnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 
 type CartFooterProps = {
   total: number;
@@ -21,8 +21,8 @@ export function CartFooter({
   animatedTotalStyle,
   onCheckout,
 }: CartFooterProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   return (
     <>

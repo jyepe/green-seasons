@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 
 type CartHeaderProps = {
   restaurantName?: string;
@@ -22,8 +22,8 @@ export function CartHeader({
   onClearCart,
   isClearing,
 }: CartHeaderProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   return (
     <View

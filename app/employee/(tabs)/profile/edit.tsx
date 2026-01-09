@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useUpdateUserInfo, useUserInfo } from '@/hooks/useUserInfo';
 import type { UpdateUserInfoParams } from '@/lib/supabase';
 import { Stack, useRouter } from 'expo-router';
@@ -19,8 +19,8 @@ import {
 
 export default function EditEmployeeProfileScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const { data: userInfo, isLoading: isUserLoading } = useUserInfo();
   const updateUserInfoMutation = useUpdateUserInfo();
 

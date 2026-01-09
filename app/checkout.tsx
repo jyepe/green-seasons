@@ -20,7 +20,7 @@ import DateTimePicker, {
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -50,8 +50,8 @@ function formatDate(date: Date) {
 
 export default function CheckoutScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
   const { data: isUserAdmin } = useAdmin();

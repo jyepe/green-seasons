@@ -1,6 +1,6 @@
 import { OrderListItem } from '@/components/OrderListItem';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { useOrders } from '@/hooks/useOrders';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { OrderStatus } from '@/lib/supabase';
@@ -29,8 +29,8 @@ const FILTER_LABELS: Record<FilterStatus, string> = {
 
 export default function OrderHistoryScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const { data: userInfo } = useUserInfo();
   const { data: orders = [], isLoading } = useOrders(userInfo?.id);
 

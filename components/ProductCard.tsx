@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -42,8 +42,8 @@ export function ProductCard({
   onAddToCart,
   onUpdateQuantity,
 }: ProductCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   return (
     <View style={[styles.productCard, { backgroundColor: colors.surface }]}>

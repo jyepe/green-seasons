@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { ROUTES, USER_ROLES } from '@/constants/Routes';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
 import { useSetEmployeeStatus } from '@/hooks/useEmployee';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import { getCurrentUserInfo, isAdmin, supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
@@ -10,8 +10,8 @@ import { ActivityIndicator, View } from 'react-native';
 
 export default function IndexScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const setAdminStatus = useSetAdminStatus();
   const setEmployeeStatus = useSetEmployeeStatus();
 

@@ -25,6 +25,9 @@ const MAPPING = {
   'cart.fill': 'shopping-cart',
   'truck.fill': 'local-shipping',
   'person.fill': 'person',
+  'sun.max.fill': 'wb-sunny',
+  'moon.fill': 'nightlight-round',
+  gear: 'settings',
 } as IconMapping;
 
 /**

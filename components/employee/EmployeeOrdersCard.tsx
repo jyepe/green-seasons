@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { EmployeeOrder } from '@/lib/supabase';
 import { EmployeeOrderRow } from './EmployeeOrderRow';
 
@@ -23,8 +23,8 @@ export function EmployeeOrdersCard({
   isLoading,
   onViewAll,
 }: EmployeeOrdersCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   if (isLoading && orders.length === 0) {
     return (

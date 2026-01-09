@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 
 type AnalyticsScreenLayoutProps = {
   title: string;
@@ -35,8 +35,8 @@ export function AnalyticsScreenLayout({
   children,
   contentPadding = true,
 }: AnalyticsScreenLayoutProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const router = useRouter();
 
   return (

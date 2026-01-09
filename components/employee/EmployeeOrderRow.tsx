@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import type { EmployeeOrder } from '@/lib/supabase';
 import { formatCurrency } from '@/utils/currency';
 
@@ -40,8 +40,8 @@ export function EmployeeOrderRow({
   containerStyle,
   showChevron,
 }: EmployeeOrderRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'Not scheduled';

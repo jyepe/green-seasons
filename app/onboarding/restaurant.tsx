@@ -27,7 +27,7 @@ import { createRestaurant, type CreateRestaurantParams } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,8 +45,8 @@ export default function RestaurantOnboardingScreen() {
   const router = useRouter();
   const invalidateUserInfo = useInvalidateUserInfo();
   const { data: isUserAdmin } = useAdmin();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
 
   // Refs for keyboard navigation
   const nameRef = useRef<TextInput>(null);

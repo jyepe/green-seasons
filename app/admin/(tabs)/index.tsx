@@ -22,7 +22,7 @@ import {
   TopItemsCard,
 } from '@/components/admin';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppColorScheme } from '@/hooks/useTheme';
 import {
   getAdminChartOrdersByDay,
   getAdminChartRevenueByDay,
@@ -35,8 +35,8 @@ import {
 const ORDERS_PAGE_SIZE = 10;
 
 export default function AdminDashboardScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
   const router = useRouter();
 
   // Month selection state
