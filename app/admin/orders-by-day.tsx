@@ -6,11 +6,12 @@ import { getAdminChartOrdersByDay } from '@/lib/supabase';
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
 
 export default function AdminOrdersByDayScreen() {
-  const { monthLabel, query, onRefresh } = useAnalyticsData<AdminChartOrdersByDay>({
-    queryKey: 'admin-all-orders-by-day',
-    queryFn: getAdminChartOrdersByDay,
-    limit: -1,
-  });
+  const { monthLabel, query, onRefresh } =
+    useAnalyticsData<AdminChartOrdersByDay>({
+      queryKey: 'admin-all-orders-by-day',
+      queryFn: getAdminChartOrdersByDay,
+      limit: -1,
+    });
 
   return (
     <AnalyticsScreenLayout
@@ -19,10 +20,7 @@ export default function AdminOrdersByDayScreen() {
       isRefreshing={query.isRefetching}
       onRefresh={onRefresh}
     >
-      <OrdersByDayList
-        data={query.data ?? []}
-        isLoading={query.isLoading}
-      />
+      <OrdersByDayList data={query.data ?? []} isLoading={query.isLoading} />
     </AnalyticsScreenLayout>
   );
 }

@@ -606,17 +606,35 @@ export default function SignupScreen() {
                   )}
                 </Animated.View>
 
-                <View style={[styles.passwordHint, { backgroundColor: colors.inputBackground }]}>
-                  <Text style={[styles.passwordHintText, { color: colors.textSecondary }]}>
+                <View
+                  style={[
+                    styles.passwordHint,
+                    { backgroundColor: colors.inputBackground },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.passwordHintText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     Password must be at least 8 characters and contain:
                   </Text>
-                  {['One uppercase letter', 'One lowercase letter', 'One number'].map(
-                    (requirement, index) => (
-                      <Text key={index} style={[styles.passwordHintText, { color: colors.textSecondary }]}>
-                        {`• ${requirement}`}
-                      </Text>
-                    )
-                  )}
+                  {[
+                    'One uppercase letter',
+                    'One lowercase letter',
+                    'One number',
+                  ].map((requirement, index) => (
+                    <Text
+                      key={index}
+                      style={[
+                        styles.passwordHintText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {`• ${requirement}`}
+                    </Text>
+                  ))}
                 </View>
 
                 <Animated.View style={buttonAnimatedStyle}>

@@ -51,9 +51,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Calculate the effective theme based on mode selection
   const effectiveTheme: 'light' | 'dark' =
-    themeMode === 'system'
-      ? systemColorScheme ?? 'light'
-      : themeMode;
+    themeMode === 'system' ? (systemColorScheme ?? 'light') : themeMode;
 
   const isDark = effectiveTheme === 'dark';
 

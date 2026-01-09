@@ -15,12 +15,15 @@ type IconSymbolName =
   | 'house.fill'
   | 'person.fill';
 
-const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: IconSymbolName }[] =
-  [
-    { mode: 'light', label: 'Light', icon: 'sun.max.fill' },
-    { mode: 'dark', label: 'Dark', icon: 'moon.fill' },
-    { mode: 'system', label: 'System', icon: 'gear' },
-  ];
+const THEME_OPTIONS: {
+  mode: ThemeMode;
+  label: string;
+  icon: IconSymbolName;
+}[] = [
+  { mode: 'light', label: 'Light', icon: 'sun.max.fill' },
+  { mode: 'dark', label: 'Dark', icon: 'moon.fill' },
+  { mode: 'system', label: 'System', icon: 'gear' },
+];
 
 export function ThemeToggle({ colors }: ThemeToggleProps) {
   const { themeMode, setThemeMode } = useTheme();
@@ -34,7 +37,7 @@ export function ThemeToggle({ colors }: ThemeToggleProps) {
     >
       <Text style={[styles.label, { color: colors.text }]}>Appearance</Text>
       <View style={styles.optionsContainer}>
-        {THEME_OPTIONS.map((option) => {
+        {THEME_OPTIONS.map(option => {
           const isSelected = themeMode === option.mode;
           return (
             <TouchableOpacity
