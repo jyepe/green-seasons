@@ -600,13 +600,13 @@ export default function SignupScreen() {
                   <Text style={styles.passwordHintText}>
                     Password must be at least 8 characters and contain:
                   </Text>
-                  <Text style={styles.passwordHintText}>
-                    • One uppercase letter
-                  </Text>
-                  <Text style={styles.passwordHintText}>
-                    • One lowercase letter
-                  </Text>
-                  <Text style={styles.passwordHintText}>• One number</Text>
+                  {['One uppercase letter', 'One lowercase letter', 'One number'].map(
+                    (requirement, index) => (
+                      <Text key={index} style={styles.passwordHintText}>
+                        {`• ${requirement}`}
+                      </Text>
+                    )
+                  )}
                 </View>
 
                 <Animated.View style={buttonAnimatedStyle}>
