@@ -75,6 +75,8 @@ export default function RestaurantOnboardingScreen() {
         if (!value.trim()) return 'City is required';
         if (value.trim().length < 2)
           return 'City must be at least 2 characters';
+        if (value.trim().toLowerCase() !== 'miami')
+          return 'We currently only service the Miami area.';
         return '';
 
       case 'postal_code':
