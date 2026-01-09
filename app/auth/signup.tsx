@@ -524,6 +524,11 @@ export default function SignupScreen() {
                     <TouchableOpacity
                       style={styles.eyeButton}
                       onPress={() => setShowPassword(!showPassword)}
+                      accessibilityLabel={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                      accessibilityRole="button"
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                       <Ionicons
                         name={showPassword ? 'eye-off' : 'eye'}
@@ -581,6 +586,11 @@ export default function SignupScreen() {
                       onPress={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
+                      accessibilityLabel={
+                        showConfirmPassword ? 'Hide password' : 'Show password'
+                      }
+                      accessibilityRole="button"
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                       <Ionicons
                         name={showConfirmPassword ? 'eye-off' : 'eye'}
