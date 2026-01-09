@@ -68,7 +68,9 @@ export default function IndexScreen() {
           if (userIsAdmin) {
             if (__DEV__) {
               // eslint-disable-next-line no-console
-              console.log('Auth Check: User is Admin, redirecting to Admin Dashboard');
+              console.log(
+                'Auth Check: User is Admin, redirecting to Admin Dashboard'
+              );
             }
             router.replace(ROUTES.ADMIN_DASHBOARD);
             return;
@@ -86,7 +88,9 @@ export default function IndexScreen() {
           setEmployeeStatus(true);
           if (__DEV__) {
             // eslint-disable-next-line no-console
-            console.log('Auth Check: User is Employee, redirecting to Employee Dashboard');
+            console.log(
+              'Auth Check: User is Employee, redirecting to Employee Dashboard'
+            );
           }
           router.replace(ROUTES.EMPLOYEE_DASHBOARD);
           return;
@@ -103,7 +107,9 @@ export default function IndexScreen() {
         } else {
           if (__DEV__) {
             // eslint-disable-next-line no-console
-            console.log('Auth Check: Restaurant owner, redirecting to main app');
+            console.log(
+              'Auth Check: Restaurant owner, redirecting to main app'
+            );
           }
           router.replace(ROUTES.RESTAURANT_OWNER_DASHBOARD);
         }

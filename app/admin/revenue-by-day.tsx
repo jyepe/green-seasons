@@ -6,11 +6,12 @@ import { getAdminChartRevenueByDay } from '@/lib/supabase';
 import type { AdminChartRevenueByDay } from '@/lib/supabase';
 
 export default function AdminRevenueByDayScreen() {
-  const { monthLabel, query, onRefresh } = useAnalyticsData<AdminChartRevenueByDay>({
-    queryKey: 'admin-all-revenue-by-day',
-    queryFn: getAdminChartRevenueByDay,
-    limit: -1,
-  });
+  const { monthLabel, query, onRefresh } =
+    useAnalyticsData<AdminChartRevenueByDay>({
+      queryKey: 'admin-all-revenue-by-day',
+      queryFn: getAdminChartRevenueByDay,
+      limit: -1,
+    });
 
   return (
     <AnalyticsScreenLayout
@@ -19,10 +20,7 @@ export default function AdminRevenueByDayScreen() {
       isRefreshing={query.isRefetching}
       onRefresh={onRefresh}
     >
-      <RevenueByDayList
-        data={query.data ?? []}
-        isLoading={query.isLoading}
-      />
+      <RevenueByDayList data={query.data ?? []} isLoading={query.isLoading} />
     </AnalyticsScreenLayout>
   );
 }

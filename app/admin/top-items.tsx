@@ -19,10 +19,7 @@ export default function AdminTopItemsScreen() {
       isRefreshing={query.isRefetching}
       onRefresh={onRefresh}
     >
-      <TopItemsCard
-        items={query.data ?? []}
-        isLoading={query.isLoading}
-      />
+      <TopItemsCard items={query.data ?? []} isLoading={query.isLoading} />
     </AnalyticsScreenLayout>
   );
 }
