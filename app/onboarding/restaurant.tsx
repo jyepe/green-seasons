@@ -32,7 +32,13 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 const { width, height } = Dimensions.get('window');
 
 const SUPPORTED_CITIES = ['miami'];
-const UNSUPPORTED_CITY_ERROR = `We currently only service the ${SUPPORTED_CITIES.map(city => city.charAt(0).toUpperCase() + city.slice(1)).join(', ')} area.`;
+
+const getUnsupportedCityError = () => {
+  const formattedCities = SUPPORTED_CITIES.map(
+    city => city.charAt(0).toUpperCase() + city.slice(1)
+  ).join(', ');
+  return `We currently only service the ${formattedCities} area.`;
+};
 
 export default function RestaurantOnboardingScreen() {
   const [formData, setFormData] = useState<CreateRestaurantParams>({
@@ -79,7 +85,7 @@ export default function RestaurantOnboardingScreen() {
         if (value.trim().length < 2)
           return 'City must be at least 2 characters';
         if (!SUPPORTED_CITIES.includes(value.trim().toLowerCase()))
-          return UNSUPPORTED_CITY_ERROR;
+          return getUnsupportedCityError();
         return '';
 
       case 'postal_code':
