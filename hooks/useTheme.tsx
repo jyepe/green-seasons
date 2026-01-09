@@ -28,12 +28,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
           setThemeModeState(savedTheme as ThemeMode);
         }
-      } catch (error) {
-        // Silently fail and use default
-        if (__DEV__) {
-          // eslint-disable-next-line no-console
-          console.warn('Failed to load theme preference:', error);
-        }
+      } catch {
+        // Silently fail and use default 'system' theme.
+        // This is intentional - theme preferences are non-critical,
+        // and failing to load should not block the app from rendering.
       } finally {
         setIsLoaded(true);
       }
@@ -45,11 +43,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeModeState(mode);
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-    } catch (error) {
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to save theme preference:', error);
-      }
+    } catch {
+      // Silently fail - theme will still work for the current session,
+      // but won't persist across app restarts if storage fails.
     }
   };
 
@@ -61,7 +57,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const isDark = effectiveTheme === 'dark';
 
-  // Don't render until theme is loaded to prevent flash
+  // Return null during initial theme load to prevent a flash of the wrong theme.
+  // The app layout waits for fonts to load anyway, so this minimal delay
+  // is seamlessly integrated into the overall loading experience.
   if (!isLoaded) {
     return null;
   }
