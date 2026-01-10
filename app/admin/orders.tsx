@@ -1,4 +1,4 @@
-import { AdminOrderListItem } from '@/components/AdminOrderListItem';
+import { OrderListItem } from '@/components/OrderListItem';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { getAdminOrders, OrderStatus } from '@/lib/supabase';
@@ -190,7 +190,7 @@ export default function AdminOrdersScreen() {
         <FlatList
           data={filteredOrders}
           keyExtractor={item => item.order_id}
-          renderItem={({ item }) => <AdminOrderListItem order={item} />}
+          renderItem={({ item }) => <OrderListItem order={item} />}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           onEndReached={loadMore}
