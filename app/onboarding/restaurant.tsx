@@ -1,13 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { createRestaurant, type CreateRestaurantParams } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -17,8 +11,15 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
+import GradientText from '@/components/ui/GradientText';
 
-const SUPPORTED_CITIES = ['miami'];
+const SUPPORTED_CITIES = [
+  'miami',
+  'fort lauderdale',
+  'hialeah',
+  'miami beach',
+  'kendall',
+];
 
 const getUnsupportedCityError = () => {
   const formattedCities = SUPPORTED_CITIES.map(
@@ -194,17 +195,17 @@ export default function RestaurantOnboardingScreen() {
     <AuthContainer contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
         <View
-          style={[
-            styles.iconContainer,
-            { backgroundColor: colors.primary },
-          ]}
+          style={[styles.iconContainer, { backgroundColor: colors.primary }]} 
         >
           <Ionicons name="restaurant" size={32} color="white" />
         </View>
-        <Text style={[styles.title, { color: colors.text }]}>
+        <GradientText
+          colors={['#7FD8B5', '#FFBE88']}
+          style={[styles.title, { color: colors.text }]}
+        >
           Create Your Restaurant
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.text }]}>
+        </GradientText>
+        <Text style={[styles.subtitle, { color: '#000000' }]}>
           Set up your restaurant profile to start ordering fresh produce
         </Text>
       </View>
@@ -295,7 +296,7 @@ export default function RestaurantOnboardingScreen() {
               title="Cancel"
               onPress={() => router.back()}
               variant="secondary"
-              style={[styles.cancelButton, { backgroundColor: colors.error }]}
+              style={[styles.cancelButton, { backgroundColor: colors.error }]} 
             />
           )}
         </View>
@@ -303,7 +304,6 @@ export default function RestaurantOnboardingScreen() {
     </AuthContainer>
   );
 }
-
 const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 20,
@@ -331,7 +331,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-    opacity: 0.8,
     paddingHorizontal: 20,
   },
   form: {
