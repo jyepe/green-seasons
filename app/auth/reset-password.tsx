@@ -1,42 +1,27 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, updateUserPassword } from '@/lib/supabase';
 import { validatePassword } from '@/utils/validation';
-import AuthBackground from './AuthBackground';
+import AuthContainer from '@/components/auth/AuthContainer';
+import AuthCard from '@/components/auth/AuthCard';
+import AuthInput from '@/components/auth/AuthInput';
+import AuthButton from '@/components/auth/AuthButton';
+import PasswordRequirements from '@/components/auth/PasswordRequirements';
 
 export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
-
-  const buttonScale = useSharedValue(1);
-  const inputFocus = useSharedValue(0);
 
   useEffect(() => {
     // Check if user is authenticated (from password reset link)
@@ -75,11 +60,7 @@ export default function ResetPasswordScreen() {
       return;
     }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsLoading(true);
-    buttonScale.value = withSpring(0.95, {}, () => {
-      buttonScale.value = withSpring(1);
-    });
 
     try {
       await updateUserPassword(password);
@@ -101,18 +82,6 @@ export default function ResetPasswordScreen() {
     }
   };
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
-
-  const inputAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: interpolate(inputFocus.value, [0, 1], [1, 1.02]),
-      },
-    ],
-  }));
-
   if (isAuthenticated !== true) {
     return (
       <View style={styles.container}>
@@ -126,152 +95,63 @@ export default function ResetPasswordScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <AuthBackground style={styles.svgBackground} />
+    <AuthContainer>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('@/assets/images/green-seasons-icon-1024.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={styles.title}>
+          <Text style={styles.titleGreen}>New</Text>{' '}
+          <Text style={styles.titleOrange}>Password</Text>
+        </Text>
+        <Text style={styles.subtitle}>Enter your new password below</Text>
+      </View>
 
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('@/assets/images/green-seasons-icon-1024.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text style={styles.title}>
-                <Text style={styles.titleGreen}>New</Text>{' '}
-                <Text style={styles.titleOrange}>Password</Text>
-              </Text>
-              <Text style={styles.subtitle}>Enter your new password below</Text>
-            </View>
+      {/* Form */}
+      <AuthCard>
+        <View style={styles.form}>
+          <AuthInput
+            label="New Password"
+            placeholder="Enter your new password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isLoading}
+            icon="lock-closed"
+            containerStyle={styles.inputContainer}
+          />
 
-            {/* Form */}
-            <View style={styles.formCard}>
-              <View style={styles.form}>
-                <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>New Password</Text>
-                  <View style={styles.inputRow}>
-                    <Ionicons
-                      name="lock-closed"
-                      size={18}
-                      color="#9E9E9E"
-                      style={styles.leftIcon}
-                    />
-                    <TextInput
-                      style={styles.inputField}
-                      placeholder="Enter your new password"
-                      placeholderTextColor="#9E9E9E"
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onFocus={() => {
-                        inputFocus.value = withTiming(1, { duration: 200 });
-                      }}
-                      onBlur={() => {
-                        inputFocus.value = withTiming(0, { duration: 200 });
-                      }}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButtonInline}
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
-                      <Ionicons
-                        name={showPassword ? 'eye-off' : 'eye'}
-                        size={20}
-                        color="#9E9E9E"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </Animated.View>
+          <AuthInput
+            label="Confirm Password"
+            placeholder="Confirm your new password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isLoading}
+            icon="lock-closed"
+            containerStyle={styles.inputContainer}
+          />
 
-                <Animated.View style={inputAnimatedStyle}>
-                  <Text style={styles.label}>Confirm Password</Text>
-                  <View style={styles.inputRow}>
-                    <Ionicons
-                      name="lock-closed"
-                      size={18}
-                      color="#9E9E9E"
-                      style={styles.leftIcon}
-                    />
-                    <TextInput
-                      style={styles.inputField}
-                      placeholder="Confirm your new password"
-                      placeholderTextColor="#9E9E9E"
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      secureTextEntry={!showConfirmPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onFocus={() => {
-                        inputFocus.value = withTiming(1, { duration: 200 });
-                      }}
-                      onBlur={() => {
-                        inputFocus.value = withTiming(0, { duration: 200 });
-                      }}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButtonInline}
-                      onPress={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                    >
-                      <Ionicons
-                        name={showConfirmPassword ? 'eye-off' : 'eye'}
-                        size={20}
-                        color="#9E9E9E"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </Animated.View>
+          <PasswordRequirements />
 
-                <View style={styles.passwordHint}>
-                  <Text style={styles.passwordHintText}>
-                    Password must be at least 8 characters and contain:
-                  </Text>
-                  <Text style={styles.passwordHintText}>
-                    • One uppercase letter
-                  </Text>
-                  <Text style={styles.passwordHintText}>
-                    • One lowercase letter
-                  </Text>
-                  <Text style={styles.passwordHintText}>• One number</Text>
-                </View>
-
-                <Animated.View style={buttonAnimatedStyle}>
-                  <TouchableOpacity
-                    style={[
-                      styles.resetButton,
-                      {
-                        opacity: isLoading ? 0.7 : 1,
-                      },
-                    ]}
-                    onPress={handleResetPassword}
-                    disabled={isLoading}
-                  >
-                    <Text style={styles.resetButtonText}>
-                      {isLoading ? 'Resetting...' : 'Reset Password'}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+          <AuthButton
+            title="Reset Password"
+            onPress={handleResetPassword}
+            isLoading={isLoading}
+            style={styles.resetButton}
+          />
+        </View>
+      </AuthCard>
+    </AuthContainer>
   );
 }
 
@@ -280,24 +160,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9F9F9',
   },
-  svgBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    zIndex: 0,
-  },
   safeArea: {
     flex: 1,
     zIndex: 1,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
@@ -353,79 +218,13 @@ const styles = StyleSheet.create({
     color: '#666',
     paddingHorizontal: 20,
   },
-  formCard: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-  },
   form: {
     marginBottom: 0,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#333',
-  },
-  inputRow: {
-    height: 52,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+  inputContainer: {
     marginBottom: 20,
-    backgroundColor: '#F5F5F5',
-    borderColor: '#E0E0E0',
-  },
-  inputField: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 10,
-    fontFamily: 'Inter_400Regular',
-    color: '#333',
-  },
-  leftIcon: {
-    marginRight: 10,
-  },
-  eyeButtonInline: {
-    padding: 6,
-    marginLeft: 6,
-  },
-  passwordHint: {
-    marginBottom: 20,
-    padding: 12,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-  },
-  passwordHintText: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#666',
-    lineHeight: 18,
   },
   resetButton: {
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
     marginTop: 8,
-  },
-  resetButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
 });
