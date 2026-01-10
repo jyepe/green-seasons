@@ -78,6 +78,9 @@ export default function AuthButton({
         onPress={handlePress}
         disabled={disabled || isLoading}
         activeOpacity={0.9}
+        accessibilityRole="button"
+        accessibilityLabel={isLoading ? 'Loading' : title}
+        accessibilityState={{ disabled: disabled || isLoading, busy: isLoading }}
       >
         {isLoading ? (
           <ActivityIndicator color={getTextColor()} size="small" />
