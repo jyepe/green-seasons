@@ -14,6 +14,7 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
+import PasswordRequirements from '@/components/auth/PasswordRequirements';
 
 export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
@@ -140,18 +141,7 @@ export default function ResetPasswordScreen() {
             containerStyle={styles.inputContainer}
           />
 
-          <View style={styles.passwordHint}>
-            <Text style={styles.passwordHintText}>
-              Password must be at least 8 characters and contain:
-            </Text>
-            <Text style={styles.passwordHintText}>
-              • One uppercase letter
-            </Text>
-            <Text style={styles.passwordHintText}>
-              • One lowercase letter
-            </Text>
-            <Text style={styles.passwordHintText}>• One number</Text>
-          </View>
+          <PasswordRequirements />
 
           <AuthButton
             title="Reset Password"
@@ -233,18 +223,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 20,
-  },
-  passwordHint: {
-    marginBottom: 20,
-    padding: 12,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-  },
-  passwordHintText: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#666',
-    lineHeight: 18,
   },
   resetButton: {
     marginTop: 8,

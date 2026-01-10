@@ -16,6 +16,7 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
+import PasswordRequirements from '@/components/auth/PasswordRequirements';
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
@@ -310,36 +311,7 @@ export default function SignupScreen() {
             containerStyle={styles.inputSpacing}
           />
 
-          <View
-            style={[
-              styles.passwordHint,
-              { backgroundColor: colors.inputBackground },
-            ]}
-          >
-            <Text
-              style={[
-                styles.passwordHintText,
-                { color: colors.textSecondary },
-              ]}
-            >
-              Password must be at least 8 characters and contain:
-            </Text>
-            {[
-              'One uppercase letter',
-              'One lowercase letter',
-              'One number',
-            ].map((requirement, index) => (
-              <Text
-                key={index}
-                style={[
-                  styles.passwordHintText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                {`• ${requirement}`}
-              </Text>
-            ))}
-          </View>
+          <PasswordRequirements />
 
           <AuthButton
             title="Create Account"
@@ -394,16 +366,6 @@ const styles = StyleSheet.create({
   },
   inputSpacing: {
     marginBottom: 20,
-  },
-  passwordHint: {
-    marginBottom: 20,
-    padding: 12,
-    borderRadius: 8,
-  },
-  passwordHintText: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 18,
   },
   footer: {
     flexDirection: 'row',
