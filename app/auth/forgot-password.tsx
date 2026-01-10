@@ -23,7 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { resetPassword } from '@/lib/supabase';
-import AuthBackground from './AuthBackground';
+import AuthBackground from '@/components/auth/AuthBackground';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');

@@ -24,7 +24,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, updateUserPassword } from '@/lib/supabase';
 import { validatePassword } from '@/utils/validation';
-import AuthBackground from './AuthBackground';
+import AuthBackground from '@/components/auth/AuthBackground';
 
 export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
