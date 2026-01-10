@@ -7,12 +7,16 @@ interface GradientTextProps extends TextProps {
   colors: readonly [ColorValue, ColorValue, ...ColorValue[]];
 }
 
-export default function GradientText({ colors, style, ...props }: GradientTextProps) {
+export default function GradientText({
+  colors,
+  style,
+  ...props
+}: GradientTextProps) {
   return (
     <View style={{ position: 'relative' }}>
       {/* Invisible text to define dimensions */}
       <Text style={[style, { opacity: 0 }]} {...props} />
-      
+
       {/* Absolute MaskedView overlay */}
       <MaskedView
         style={StyleSheet.absoluteFill}
