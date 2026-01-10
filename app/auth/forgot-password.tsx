@@ -1,38 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { resetPassword } from '@/lib/supabase';
-import AuthBackground from '@/components/auth/AuthBackground';
+import AuthContainer from '@/components/auth/AuthContainer';
+import AuthCard from '@/components/auth/AuthCard';
+import AuthInput from '@/components/auth/AuthInput';
+import AuthButton from '@/components/auth/AuthButton';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
-
-  const buttonScale = useSharedValue(1);
-  const inputFocus = useSharedValue(0);
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -47,11 +34,7 @@ export default function ForgotPasswordScreen() {
       return;
     }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsLoading(true);
-    buttonScale.value = withSpring(0.95, {}, () => {
-      buttonScale.value = withSpring(1);
-    });
 
     try {
       await resetPassword({ email });
@@ -71,161 +54,86 @@ export default function ForgotPasswordScreen() {
     router.back();
   };
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
-
-  const inputAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: interpolate(inputFocus.value, [0, 1], [1, 1.02]),
-      },
-    ],
-  }));
-
   return (
-    <View style={styles.container}>
-      <AuthBackground style={styles.svgBackground} />
+    <AuthContainer>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('@/assets/images/green-seasons-icon-1024.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={styles.title}>
+          <Text style={styles.titleGreen}>Reset</Text>{' '}
+          <Text style={styles.titleOrange}>Password</Text>
+        </Text>
+        <Text style={styles.subtitle}>
+          {emailSent
+            ? 'Check your email for reset instructions'
+            : 'Enter your email to receive a password reset link'}
+        </Text>
+      </View>
 
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('@/assets/images/green-seasons-icon-1024.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text style={styles.title}>
-                <Text style={styles.titleGreen}>Reset</Text>{' '}
-                <Text style={styles.titleOrange}>Password</Text>
-              </Text>
-              <Text style={styles.subtitle}>
-                {emailSent
-                  ? 'Check your email for reset instructions'
-                  : 'Enter your email to receive a password reset link'}
-              </Text>
-            </View>
+      {/* Form */}
+      {!emailSent ? (
+        <AuthCard>
+          <View style={styles.form}>
+            <AuthInput
+              label="Email"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isLoading}
+              icon="mail"
+              containerStyle={styles.inputContainer}
+            />
 
-            {/* Form */}
-            {!emailSent ? (
-              <View style={styles.formCard}>
-                <View style={styles.form}>
-                  <Animated.View style={inputAnimatedStyle}>
-                    <Text style={styles.label}>Email</Text>
-                    <View style={styles.inputRow}>
-                      <Ionicons
-                        name="mail"
-                        size={18}
-                        color="#9E9E9E"
-                        style={styles.leftIcon}
-                      />
-                      <TextInput
-                        style={styles.inputField}
-                        placeholder="Enter your email"
-                        placeholderTextColor="#9E9E9E"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        editable={!isLoading}
-                        onFocus={() => {
-                          inputFocus.value = withTiming(1, { duration: 200 });
-                        }}
-                        onBlur={() => {
-                          inputFocus.value = withTiming(0, { duration: 200 });
-                        }}
-                      />
-                    </View>
-                  </Animated.View>
+            <AuthButton
+              title="Send Reset Link"
+              onPress={handleResetPassword}
+              isLoading={isLoading}
+              style={styles.resetButton}
+            />
+          </View>
+        </AuthCard>
+      ) : (
+        <AuthCard>
+          <View style={styles.successContainer}>
+            <Ionicons
+              name="checkmark-circle"
+              size={64}
+              color="#4CAF50"
+              style={styles.successIcon}
+            />
+            <Text style={styles.successTitle}>Email Sent!</Text>
+            <Text style={styles.successText}>
+              We&apos;ve sent a password reset link to{' '}
+              <Text style={styles.emailText}>{email}</Text>
+            </Text>
+            <Text style={styles.successSubtext}>
+              Please check your inbox and follow the instructions to reset
+              your password.
+            </Text>
+          </View>
+        </AuthCard>
+      )}
 
-                  <Animated.View style={buttonAnimatedStyle}>
-                    <TouchableOpacity
-                      style={[
-                        styles.resetButton,
-                        {
-                          opacity: isLoading ? 0.7 : 1,
-                        },
-                      ]}
-                      onPress={handleResetPassword}
-                      disabled={isLoading}
-                    >
-                      <Text style={styles.resetButtonText}>
-                        {isLoading ? 'Sending...' : 'Send Reset Link'}
-                      </Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.formCard}>
-                <View style={styles.successContainer}>
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={64}
-                    color="#4CAF50"
-                    style={styles.successIcon}
-                  />
-                  <Text style={styles.successTitle}>Email Sent!</Text>
-                  <Text style={styles.successText}>
-                    We&apos;ve sent a password reset link to{' '}
-                    <Text style={styles.emailText}>{email}</Text>
-                  </Text>
-                  <Text style={styles.successSubtext}>
-                    Please check your inbox and follow the instructions to reset
-                    your password.
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Footer */}
-            <View style={styles.footer}>
-              <TouchableOpacity onPress={handleBackToLogin}>
-                <Text style={styles.backLink}>Back to Login</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+      {/* Footer */}
+      <View style={styles.footer}>
+        <TouchableOpacity onPress={handleBackToLogin}>
+          <Text style={styles.backLink}>Back to Login</Text>
+        </TouchableOpacity>
+      </View>
+    </AuthContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9F9F9',
-  },
-  svgBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    zIndex: 0,
-  },
-  safeArea: {
-    flex: 1,
-    zIndex: 1,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
-  },
   header: {
     alignItems: 'center',
     marginBottom: 32,
@@ -270,64 +178,14 @@ const styles = StyleSheet.create({
     color: '#666',
     paddingHorizontal: 20,
   },
-  formCard: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-  },
   form: {
     marginBottom: 0,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#333',
-  },
-  inputRow: {
-    height: 52,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+  inputContainer: {
     marginBottom: 20,
-    backgroundColor: '#F5F5F5',
-    borderColor: '#E0E0E0',
-  },
-  inputField: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 10,
-    fontFamily: 'Inter_400Regular',
-    color: '#333',
-  },
-  leftIcon: {
-    marginRight: 10,
   },
   resetButton: {
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
     marginTop: 8,
-  },
-  resetButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
   successContainer: {
     alignItems: 'center',
