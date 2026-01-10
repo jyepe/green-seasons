@@ -22,7 +22,7 @@ interface AuthButtonProps {
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'destructive';
 }
 
 export default function AuthButton({
@@ -55,6 +55,7 @@ export default function AuthButton({
     if (disabled) return colors.textTertiary;
     if (variant === 'primary') return colors.primary;
     if (variant === 'secondary') return colors.accent;
+    if (variant === 'destructive') return colors.error;
     return 'transparent';
   };
 
