@@ -295,8 +295,8 @@ export default function RestaurantOnboardingScreen() {
             <AuthButton
               title="Cancel"
               onPress={() => router.back()}
-              variant="secondary"
-              style={[styles.cancelButton, { backgroundColor: colors.error }]} 
+              variant="destructive"
+              style={styles.cancelButton}
             />
           )}
         </View>
