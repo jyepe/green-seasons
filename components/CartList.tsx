@@ -4,8 +4,10 @@ import {
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SwipeableRow } from './SwipeableRow';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
@@ -32,6 +34,7 @@ export function CartList({
   onDeleteItem,
   onItemPress,
 }: CartListProps) {
+  const router = useRouter();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
@@ -77,6 +80,14 @@ export function CartList({
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Start adding products to your cart to get started
         </Text>
+        <TouchableOpacity
+          style={[styles.startShoppingButton, { backgroundColor: colors.primary }]}
+          onPress={() => router.push('/(tabs)/explore')}
+          accessibilityLabel="Start shopping"
+          accessibilityRole="button"
+        >
+          <Text style={styles.startShoppingButtonText}>Start Shopping</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -146,6 +157,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     opacity: 0.7,
+    marginBottom: 32,
+  },
+  startShoppingButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  startShoppingButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   cartContainer: {
     flex: 1,
