@@ -73,9 +73,8 @@ export default function EmployeeTruckLoadScreen() {
     try {
       setLoading(true);
       const deliveryDate = new Date();
-      const driverName = userInfo
-        ? `${userInfo.first_name || ''} ${userInfo.last_name || ''}`.trim() || 'Unknown Driver'
-        : 'Unknown Driver';
+      const fullName = `${userInfo?.first_name || ''} ${userInfo?.last_name || ''}`.trim();
+      const driverName = fullName || 'Unknown Driver';
         
       const html = generateLoadingSheetHtml(items, deliveryDate, driverName);
 
