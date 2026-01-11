@@ -265,7 +265,7 @@ export const generateInvoiceHtml = (
 export const generateLoadingSheetHtml = (
   truckLoadItems: EmployeeTruckLoadItem[],
   deliveryDate: Date | string,
-  driverName: string = 'Maria Rodriguez'
+  driverName: string = 'Unknown Driver'
 ) => {
   if (!truckLoadItems || truckLoadItems.length === 0) return '';
 
@@ -288,39 +288,37 @@ export const generateLoadingSheetHtml = (
     .sort((a, b) => a.name.localeCompare(b.name));
 
   // Generate table header columns
-  const headerColumns = sortedRestaurants
-    .map(
+  const headerColumns = [
+    `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: left; font-size: 14px;">Item</th>`,
+    ...sortedRestaurants.map(
       (r) =>
-        `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: left; border: none; font-size: 14px;">${escapeHtml(
+        `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: center; font-size: 14px;">${escapeHtml(
           r.name
         )}</th>`
-    )
-    .join('');
+    ),
+    `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: center; font-size: 14px;">Total</th>`
+  ].join('');
 
   // Generate table body rows
   const itemsHtml = truckLoadItems
     .map((item, index) => {
       const rowBackground = index % 2 === 0 ? '#f3f4f6' : '#fff';
       
+      // Use a Map for O(1) lookups to improve performance inside the loop.
+      const itemRestaurantsMap = new Map(item.restaurants?.map(r => [r.restaurant_id, r.quantity]));
+      
       const restaurantCells = sortedRestaurants
         .map((r) => {
-          const restData = item.restaurants?.find(
-            (ir) => ir.restaurant_id === r.id
-          );
-          const cellContent = restData
-            ? `${escapeHtml(item.item_name)}: ${restData.quantity}`
-            : '';
-            
-          return `<td style="padding: 12px; font-size: 14px; color: #374151;">${cellContent}</td>`;
+          const quantity = itemRestaurantsMap.get(r.id);
+          return `<td style="padding: 12px; font-size: 14px; color: #374151; text-align: center;">${quantity ?? ''}</td>`;
         })
         .join('');
 
       return `
         <tr style="background: ${rowBackground};">
+          <td style="padding: 12px; font-weight: 700; font-size: 14px; color: #1f2937;">${escapeHtml(item.item_name)}</td>
           ${restaurantCells}
-          <td style="padding: 12px; font-weight: 700; font-size: 14px; color: #1f2937;">
-            ${escapeHtml(item.item_name)}: ${item.total_quantity}
-          </td>
+          <td style="padding: 12px; font-weight: 700; font-size: 14px; color: #1f2937; text-align: center;">${item.total_quantity}</td>
         </tr>
       `;
     })
@@ -384,7 +382,6 @@ export const generateLoadingSheetHtml = (
           <thead>
             <tr>
               ${headerColumns}
-              <th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: left; border: none; font-size: 14px;">Total Quantity</th>
             </tr>
           </thead>
           <tbody>
