@@ -611,6 +611,13 @@ export default function CheckoutScreen() {
                     ]}
                     activeOpacity={0.7}
                     onPress={handleShowDatePicker}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      deliveryDate
+                        ? `Delivery date: ${formatDate(deliveryDate)}`
+                        : 'Select delivery date'
+                    }
+                    accessibilityHint="Double tap to open date picker"
                   >
                     <Text
                       style={[
@@ -652,6 +659,7 @@ export default function CheckoutScreen() {
                   placeholderTextColor={colors.tabIconDefault}
                   multiline
                   numberOfLines={4}
+                  accessibilityLabel="Special Instructions (Optional)"
                 />
               </View>
             </View>
@@ -675,6 +683,9 @@ export default function CheckoutScreen() {
                     key={option.value}
                     style={styles.paymentOption}
                     onPress={() => setPaymentMethod(option.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={option.label}
                   >
                     <View
                       style={[
@@ -722,6 +733,14 @@ export default function CheckoutScreen() {
             ]}
             onPress={handlePlaceOrder}
             disabled={createOrderMutation.isPending}
+            accessibilityRole="button"
+            accessibilityState={{
+              disabled: createOrderMutation.isPending,
+              busy: createOrderMutation.isPending,
+            }}
+            accessibilityLabel={
+              createOrderMutation.isPending ? 'Placing order...' : 'Place Order'
+            }
           >
             {createOrderMutation.isPending ? (
               <ActivityIndicator color="white" />

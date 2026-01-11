@@ -1,0 +1,57 @@
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY
+Starting project at /app
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 31.6% (17/93)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░ 10.3% ( 69/215)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 31.6% ( 99/204)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 18.7% (157/363)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 31.6% ( 99/204)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓░░░░░░░░░░░ 36.5% (324/536)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.3% (196/356)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.8% (497/632)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.3% (336/531)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.8% (646/876)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 54.3% (533/723)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.8% ( 784/1036)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 55.9% (719/962)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 74.6% (1054/1220)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 69.5% ( 951/1141)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.4% (1191/1289)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.2% (1201/1309)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.6% (1323/1408)
+Web node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94.7% (1450/1496)
+λ node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95.8% (1508/1541)
+λ Bundled 36292ms node_modules/.pnpm/expo-router@6.0.21_ee003784847047e16a294a61b19b95d3/node_modules/expo-router/node/render.js (1566 modules)
+"shadow*" style props are deprecated. Use "boxShadow".
+ReferenceError: window is not defined
+    at getValue (/app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:63:52)
+    at /app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.getItem (/app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:63:12)
+    at getItemAsync (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/lib/helpers.js:129:33)
+    at SupabaseAuthClient._recoverAndRefresh (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:1871:69)
+    at SupabaseAuthClient._initialize (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:298:24)
+    at fn (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:237:35)
+    at /app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:1124:36
+/app/node_modules/.pnpm/@expo+cli@54.0.21_expo-router@6.0.21_expo@54.0.31_react-native@0.81.5_@babel+core@7.28._1ae18ec7eba2d85fb388fb428c6fb4ef/node_modules/@expo/cli/build/src/utils/errors.js:130
+    throw error;
+    ^
+
+ReferenceError: window is not defined
+    at getValue (/app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:63:52)
+    at /app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.getItem (/app/node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.28.5__7b10023ea6573c496835c437e203161a/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:63:12)
+    at getItemAsync (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/lib/helpers.js:129:33)
+    at SupabaseAuthClient.__loadSession (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:1181:66)
+    at SupabaseAuthClient._useSession (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:1162:39)
+    at SupabaseAuthClient._emitInitialSession (/app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:1621:27)
+    at /app/node_modules/.pnpm/@supabase+auth-js@2.90.1/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:1615:22
+
+Node.js v22.21.1
