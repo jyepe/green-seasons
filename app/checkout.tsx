@@ -337,7 +337,11 @@ export default function CheckoutScreen() {
         edges={['bottom']}
       >
         {isLoadingDetails ? (
-          <View style={styles.loadingContainer}>
+          <View
+            style={styles.loadingContainer}
+            accessible={true}
+            accessibilityLabel="Loading checkout details"
+          >
             <ActivityIndicator size="small" color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
               Loading checkout details...
@@ -360,7 +364,10 @@ export default function CheckoutScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.noticeTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.noticeTitle, { color: colors.text }]}
+                  accessibilityRole="header"
+                >
                   Restaurant details missing
                 </Text>
                 <Text
@@ -379,7 +386,10 @@ export default function CheckoutScreen() {
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              <Text
+                style={[styles.sectionTitle, { color: colors.text }]}
+                accessibilityRole="header"
+              >
                 Restaurant Information
               </Text>
 
@@ -402,6 +412,9 @@ export default function CheckoutScreen() {
                         },
                       ]}
                       onPress={() => setDropdownVisible(!dropdownVisible)}
+                      accessibilityRole="combobox"
+                      accessibilityLabel="Select a restaurant"
+                      accessibilityState={{ expanded: dropdownVisible }}
                     >
                       <Text
                         style={{
@@ -444,6 +457,11 @@ export default function CheckoutScreen() {
                                 },
                               ]}
                               onPress={() => handleRestaurantSelect(rest)}
+                              accessibilityRole="button"
+                              accessibilityLabel={rest.name}
+                              accessibilityState={{
+                                selected: selectedRestaurantId === rest.id,
+                              }}
                             >
                               <Text
                                 style={[
@@ -543,6 +561,7 @@ export default function CheckoutScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
+                    accessibilityLabel="Email address"
                   />
                 ) : (
                   <View
@@ -570,7 +589,10 @@ export default function CheckoutScreen() {
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              <Text
+                style={[styles.sectionTitle, { color: colors.text }]}
+                accessibilityRole="header"
+              >
                 Delivery Information
               </Text>
 
@@ -611,6 +633,9 @@ export default function CheckoutScreen() {
                     ]}
                     activeOpacity={0.7}
                     onPress={handleShowDatePicker}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Preferred Delivery Date, ${deliveryDateLabel}`}
+                    accessibilityHint="Opens date picker"
                   >
                     <Text
                       style={[
@@ -652,6 +677,7 @@ export default function CheckoutScreen() {
                   placeholderTextColor={colors.tabIconDefault}
                   multiline
                   numberOfLines={4}
+                  accessibilityLabel="Special Instructions"
                 />
               </View>
             </View>
@@ -663,7 +689,10 @@ export default function CheckoutScreen() {
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              <Text
+                style={[styles.sectionTitle, { color: colors.text }]}
+                accessibilityRole="header"
+              >
                 Payment Method
               </Text>
 
@@ -675,6 +704,9 @@ export default function CheckoutScreen() {
                     key={option.value}
                     style={styles.paymentOption}
                     onPress={() => setPaymentMethod(option.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={option.label}
                   >
                     <View
                       style={[
@@ -722,6 +754,12 @@ export default function CheckoutScreen() {
             ]}
             onPress={handlePlaceOrder}
             disabled={createOrderMutation.isPending}
+            accessibilityRole="button"
+            accessibilityLabel="Place Order"
+            accessibilityState={{
+              disabled: createOrderMutation.isPending,
+              busy: createOrderMutation.isPending,
+            }}
           >
             {createOrderMutation.isPending ? (
               <ActivityIndicator color="white" />
@@ -746,7 +784,11 @@ export default function CheckoutScreen() {
                 ]}
               >
                 <View style={styles.modalHeader}>
-                  <TouchableOpacity onPress={handleIosCancel}>
+                  <TouchableOpacity
+                    onPress={handleIosCancel}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel date selection"
+                  >
                     <Text
                       style={[
                         styles.modalAction,
@@ -756,10 +798,17 @@ export default function CheckoutScreen() {
                       Cancel
                     </Text>
                   </TouchableOpacity>
-                  <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  <Text
+                    style={[styles.modalTitle, { color: colors.text }]}
+                    accessibilityRole="header"
+                  >
                     Select delivery date
                   </Text>
-                  <TouchableOpacity onPress={handleIosConfirm}>
+                  <TouchableOpacity
+                    onPress={handleIosConfirm}
+                    accessibilityRole="button"
+                    accessibilityLabel="Confirm date selection"
+                  >
                     <Text
                       style={[styles.modalAction, { color: colors.primary }]}
                     >
