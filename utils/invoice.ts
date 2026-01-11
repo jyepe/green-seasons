@@ -264,7 +264,8 @@ export const generateInvoiceHtml = (
 
 export const generateLoadingSheetHtml = (
   truckLoadItems: EmployeeTruckLoadItem[],
-  deliveryDate: Date | string
+  deliveryDate: Date | string,
+  driverName: string = 'Maria Rodriguez'
 ) => {
   if (!truckLoadItems || truckLoadItems.length === 0) return '';
 
@@ -274,46 +275,53 @@ export const generateLoadingSheetHtml = (
       ? formatDate(deliveryDate)
       : formatDate(deliveryDate.toISOString());
 
-  // Calculate totals
-  const totalItems = truckLoadItems.length;
-  const totalUnits = truckLoadItems.reduce(
-    (sum, item) => sum + item.total_quantity,
-    0
-  );
+  // Extract all unique restaurants for table headers
+  const allRestaurantsMap = new Map<string, string>();
+  truckLoadItems.forEach((item) => {
+    item.restaurants?.forEach((r) => {
+      allRestaurantsMap.set(r.restaurant_id, r.restaurant_name);
+    });
+  });
 
-  // Generate items HTML with restaurant breakdowns
+  const sortedRestaurants = Array.from(allRestaurantsMap.entries())
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Generate table header columns
+  const headerColumns = sortedRestaurants
+    .map(
+      (r) =>
+        `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: left; border: none; font-size: 14px;">${escapeHtml(
+          r.name
+        )}</th>`
+    )
+    .join('');
+
+  // Generate table body rows
   const itemsHtml = truckLoadItems
-    .map(item => {
-      const restaurantRows =
-        item.restaurants
-          ?.map(
-            restaurant => `
-          <tr style="background: #fafafa;">
-            <td style="padding: 8px 12px 8px 48px; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #6b7280;">
-              ${escapeHtml(restaurant.restaurant_name)}
-            </td>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-size: 13px; color: #6b7280;">
-              ${restaurant.quantity}
-            </td>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;"></td>
-          </tr>
-        `
-          )
-          .join('') || '';
+    .map((item, index) => {
+      const rowBackground = index % 2 === 0 ? '#f3f4f6' : '#fff';
+      
+      const restaurantCells = sortedRestaurants
+        .map((r) => {
+          const restData = item.restaurants?.find(
+            (ir) => ir.restaurant_id === r.id
+          );
+          const cellContent = restData
+            ? `${escapeHtml(item.item_name)}: ${restData.quantity}`
+            : '';
+            
+          return `<td style="padding: 12px; font-size: 14px; color: #374151;">${cellContent}</td>`;
+        })
+        .join('');
 
       return `
-        <tr>
-          <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937;">
-            ${escapeHtml(item.item_name)}
-          </td>
-          <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-weight: 600; color: #1f2937;">
-            ${item.total_quantity}
-          </td>
-          <td style="padding: 14px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 13px;">
-            ${item.restaurants?.length ?? 0} ${pluralize('restaurant', item.restaurants?.length ?? 0)}
+        <tr style="background: ${rowBackground};">
+          ${restaurantCells}
+          <td style="padding: 12px; font-weight: 700; font-size: 14px; color: #1f2937;">
+            ${escapeHtml(item.item_name)}: ${item.total_quantity}
           </td>
         </tr>
-        ${restaurantRows}
       `;
     })
     .join('');
@@ -328,166 +336,61 @@ export const generateLoadingSheetHtml = (
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            font-family: Arial, sans-serif; 
             padding: 40px; 
-            color: #1f2937;
+            color: #000;
             background: #fff;
           }
-          .loading-sheet-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start;
-            margin-bottom: 40px; 
-            padding-bottom: 20px;
-            border-bottom: 2px solid #16a34a;
+          h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
           }
-          .company-name { 
-            font-size: 28px; 
-            font-weight: 700; 
-            color: #16a34a;
-            margin-bottom: 4px;
-          }
-          .company-tagline {
-            font-size: 14px;
-            color: #6b7280;
-          }
-          .loading-sheet-title { 
-            text-align: right;
-          }
-          .loading-sheet-title h1 {
-            font-size: 32px; 
-            font-weight: 700; 
-            color: #1f2937;
-            margin-bottom: 8px;
-          }
-          .delivery-date {
-            font-size: 16px;
-            color: #6b7280;
-          }
-          .info-section { 
-            display: flex; 
-            justify-content: space-between; 
+          .meta-info {
             margin-bottom: 40px;
-          }
-          .info-block h3 { 
-            font-size: 12px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-            color: #6b7280; 
-            margin-bottom: 8px;
-          }
-          .info-block p { 
-            font-size: 14px; 
+            font-size: 14px;
             line-height: 1.6;
-            color: #374151;
           }
           table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin-bottom: 30px;
           }
           th { 
-            background: #f9fafb; 
-            padding: 14px 12px; 
-            text-align: left; 
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #6b7280;
-            font-weight: 600;
-            border-bottom: 2px solid #e5e7eb;
+            background: #9ca3af;
+            color: #000;
+            font-weight: 700;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
           }
-          th:nth-child(2) { text-align: center; }
-          th:nth-child(3) { text-align: center; }
           td { 
+            padding: 12px;
             font-size: 14px;
             color: #374151;
           }
-          .summary { 
-            margin-left: auto;
-            width: 280px;
-          }
-          .summary-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 10px 0;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          .summary-row.total { 
-            font-weight: 700; 
-            font-size: 18px;
-            border-bottom: none;
-            padding-top: 16px;
-            color: #1f2937;
-          }
-          .summary-row span:first-child {
-            color: #6b7280;
-          }
-          .summary-row.total span:first-child {
-            color: #1f2937;
-          }
-          .footer { 
-            margin-top: 60px; 
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center; 
-            color: #9ca3af;
-            font-size: 12px;
-          }
-          .footer p { margin-bottom: 4px; }
+          /* Striped rows handled inline for PDF compatibility */
         </style>
       </head>
       <body>
-        <div class="loading-sheet-header">
-          <div>
-            <div class="company-name">${COMPANY_INFO.name}</div>
-            <div class="company-tagline">${COMPANY_INFO.tagline}</div>
-          </div>
-          <div class="loading-sheet-title">
-            <h1>LOADING SHEET</h1>
-            <div class="delivery-date">${formattedDate}</div>
-          </div>
-        </div>
+        <h1>Green Seasons - Employee Loading List</h1>
         
-        <div class="info-section">
-          <div class="info-block">
-            <h3>Total Items</h3>
-            <p><strong>${totalItems}</strong></p>
-          </div>
-          <div class="info-block">
-            <h3>Total Units</h3>
-            <p><strong>${totalUnits}</strong></p>
-          </div>
+        <div class="meta-info">
+          <div>Date: ${formattedDate}</div>
+          <br />
+          <div>Driver: ${escapeHtml(driverName)}</div>
         </div>
         
         <table>
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Total Qty</th>
-              <th>Restaurants</th>
+              ${headerColumns}
+              <th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: left; border: none; font-size: 14px;">Total Quantity</th>
             </tr>
           </thead>
           <tbody>
             ${itemsHtml}
           </tbody>
         </table>
-        
-        <div class="summary">
-          <div class="summary-row">
-            <span>Total Items</span>
-            <span>${totalItems}</span>
-          </div>
-          <div class="summary-row total">
-            <span>Total Units</span>
-            <span>${totalUnits}</span>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <p>Use this sheet to organize your deliveries</p>
-          <p>${COMPANY_INFO.name} - ${COMPANY_INFO.footerText}</p>
-        </div>
       </body>
     </html>
   `;

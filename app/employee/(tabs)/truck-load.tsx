@@ -19,12 +19,14 @@ import * as Sharing from 'expo-sharing';
 
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
+import { useUserInfo } from '@/hooks/useUserInfo';
 import { getEmployeeTruckLoadSummary } from '@/lib/supabase';
 import { generateLoadingSheetHtml, pluralize } from '@/utils/invoice';
 
 export default function EmployeeTruckLoadScreen() {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+  const { data: userInfo } = useUserInfo();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
@@ -71,7 +73,11 @@ export default function EmployeeTruckLoadScreen() {
     try {
       setLoading(true);
       const deliveryDate = new Date();
-      const html = generateLoadingSheetHtml(items, deliveryDate);
+      const driverName = userInfo
+        ? `${userInfo.first_name || ''} ${userInfo.last_name || ''}`.trim() || 'Unknown Driver'
+        : 'Unknown Driver';
+        
+      const html = generateLoadingSheetHtml(items, deliveryDate, driverName);
 
       if (isPreview) {
         // Direct print preview
