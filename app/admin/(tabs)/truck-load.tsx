@@ -105,6 +105,23 @@ export default function AdminTruckLoadScreen() {
       return;
     }
 
+    // Check that all non-finalized items have a price set
+    const itemsMissingPrice = nonFinalizedItems.filter(
+      item =>
+        !editedPrices[item.item_id] || editedPrices[item.item_id].trim() === ''
+    );
+
+    if (itemsMissingPrice.length > 0) {
+      const missingNames = itemsMissingPrice
+        .map(item => item.item_name)
+        .join(', ');
+      Alert.alert(
+        'Missing Prices',
+        `Please set prices for all items before finalizing:\n\n${missingNames}`
+      );
+      return;
+    }
+
     Alert.alert(
       'Finalize Prices',
       'Are you sure you want to finalize the prices for today? This action cannot be undone.',
