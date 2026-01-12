@@ -28,15 +28,17 @@ export function EditProfileForm() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (userInfo) {
+    if (userInfo && !isInitialized) {
       setEmail(userInfo.email || '');
       setFirstName(userInfo.first_name || '');
       setLastName(userInfo.last_name || '');
       setPhone(userInfo.phone || '');
+      setIsInitialized(true);
     }
-  }, [userInfo]);
+  }, [userInfo, isInitialized]);
 
   const handleSave = async () => {
     const trimmedEmail = email.trim();
@@ -50,7 +52,7 @@ export function EditProfileForm() {
     }
 
     // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(trimmedEmail)) {
       Alert.alert('Error', 'Please enter a valid email address.');
       return;
