@@ -5,6 +5,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -155,125 +157,135 @@ export default function AdminTruckLoadScreen() {
           </Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={truckLoadQuery.isRefetching}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
-          {items.map(item => (
-            <View
-              key={item.item_id}
-              style={[styles.itemCard, { backgroundColor: colors.surface }]}
-            >
-              <View style={styles.itemHeader}>
-                <View style={styles.imageContainer}>
-                  {item.item_image_url ? (
-                    <Image
-                      source={{ uri: item.item_image_url }}
-                      style={styles.itemImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={truckLoadQuery.isRefetching}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            }
+            keyboardShouldPersistTaps="handled"
+          >
+            {items.map(item => (
+              <View
+                key={item.item_id}
+                style={[styles.itemCard, { backgroundColor: colors.surface }]}
+              >
+                <View style={styles.itemHeader}>
+                  <View style={styles.imageContainer}>
+                    {item.item_image_url ? (
+                      <Image
+                        source={{ uri: item.item_image_url }}
+                        style={styles.itemImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View
+                        style={[
+                          styles.itemImagePlaceholder,
+                          { backgroundColor: colors.border },
+                        ]}
+                      >
+                        <Ionicons
+                          name="image-outline"
+                          size={28}
+                          color={colors.textTertiary}
+                        />
+                      </View>
+                    )}
+                    {item.finalized && (
+                      <Text
+                        style={[
+                          styles.finalizedText,
+                          { color: colors.success },
+                        ]}
+                      >
+                        Price finalized
+                      </Text>
+                    )}
+                  </View>
+
+                  <View style={styles.itemInfo}>
+                    <Text style={[styles.itemName, { color: colors.text }]}>
+                      {item.item_name}
+                    </Text>
+                  </View>
+
+                  <View style={styles.priceInputContainer}>
+                    <Text
                       style={[
-                        styles.itemImagePlaceholder,
-                        { backgroundColor: colors.border },
+                        styles.dollarSign,
+                        {
+                          color: item.finalized
+                            ? colors.textTertiary
+                            : colors.text,
+                        },
                       ]}
                     >
-                      <Ionicons
-                        name="image-outline"
-                        size={28}
-                        color={colors.textTertiary}
-                      />
-                    </View>
-                  )}
-                  {item.finalized && (
-                    <Text
-                      style={[styles.finalizedText, { color: colors.success }]}
-                    >
-                      Price finalized
+                      $
                     </Text>
-                  )}
-                </View>
-
-                <View style={styles.itemInfo}>
-                  <Text style={[styles.itemName, { color: colors.text }]}>
-                    {item.item_name}
-                  </Text>
-                </View>
-
-                <View style={styles.priceInputContainer}>
-                  <Text
-                    style={[
-                      styles.dollarSign,
-                      {
-                        color: item.finalized
-                          ? colors.textTertiary
-                          : colors.text,
-                      },
-                    ]}
-                  >
-                    $
-                  </Text>
-                  <TextInput
-                    style={[
-                      styles.priceInput,
-                      {
-                        color: item.finalized
-                          ? colors.textTertiary
-                          : colors.text,
-                        borderColor: colors.border,
-                        backgroundColor: item.finalized
-                          ? colors.border
-                          : colors.background,
-                      },
-                    ]}
-                    value={getDisplayPrice(item.item_id)}
-                    onChangeText={value =>
-                      handlePriceChange(item.item_id, value)
-                    }
-                    keyboardType="decimal-pad"
-                    placeholder="0.00"
-                    placeholderTextColor={colors.textTertiary}
-                    editable={!item.finalized}
-                  />
+                    <TextInput
+                      style={[
+                        styles.priceInput,
+                        {
+                          color: item.finalized
+                            ? colors.textTertiary
+                            : colors.text,
+                          borderColor: colors.border,
+                          backgroundColor: item.finalized
+                            ? colors.border
+                            : colors.background,
+                        },
+                      ]}
+                      value={getDisplayPrice(item.item_id)}
+                      onChangeText={value =>
+                        handlePriceChange(item.item_id, value)
+                      }
+                      keyboardType="decimal-pad"
+                      placeholder="0.00"
+                      placeholderTextColor={colors.textTertiary}
+                      editable={!item.finalized}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
+            ))}
 
-          <TouchableOpacity
-            onPress={handleFinalizePrices}
-            disabled={finalizeMutation.isPending}
-            style={[
-              styles.finalizeButton,
-              {
-                backgroundColor: colors.primary,
-                opacity: finalizeMutation.isPending ? 0.6 : 1,
-              },
-            ]}
-          >
-            {finalizeMutation.isPending ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <>
-                <Ionicons
-                  name="checkmark-circle-outline"
-                  size={20}
-                  color="#fff"
-                />
-                <Text style={styles.finalizeButtonText}>Finalize Prices</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
+            <TouchableOpacity
+              onPress={handleFinalizePrices}
+              disabled={finalizeMutation.isPending}
+              style={[
+                styles.finalizeButton,
+                {
+                  backgroundColor: colors.primary,
+                  opacity: finalizeMutation.isPending ? 0.6 : 1,
+                },
+              ]}
+            >
+              {finalizeMutation.isPending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons
+                    name="checkmark-circle-outline"
+                    size={20}
+                    color="#fff"
+                  />
+                  <Text style={styles.finalizeButtonText}>Finalize Prices</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
@@ -281,6 +293,9 @@ export default function AdminTruckLoadScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  keyboardAvoidingView: {
     flex: 1,
   },
   header: {
