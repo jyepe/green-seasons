@@ -256,8 +256,7 @@ export default function AdminItemsScreen() {
                 onDelete={() => handleDeleteItem(item)}
                 isDeleting={
                   deleteItemMutation.isPending &&
-                  (deleteItemMutation.variables === item.id ||
-                    (deleteItemMutation.variables as any)?.id === item.id)
+                  deleteItemMutation.variables === item.id
                 }
               />
             ))}
