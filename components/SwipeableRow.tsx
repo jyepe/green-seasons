@@ -100,6 +100,14 @@ export function SwipeableRow({
                     disabled={
                       item.quantity <= 1 || updatingItemId === item.item_id
                     }
+                    accessibilityRole="button"
+                    accessibilityLabel={`Decrease quantity of ${item.item_name}`}
+                    accessibilityState={{
+                      disabled:
+                        item.quantity <= 1 || updatingItemId === item.item_id,
+                      busy: updatingItemId === item.item_id,
+                    }}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Ionicons name="remove" size={16} color={colors.text} />
                   </TouchableOpacity>
@@ -123,6 +131,13 @@ export function SwipeableRow({
                     ]}
                     onPress={() => onQuantityChange(item.item_id, 1)}
                     disabled={updatingItemId === item.item_id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Increase quantity of ${item.item_name}`}
+                    accessibilityState={{
+                      disabled: updatingItemId === item.item_id,
+                      busy: updatingItemId === item.item_id,
+                    }}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Ionicons name="add" size={16} color={colors.text} />
                   </TouchableOpacity>
