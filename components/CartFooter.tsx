@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import type { AnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 
@@ -51,6 +52,24 @@ export function CartFooter({
               ${total.toFixed(2)}
             </Animated.Text>
           </View>
+        </View>
+        <View
+          style={[
+            styles.disclaimerContainer,
+            { borderColor: colors.textTertiary },
+          ]}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            size={14}
+            color={colors.textSecondary}
+          />
+          <Text
+            style={[styles.disclaimerText, { color: colors.textSecondary }]}
+          >
+            This total does not reflect the final price. The final price will be
+            determined when item prices are set on the scheduled delivery day.
+          </Text>
         </View>
         <TouchableOpacity
           style={[styles.checkoutButton, { backgroundColor: colors.primary }]}
@@ -98,5 +117,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  disclaimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    gap: 6,
+  },
+  disclaimerText: {
+    flex: 1,
+    fontSize: 11,
+    lineHeight: 16,
   },
 });

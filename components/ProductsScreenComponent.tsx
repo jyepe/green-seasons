@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
-import { useItems } from '@/hooks/useItems';
+import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
 import { useToggleFavorite } from '@/hooks/useFavorite';
 import { ProductCard } from '@/components/ProductCard';
 import { Toast } from '@/components/ui/Toast';
@@ -37,6 +37,9 @@ export default function ProductsScreenComponent() {
 
   // Refetch cart when screen comes into focus to stay in sync with other screens
   useCartRefetchOnFocus();
+
+  // Refetch items when screen comes into focus to get the latest information
+  useItemsRefetchOnFocus();
 
   const filteredProducts =
     items?.filter(item => {
@@ -201,8 +204,12 @@ export default function ProductsScreenComponent() {
             Alert.alert('Error', errorMessage);
           },
           onSuccess: () => {
-             AccessibilityInfo.announceForAccessibility(currentlyFavorite ? 'Removed from favorites' : 'Added to favorites');
-          }
+            AccessibilityInfo.announceForAccessibility(
+              currentlyFavorite
+                ? 'Removed from favorites'
+                : 'Added to favorites'
+            );
+          },
         }
       );
     },
@@ -210,8 +217,10 @@ export default function ProductsScreenComponent() {
   );
 
   const handlePageChange = (newPage: number) => {
-      setCurrentPage(newPage);
-      AccessibilityInfo.announceForAccessibility(`Page ${newPage} of ${totalPages}`);
+    setCurrentPage(newPage);
+    AccessibilityInfo.announceForAccessibility(
+      `Page ${newPage} of ${totalPages}`
+    );
   };
 
   return (
@@ -226,12 +235,34 @@ export default function ProductsScreenComponent() {
         onHide={handleToastHide}
       />
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.surface }]} accessible={true} accessibilityRole="header">
+      <View
+        style={[styles.header, { backgroundColor: colors.surface }]}
+        accessible={true}
+        accessibilityRole="header"
+      >
         <Text style={[styles.title, { color: colors.text }]}>
           Fresh Produce
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Order the freshest ingredients for your restaurant
+        </Text>
+      </View>
+
+      {/* Price Disclaimer */}
+      <View
+        style={[
+          styles.disclaimerContainer,
+          { backgroundColor: colors.surface, borderColor: colors.textTertiary },
+        ]}
+      >
+        <Ionicons
+          name="information-circle-outline"
+          size={16}
+          color={colors.textSecondary}
+        />
+        <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
+          Due to the prices of produce changing everyday, prices shown are the
+          last finalized prices and are subject to change.
         </Text>
       </View>
 
@@ -495,5 +526,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
     textAlign: 'center',
+  },
+  disclaimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+  },
+  disclaimerText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
   },
 });
