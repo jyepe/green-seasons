@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   ExpandableCard,
@@ -31,8 +31,6 @@ import {
   getAdminOrders,
   getAdminTopItems,
 } from '@/lib/supabase';
-
-const ORDERS_PAGE_SIZE = 10;
 
 export default function AdminDashboardScreen() {
   const colorScheme = useAppColorScheme();
@@ -108,29 +106,24 @@ export default function AdminDashboardScreen() {
   });
 
   // Orders Query
-  const ordersQuery = useInfiniteQuery({
+  const ordersQuery = useQuery({
     queryKey: ['admin-orders', dateRange.start.toISOString()],
-    queryFn: async ({ pageParam = null }) => {
-      return getAdminOrders(
+    queryFn: async () => {
+      const result = await getAdminOrders(
         dateRange.start,
         dateRange.end,
-        ORDERS_PAGE_SIZE,
-        pageParam as { created_at: string; id: string } | null
+        5,
+        null
       );
-    },
-    initialPageParam: null as { created_at: string; id: string } | null,
-    getNextPageParam: lastPage => {
-      return lastPage.nextCursor;
+      return result.orders;
     },
   });
 
-  const allOrders = useMemo(
-    () => ordersQuery.data?.pages.flatMap(page => page.orders) ?? [],
+  // Limit to 5 most recent orders for display (already handled by query limit)
+  const recentOrders = useMemo(
+    () => ordersQuery.data ?? [],
     [ordersQuery.data]
   );
-
-  // Limit to 5 most recent orders for display
-  const recentOrders = useMemo(() => allOrders.slice(0, 5), [allOrders]);
 
   // Orders by Day Chart Query
   const ordersByDayQuery = useQuery({
@@ -176,13 +169,6 @@ export default function AdminDashboardScreen() {
     topItemsQuery.isRefetching ||
     ordersByDayQuery.isRefetching ||
     ordersQuery.isRefetching;
-
-  // Load more orders
-  const loadMoreOrders = () => {
-    if (ordersQuery.hasNextPage && !ordersQuery.isFetchingNextPage) {
-      ordersQuery.fetchNextPage();
-    }
-  };
 
   return (
     <SafeAreaView
@@ -336,8 +322,6 @@ export default function AdminDashboardScreen() {
           <OrdersCard
             orders={recentOrders}
             isLoading={ordersQuery.isLoading}
-            hasMore={ordersQuery.hasNextPage}
-            onLoadMore={loadMoreOrders}
             onViewAll={() => router.push('/admin/orders')}
           />
         </ExpandableCard>

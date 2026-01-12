@@ -16,8 +16,6 @@ import { formatCurrency } from '@/utils/currency';
 type OrdersCardProps = {
   orders: AdminOrder[];
   isLoading?: boolean;
-  hasMore?: boolean;
-  onLoadMore?: () => void;
   onViewAll?: () => void;
 };
 
@@ -30,13 +28,7 @@ const STATUS_CONFIG: Record<
   delivered: { label: 'Delivered', icon: 'checkmark-circle-outline' },
 };
 
-export function OrdersCard({
-  orders,
-  isLoading,
-  hasMore,
-  onLoadMore,
-  onViewAll,
-}: OrdersCardProps) {
+export function OrdersCard({ orders, isLoading, onViewAll }: OrdersCardProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
@@ -169,25 +161,6 @@ export function OrdersCard({
           </View>
         );
       })}
-
-      {hasMore && (
-        <TouchableOpacity
-          style={[styles.loadMoreButton, { borderColor: colors.border }]}
-          onPress={onLoadMore}
-          disabled={isLoading}
-          accessibilityLabel="Load more orders"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isLoading }}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Text style={[styles.loadMoreText, { color: colors.primary }]}>
-              Load More
-            </Text>
-          )}
-        </TouchableOpacity>
-      )}
 
       {onViewAll && (
         <TouchableOpacity
