@@ -420,10 +420,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     marginBottom: 4,
   },
-  itemMeta: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-  },
   priceInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

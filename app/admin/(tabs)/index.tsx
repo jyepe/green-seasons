@@ -32,6 +32,8 @@ import {
   getAdminTopItems,
 } from '@/lib/supabase';
 
+const RECENT_ORDERS_LIMIT = 5;
+
 export default function AdminDashboardScreen() {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
@@ -112,7 +114,7 @@ export default function AdminDashboardScreen() {
       const result = await getAdminOrders(
         dateRange.start,
         dateRange.end,
-        5,
+        RECENT_ORDERS_LIMIT,
         null
       );
       return result.orders;
