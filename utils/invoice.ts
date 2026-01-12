@@ -18,7 +18,10 @@ export const formatDate = (dateString: string | null | undefined) => {
 };
 
 // Helper function to format currency
-export const formatCurrency = (amount: number) => {
+export const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) {
+    return '$0.00';
+  }
   return `$${amount.toFixed(2)}`;
 };
 
@@ -277,8 +280,8 @@ export const generateLoadingSheetHtml = (
 
   // Extract all unique restaurants for table headers
   const allRestaurantsMap = new Map<string, string>();
-  truckLoadItems.forEach((item) => {
-    item.restaurants?.forEach((r) => {
+  truckLoadItems.forEach(item => {
+    item.restaurants?.forEach(r => {
       allRestaurantsMap.set(r.restaurant_id, r.restaurant_name);
     });
   });
@@ -291,24 +294,26 @@ export const generateLoadingSheetHtml = (
   const headerColumns = [
     `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: left; font-size: 14px;">Item</th>`,
     ...sortedRestaurants.map(
-      (r) =>
+      r =>
         `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: center; font-size: 14px;">${escapeHtml(
           r.name
         )}</th>`
     ),
-    `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: center; font-size: 14px;">Total</th>`
+    `<th style="background: #9ca3af; color: #000; font-weight: 700; padding: 12px; text-align: center; font-size: 14px;">Total</th>`,
   ].join('');
 
   // Generate table body rows
   const itemsHtml = truckLoadItems
     .map((item, index) => {
       const rowBackground = index % 2 === 0 ? '#f3f4f6' : '#fff';
-      
+
       // Use a Map for O(1) lookups to improve performance inside the loop.
-      const itemRestaurantsMap = new Map(item.restaurants?.map(r => [r.restaurant_id, r.quantity]));
-      
+      const itemRestaurantsMap = new Map(
+        item.restaurants?.map(r => [r.restaurant_id, r.quantity])
+      );
+
       const restaurantCells = sortedRestaurants
-        .map((r) => {
+        .map(r => {
           const quantity = itemRestaurantsMap.get(r.id);
           return `<td style="padding: 12px; font-size: 14px; color: #374151; text-align: center;">${quantity ?? ''}</td>`;
         })

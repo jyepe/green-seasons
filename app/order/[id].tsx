@@ -375,7 +375,11 @@ export default function OrderDetailsScreen() {
               Subtotal
             </Text>
             <Text style={[styles.summaryValue, { color: colors.text }]}>
-              {formatCurrency(orderSummary.subtotal)}
+              {formatCurrency(
+                orderSummary.final_subtotal > 0
+                  ? orderSummary.final_subtotal
+                  : orderSummary.subtotal
+              )}
             </Text>
           </View>
 
@@ -384,9 +388,33 @@ export default function OrderDetailsScreen() {
               Total
             </Text>
             <Text style={[styles.totalValue, { color: colors.text }]}>
-              {formatCurrency(orderSummary.total)}
+              {formatCurrency(
+                orderSummary.final_total > 0
+                  ? orderSummary.final_total
+                  : orderSummary.total
+              )}
             </Text>
           </View>
+
+          {orderSummary.final_total <= 0 && (
+            <View
+              style={[
+                styles.disclaimerContainer,
+                { borderTopColor: colors.border },
+              ]}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={16}
+                color={colors.textTertiary}
+              />
+              <Text
+                style={[styles.disclaimerText, { color: colors.textTertiary }]}
+              >
+                Price is not finalized
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Invoice Actions */}
@@ -474,13 +502,39 @@ export default function OrderDetailsScreen() {
                   <Text
                     style={[styles.itemPrice, { color: colors.textSecondary }]}
                   >
-                    {formatCurrency(item.unit_price)} each
+                    {formatCurrency(
+                      item.final_unit_price > 0
+                        ? item.final_unit_price
+                        : item.unit_price
+                    )}{' '}
+                    each
                   </Text>
+                  {item.final_line_total <= 0 && (
+                    <View style={styles.itemDisclaimerContainer}>
+                      <Ionicons
+                        name="information-circle-outline"
+                        size={12}
+                        color={colors.textTertiary}
+                      />
+                      <Text
+                        style={[
+                          styles.itemDisclaimerText,
+                          { color: colors.textTertiary },
+                        ]}
+                      >
+                        Price not finalized
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 <View style={styles.itemPriceContainer}>
                   <Text style={[styles.itemTotal, { color: colors.text }]}>
-                    {formatCurrency(item.line_total)}
+                    {formatCurrency(
+                      item.final_line_total > 0
+                        ? item.final_line_total
+                        : item.line_total
+                    )}
                   </Text>
                 </View>
               </View>
@@ -808,5 +862,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
     textAlign: 'center',
+  },
+  disclaimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  disclaimerText: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    fontStyle: 'italic',
+  },
+  itemDisclaimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  itemDisclaimerText: {
+    fontSize: 11,
+    fontFamily: 'Inter_400Regular',
+    fontStyle: 'italic',
   },
 });

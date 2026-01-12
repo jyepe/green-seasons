@@ -304,7 +304,9 @@ export default function CheckoutScreen() {
           {
             text: 'OK',
             onPress: () => {
-              router.replace('/(tabs)/cart');
+              router.replace(
+                isUserAdmin ? '/admin/(tabs)/cart' : '/(tabs)/cart'
+              );
             },
           },
         ]

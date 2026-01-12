@@ -836,12 +836,16 @@ export type OrderDetailItem = {
   customer_id: string;
   subtotal: number;
   total: number;
+  final_subtotal: number;
+  final_total: number;
   item_id: string;
   item_name: string;
   item_image_url: string | null;
   quantity: number;
   unit_price: number;
+  final_unit_price: number;
   line_total: number;
+  final_line_total: number;
 };
 
 export async function getOrderDetails(
@@ -1003,6 +1007,7 @@ export type AdminOrder = {
   created_by: string;
   buyer_first_name: string | null;
   buyer_last_name: string | null;
+  final_total_amount: number;
   total_amount: number;
   items_count: number;
 };
@@ -1052,6 +1057,7 @@ export async function getAdminOrders(
     buyer_first_name: order.buyer_first_name as string | null,
     buyer_last_name: order.buyer_last_name as string | null,
     total_amount: parseFloat(String(order.total_amount ?? '0')),
+    final_total_amount: parseFloat(String(order.final_total_amount ?? '0')),
     items_count: parseInt(String(order.items_count ?? '0'), 10),
   }));
 
@@ -1351,4 +1357,77 @@ export async function getAdminChartRevenueByRestaurant(
     orders_count: parseInt(String(row.orders_count ?? '0'), 10),
     revenue: parseFloat(String(row.revenue ?? '0')),
   }));
+}
+
+// ============================================================================
+// Admin Truck Load Functions
+// ============================================================================
+
+export type AdminTruckLoadItem = {
+  item_id: string;
+  item_name: string;
+  item_image_url: string | null;
+  finalized: boolean;
+};
+
+/**
+ * Get today's truck load summary for admin
+ */
+export async function getAdminTruckLoadSummary(
+  deliveryDate?: Date,
+  tz: string = 'America/New_York'
+): Promise<AdminTruckLoadItem[]> {
+  const params: { p_delivery_date?: string; p_tz?: string } = {};
+
+  if (deliveryDate) {
+    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+  }
+
+  params.p_tz = tz;
+
+  const { data, error } = await supabase.rpc(
+    'fn_admin_truck_load_summary',
+    params
+  );
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching admin truck load summary:', error);
+    }
+    throw error;
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    item_id: row.item_id as string,
+    item_name: row.item_name as string,
+    item_image_url: (row.item_image_url as string | null) ?? null,
+    finalized: row.finalized === true,
+  }));
+}
+
+export type AdminFinalizePricingItem = {
+  item_id: string;
+  final_unit_price: number;
+};
+
+/**
+ * Finalize pricing for a delivery day
+ */
+export async function adminFinalizePricingForDay(
+  deliveryDay: Date,
+  prices: AdminFinalizePricingItem[]
+): Promise<void> {
+  const { error } = await supabase.rpc('fn_admin_finalize_pricing_for_day', {
+    p_delivery_day: deliveryDay.toISOString().slice(0, 10),
+    p_prices: prices,
+  });
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error finalizing pricing for day:', error);
+    }
+    throw error;
+  }
 }

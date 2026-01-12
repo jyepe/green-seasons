@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { SwipeableRow } from './SwipeableRow';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
+import { useAdmin } from '@/hooks/useAdmin';
 import type { CartItem } from '@/lib/supabase';
 
 type CartListProps = {
@@ -37,6 +38,7 @@ export function CartList({
   const router = useRouter();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+  const { data: isUserAdmin } = useAdmin();
 
   if (isLoading) {
     return (
@@ -81,8 +83,15 @@ export function CartList({
           Start adding products to your cart to get started
         </Text>
         <TouchableOpacity
-          style={[styles.startShoppingButton, { backgroundColor: colors.primary }]}
-          onPress={() => router.push('/(tabs)/explore')}
+          style={[
+            styles.startShoppingButton,
+            { backgroundColor: colors.primary },
+          ]}
+          onPress={() =>
+            router.push(
+              isUserAdmin ? '/admin/(tabs)/explore' : '/(tabs)/explore'
+            )
+          }
           accessibilityLabel="Start shopping"
           accessibilityRole="button"
         >

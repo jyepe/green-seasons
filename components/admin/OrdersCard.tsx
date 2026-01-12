@@ -16,8 +16,6 @@ import { formatCurrency } from '@/utils/currency';
 type OrdersCardProps = {
   orders: AdminOrder[];
   isLoading?: boolean;
-  hasMore?: boolean;
-  onLoadMore?: () => void;
   onViewAll?: () => void;
 };
 
@@ -30,13 +28,7 @@ const STATUS_CONFIG: Record<
   delivered: { label: 'Delivered', icon: 'checkmark-circle-outline' },
 };
 
-export function OrdersCard({
-  orders,
-  isLoading,
-  hasMore,
-  onLoadMore,
-  onViewAll,
-}: OrdersCardProps) {
+export function OrdersCard({ orders, isLoading, onViewAll }: OrdersCardProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
@@ -81,6 +73,8 @@ export function OrdersCard({
           order.buyer_first_name || order.buyer_last_name
             ? `${order.buyer_first_name ?? ''} ${order.buyer_last_name ?? ''}`.trim()
             : 'Unknown';
+
+        const isFinalized = order.final_total_amount > 0;
 
         return (
           <View
@@ -146,32 +140,27 @@ export function OrdersCard({
                   {order.items_count} items
                 </Text>
               </View>
-              <Text style={[styles.totalAmount, { color: colors.primary }]}>
-                {formatCurrency(order.total_amount)}
-              </Text>
+              <View style={styles.amountContainer}>
+                <Text style={[styles.totalAmount, { color: colors.primary }]}>
+                  {formatCurrency(
+                    isFinalized ? order.final_total_amount : order.total_amount
+                  )}
+                </Text>
+                {!isFinalized && (
+                  <Text
+                    style={[
+                      styles.disclaimerText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Price not finalized
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
         );
       })}
-
-      {hasMore && (
-        <TouchableOpacity
-          style={[styles.loadMoreButton, { borderColor: colors.border }]}
-          onPress={onLoadMore}
-          disabled={isLoading}
-          accessibilityLabel="Load more orders"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isLoading }}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Text style={[styles.loadMoreText, { color: colors.primary }]}>
-              Load More
-            </Text>
-          )}
-        </TouchableOpacity>
-      )}
 
       {onViewAll && (
         <TouchableOpacity
@@ -253,10 +242,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Inter_400Regular',
   },
-  totalAmount: {
+  amountContainer: {
     marginLeft: 'auto',
+    alignItems: 'flex-end',
+  },
+  totalAmount: {
     fontSize: 15,
     fontFamily: 'Inter_700Bold',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
   },
   loadMoreButton: {
     marginTop: 12,
