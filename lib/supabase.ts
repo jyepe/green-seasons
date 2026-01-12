@@ -836,12 +836,16 @@ export type OrderDetailItem = {
   customer_id: string;
   subtotal: number;
   total: number;
+  final_subtotal: number;
+  final_total: number;
   item_id: string;
   item_name: string;
   item_image_url: string | null;
   quantity: number;
   unit_price: number;
+  final_unit_price: number;
   line_total: number;
+  final_line_total: number;
 };
 
 export async function getOrderDetails(
