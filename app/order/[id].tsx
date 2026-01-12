@@ -397,7 +397,12 @@ export default function OrderDetailsScreen() {
           </View>
 
           {orderSummary.final_total <= 0 && (
-            <View style={styles.disclaimerContainer}>
+            <View
+              style={[
+                styles.disclaimerContainer,
+                { borderTopColor: colors.border },
+              ]}
+            >
               <Ionicons
                 name="information-circle-outline"
                 size={16}
@@ -865,7 +870,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
   },
   disclaimerText: {
     fontSize: 13,
