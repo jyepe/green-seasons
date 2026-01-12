@@ -43,6 +43,15 @@ export default function AdminTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="truck-load"
+        options={{
+          title: 'Truck Load',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="truck.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           title: 'Products',
