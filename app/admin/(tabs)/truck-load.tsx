@@ -41,10 +41,14 @@ export default function AdminTruckLoadScreen() {
   const finalizeMutation = useMutation({
     mutationFn: async () => {
       const items = truckLoadQuery.data ?? [];
-      const prices = items.map(item => ({
-        item_id: item.item_id,
-        final_unit_price: parseFloat(editedPrices[item.item_id]),
-      }));
+      // Only send items that have not been finalized yet
+      const nonFinalizedItems = items.filter(item => !item.finalized);
+      const prices = nonFinalizedItems
+        .filter(item => editedPrices[item.item_id]) // Only items with a price entered
+        .map(item => ({
+          item_id: item.item_id,
+          final_unit_price: parseFloat(editedPrices[item.item_id]),
+        }));
       return adminFinalizePricingForDay(new Date(), prices);
     },
     onSuccess: () => {
@@ -67,8 +71,20 @@ export default function AdminTruckLoadScreen() {
   const items = truckLoadQuery.data ?? [];
 
   const handlePriceChange = (itemId: string, value: string) => {
-    // Allow only valid decimal input
-    const sanitized = value.replace(/[^0-9.]/g, '');
+    // Allow only valid decimal input with max 2 decimal places
+    let sanitized = value.replace(/[^0-9.]/g, '');
+
+    // Ensure only one decimal point
+    const parts = sanitized.split('.');
+    if (parts.length > 2) {
+      sanitized = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // Limit to 2 decimal places
+    if (parts.length === 2 && parts[1].length > 2) {
+      sanitized = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+
     setEditedPrices(prev => ({
       ...prev,
       [itemId]: sanitized,
@@ -80,8 +96,10 @@ export default function AdminTruckLoadScreen() {
   };
 
   const handleFinalizePrices = () => {
-    if (items.length === 0) {
-      Alert.alert('No Items', 'There are no items to finalize pricing for.');
+    const nonFinalizedItems = items.filter(item => !item.finalized);
+
+    if (nonFinalizedItems.length === 0) {
+      Alert.alert('No Items', 'All items have already been finalized.');
       return;
     }
 
@@ -155,26 +173,35 @@ export default function AdminTruckLoadScreen() {
               style={[styles.itemCard, { backgroundColor: colors.surface }]}
             >
               <View style={styles.itemHeader}>
-                {item.item_image_url ? (
-                  <Image
-                    source={{ uri: item.item_image_url }}
-                    style={styles.itemImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.itemImagePlaceholder,
-                      { backgroundColor: colors.border },
-                    ]}
-                  >
-                    <Ionicons
-                      name="image-outline"
-                      size={28}
-                      color={colors.textTertiary}
+                <View style={styles.imageContainer}>
+                  {item.item_image_url ? (
+                    <Image
+                      source={{ uri: item.item_image_url }}
+                      style={styles.itemImage}
+                      resizeMode="cover"
                     />
-                  </View>
-                )}
+                  ) : (
+                    <View
+                      style={[
+                        styles.itemImagePlaceholder,
+                        { backgroundColor: colors.border },
+                      ]}
+                    >
+                      <Ionicons
+                        name="image-outline"
+                        size={28}
+                        color={colors.textTertiary}
+                      />
+                    </View>
+                  )}
+                  {item.finalized && (
+                    <Text
+                      style={[styles.finalizedText, { color: colors.success }]}
+                    >
+                      Price finalized
+                    </Text>
+                  )}
+                </View>
 
                 <View style={styles.itemInfo}>
                   <Text style={[styles.itemName, { color: colors.text }]}>
@@ -183,16 +210,29 @@ export default function AdminTruckLoadScreen() {
                 </View>
 
                 <View style={styles.priceInputContainer}>
-                  <Text style={[styles.dollarSign, { color: colors.text }]}>
+                  <Text
+                    style={[
+                      styles.dollarSign,
+                      {
+                        color: item.finalized
+                          ? colors.textTertiary
+                          : colors.text,
+                      },
+                    ]}
+                  >
                     $
                   </Text>
                   <TextInput
                     style={[
                       styles.priceInput,
                       {
-                        color: colors.text,
+                        color: item.finalized
+                          ? colors.textTertiary
+                          : colors.text,
                         borderColor: colors.border,
-                        backgroundColor: colors.background,
+                        backgroundColor: item.finalized
+                          ? colors.border
+                          : colors.background,
                       },
                     ]}
                     value={getDisplayPrice(item.item_id)}
@@ -202,6 +242,7 @@ export default function AdminTruckLoadScreen() {
                     keyboardType="decimal-pad"
                     placeholder="0.00"
                     placeholderTextColor={colors.textTertiary}
+                    editable={!item.finalized}
                   />
                 </View>
               </View>
@@ -317,19 +358,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
+  imageContainer: {
+    marginRight: 16,
+    alignItems: 'center',
+  },
   itemImage: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    marginRight: 16,
   },
   itemImagePlaceholder: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    marginRight: 16,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  finalizedText: {
+    fontSize: 10,
+    fontFamily: 'Inter_500Medium',
+    marginTop: 4,
   },
   itemInfo: {
     flex: 1,
@@ -361,9 +409,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
+    paddingVertical: 0,
     fontSize: 16,
     fontFamily: 'Inter_500Medium',
     textAlign: 'right',
+    textAlignVertical: 'center',
+    lineHeight: 20,
   },
   finalizeButton: {
     flexDirection: 'row',

@@ -1367,6 +1367,7 @@ export type AdminTruckLoadItem = {
   item_id: string;
   item_name: string;
   item_image_url: string | null;
+  finalized: boolean;
 };
 
 /**
@@ -1401,6 +1402,7 @@ export async function getAdminTruckLoadSummary(
     item_id: row.item_id as string,
     item_name: row.item_name as string,
     item_image_url: (row.item_image_url as string | null) ?? null,
+    finalized: row.finalized === true,
   }));
 }
 
