@@ -1003,6 +1003,7 @@ export type AdminOrder = {
   created_by: string;
   buyer_first_name: string | null;
   buyer_last_name: string | null;
+  final_total_amount: number;
   total_amount: number;
   items_count: number;
 };
@@ -1052,6 +1053,7 @@ export async function getAdminOrders(
     buyer_first_name: order.buyer_first_name as string | null,
     buyer_last_name: order.buyer_last_name as string | null,
     total_amount: parseFloat(String(order.total_amount ?? '0')),
+    final_total_amount: parseFloat(String(order.final_total_amount ?? '0')),
     items_count: parseInt(String(order.items_count ?? '0'), 10),
   }));
 

@@ -82,6 +82,8 @@ export function OrdersCard({
             ? `${order.buyer_first_name ?? ''} ${order.buyer_last_name ?? ''}`.trim()
             : 'Unknown';
 
+        const isFinalized = order.final_total_amount > 0;
+
         return (
           <View
             key={order.order_id}
@@ -146,9 +148,23 @@ export function OrdersCard({
                   {order.items_count} items
                 </Text>
               </View>
-              <Text style={[styles.totalAmount, { color: colors.primary }]}>
-                {formatCurrency(order.total_amount)}
-              </Text>
+              <View style={styles.amountContainer}>
+                <Text style={[styles.totalAmount, { color: colors.primary }]}>
+                  {formatCurrency(
+                    isFinalized ? order.final_total_amount : order.total_amount
+                  )}
+                </Text>
+                {!isFinalized && (
+                  <Text
+                    style={[
+                      styles.disclaimerText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Price not finalized
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
         );
@@ -253,10 +269,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Inter_400Regular',
   },
-  totalAmount: {
+  amountContainer: {
     marginLeft: 'auto',
+    alignItems: 'flex-end',
+  },
+  totalAmount: {
     fontSize: 15,
     fontFamily: 'Inter_700Bold',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
   },
   loadMoreButton: {
     marginTop: 12,
