@@ -56,7 +56,8 @@ export function AdminOrderListItem({ order }: AdminOrderListItemProps) {
         })
       }
       activeOpacity={0.7}
-      accessibilityLabel={`View order details for order #${order.order_id.slice(0, 8)}`}
+      accessibilityLabel={`Order #${order.order_id.slice(0, 8)} from ${order.restaurant_name}, Status: ${formatStatus(order.status)}, Delivery: ${formatDate(order.delivery_at)}, ${order.items_count} items`}
+      accessibilityHint="Double tap to view details"
       accessibilityRole="button"
     >
       <View

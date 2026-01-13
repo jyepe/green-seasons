@@ -51,7 +51,8 @@ export function OrderListItem({ order }: OrderListItemProps) {
         })
       }
       activeOpacity={0.7}
-      accessibilityLabel={`View order details for order #${order.id.slice(0, 8)}`}
+      accessibilityLabel={`Order #${order.id.slice(0, 8)}, Status: ${formatStatus(order.status)}, Date: ${formatDate(order.order_date || order.created_at)}, Delivery: ${formatDate(order.delivery_at)}`}
+      accessibilityHint="Double tap to view details"
       accessibilityRole="button"
     >
       <View
