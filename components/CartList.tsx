@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -8,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LoadingView } from '@/components/ThemedView';
 import { SwipeableRow } from './SwipeableRow';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
@@ -41,14 +41,7 @@ export function CartList({
   const { data: isUserAdmin } = useAdmin();
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Loading cart...
-        </Text>
-      </View>
-    );
+    return <LoadingView message="Loading cart..." />;
   }
 
   if (error) {
@@ -126,15 +119,6 @@ export function CartList({
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
