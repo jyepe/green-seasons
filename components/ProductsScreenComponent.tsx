@@ -19,6 +19,7 @@ import {
   AccessibilityInfo,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ProductsScreenHeader from './ProductsScreenHeader';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -43,10 +44,9 @@ export default function ProductsScreenComponent() {
 
   const filteredProducts =
     items?.filter(item => {
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.description &&
-          item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = item.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
       return matchesSearch;
     }) || [];
 
@@ -234,19 +234,7 @@ export default function ProductsScreenComponent() {
         visible={showToast}
         onHide={handleToastHide}
       />
-      {/* Header */}
-      <View
-        style={[styles.header, { backgroundColor: colors.surface }]}
-        accessible={true}
-        accessibilityRole="header"
-      >
-        <Text style={[styles.title, { color: colors.text }]}>
-          Fresh Produce
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Order the freshest ingredients for your restaurant
-        </Text>
-      </View>
+      <ProductsScreenHeader />
 
       {/* Price Disclaimer */}
       <View
@@ -396,30 +384,6 @@ export default function ProductsScreenComponent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    padding: 20,
-    marginBottom: 16,
-    borderRadius: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    fontFamily: 'Inter_700Bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   searchContainer: {
     paddingHorizontal: 16,
