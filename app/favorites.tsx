@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useFavoriteItems, useToggleFavorite } from '@/hooks/useFavorite';
-import { ProductCard } from '@/components/ProductCard';
+import { ProductCard } from '@/components/products/ProductCard';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
