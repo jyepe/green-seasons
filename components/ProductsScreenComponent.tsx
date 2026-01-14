@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductsScreenHeader from './ProductsScreenHeader';
+import ProductsDisclaimer from './ProductsDisclaimer';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -236,24 +237,7 @@ export default function ProductsScreenComponent() {
       />
       <ProductsScreenHeader />
 
-      {/* Price Disclaimer */}
-      <View
-        style={[
-          styles.disclaimerContainer,
-          { backgroundColor: colors.surface, borderColor: colors.textTertiary },
-        ]}
-      >
-        <Ionicons
-          name="information-circle-outline"
-          size={16}
-          color={colors.textSecondary}
-        />
-        <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
-          Due to the prices of produce changing everyday, prices shown are the
-          last finalized prices and are subject to change.
-        </Text>
-      </View>
-
+      <ProductsDisclaimer />
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View
