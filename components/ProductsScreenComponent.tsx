@@ -3,17 +3,13 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
 import { useToggleFavorite } from '@/hooks/useFavorite';
-import { ProductCard } from '@/components/ProductCard';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   AccessibilityInfo,
@@ -21,6 +17,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductsScreenHeader from './ProductsScreenHeader';
 import ProductsDisclaimer from './ProductsDisclaimer';
+import ProductsSearchBar from './ProductsSearchBar';
+import ProductsGrid from './ProductsGrid';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -238,74 +236,24 @@ export default function ProductsScreenComponent() {
       <ProductsScreenHeader />
 
       <ProductsDisclaimer />
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View
-          style={[
-            styles.searchBar,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.textTertiary,
-            },
-          ]}
-        >
-          <Ionicons name="search" size={20} color={colors.textTertiary} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search products..."
-            placeholderTextColor={colors.textTertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            accessibilityLabel="Search products"
-            accessibilityRole="search"
-          />
-        </View>
-      </View>
+      
+      <ProductsSearchBar 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
-      {/* Products Grid */}
-      <ScrollView
-        style={styles.productsContainer}
-        contentContainerStyle={styles.productsContent}
-      >
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading products...
-            </Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={[styles.errorText, { color: colors.text }]}>
-              Failed to load products. Please try again.
-            </Text>
-          </View>
-        ) : filteredProducts.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text
-              style={[styles.emptyStateText, { color: colors.textSecondary }]}
-            >
-              No products found. Try a different search.
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.productsGrid}>
-            {paginatedProducts.map(item => (
-              <ProductCard
-                key={item.id}
-                item={item}
-                quantityInCart={getCartQuantity(item.id)}
-                stepperQuantity={getStepperQuantity(item.id)}
-                isStepperMode={isStepperMode(item.id)}
-                isPending={pendingItemId === item.id}
-                onToggleFavorite={handleToggleFavorite}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateCartQuantity}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      <ProductsGrid 
+        products={paginatedProducts}
+        isLoading={isLoading}
+        error={error}
+        getCartQuantity={getCartQuantity}
+        getStepperQuantity={getStepperQuantity}
+        isStepperMode={isStepperMode}
+        pendingItemId={pendingItemId}
+        onToggleFavorite={handleToggleFavorite}
+        onAddToCart={handleAddToCart}
+        onUpdateQuantity={handleUpdateCartQuantity}
+      />
 
       {!isLoading && !error && filteredProducts.length > 0 && (
         <View
@@ -369,52 +317,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  searchContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  productsContainer: {
-    flex: 1,
-  },
-  productsContent: {
-    paddingBottom: 24,
-  },
-  productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    justifyContent: 'space-between',
-  },
-  outOfStockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  outOfStockText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
   paginationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -440,55 +342,5 @@ const styles = StyleSheet.create({
   paginationLabel: {
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-  },
-  disclaimerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 8,
-  },
-  disclaimerText: {
-    flex: 1,
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
   },
 });
