@@ -4,12 +4,8 @@ import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
 import { useToggleFavorite } from '@/hooks/useFavorite';
 import { Toast } from '@/components/ui/Toast';
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Alert,
-  StyleSheet,
-  AccessibilityInfo,
-} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, StyleSheet, AccessibilityInfo } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductsScreenHeader from './ProductsScreenHeader';
 import ProductsDisclaimer from './ProductsDisclaimer';
@@ -38,23 +34,30 @@ export default function ProductsScreenComponent() {
   // Refetch items when screen comes into focus to get the latest information
   useItemsRefetchOnFocus();
 
-  const filteredProducts =
-    items?.filter(item => {
-      const matchesSearch = item.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    }) || [];
+  const { filteredProducts, paginatedProducts, totalPages, safePage } =
+    useMemo(() => {
+      const filtered =
+        items?.filter(item => {
+          const matchesSearch = item.name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+          return matchesSearch;
+        }) || [];
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
-  );
-  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
-  const paginatedProducts = filteredProducts.slice(
-    (safePage - 1) * ITEMS_PER_PAGE,
-    safePage * ITEMS_PER_PAGE
-  );
+      const total = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+      const safe = Math.min(Math.max(currentPage, 1), total);
+      const paginated = filtered.slice(
+        (safe - 1) * ITEMS_PER_PAGE,
+        safe * ITEMS_PER_PAGE
+      );
+
+      return {
+        filteredProducts: filtered,
+        paginatedProducts: paginated,
+        totalPages: total,
+        safePage: safe,
+      };
+    }, [items, searchQuery, currentPage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -69,14 +72,10 @@ export default function ProductsScreenComponent() {
   // Sync stepper items with cart when cart updates
   useEffect(() => {
     if (cartItems) {
-      setStepperItems(prev => {
-        const updated: Record<string, number> = {};
-        // Sync stepper state with actual cart quantities
-        cartItems.forEach(cartItem => {
-          updated[cartItem.item_id] = cartItem.quantity;
-        });
-        return updated;
-      });
+      const updatedStepperItems = Object.fromEntries(
+        cartItems.map(item => [item.item_id, item.quantity])
+      );
+      setStepperItems(updatedStepperItems);
     }
   }, [cartItems]);
 
@@ -230,13 +229,13 @@ export default function ProductsScreenComponent() {
       <ProductsScreenHeader />
 
       <ProductsDisclaimer />
-      
-      <ProductsSearchBar 
+
+      <ProductsSearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
 
-      <ProductsGrid 
+      <ProductsGrid
         products={paginatedProducts}
         isLoading={isLoading}
         error={error}
@@ -250,7 +249,7 @@ export default function ProductsScreenComponent() {
       />
 
       {!isLoading && !error && filteredProducts.length > 0 && (
-        <PaginationControls 
+        <PaginationControls
           currentPage={safePage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
