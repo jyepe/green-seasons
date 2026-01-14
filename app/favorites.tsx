@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -17,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LoadingView } from '@/components/ThemedView';
 
 export default function FavoritesScreen() {
   const router = useRouter();
@@ -197,12 +197,7 @@ export default function FavoritesScreen() {
         contentContainerStyle={styles.productsContent}
       >
         {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading favorites...
-            </Text>
-          </View>
+          <LoadingView message="Loading favorites..." />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={[styles.errorText, { color: colors.text }]}>
@@ -315,17 +310,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   errorContainer: {
     flex: 1,

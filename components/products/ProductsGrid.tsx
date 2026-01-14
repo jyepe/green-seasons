@@ -2,13 +2,8 @@ import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { ProductCard, ProductItem } from './ProductCard';
 import React from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LoadingView } from '@/components/ThemedView';
 
 interface ProductsGridProps {
   products: ProductItem[];
@@ -44,12 +39,7 @@ export default function ProductsGrid({
       contentContainerStyle={styles.productsContent}
     >
       {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Loading products...
-          </Text>
-        </View>
+        <LoadingView message="Loading products..." />
       ) : error ? (
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: colors.text }]}>
@@ -108,17 +98,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
     textAlign: 'center',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   errorContainer: {
     flex: 1,

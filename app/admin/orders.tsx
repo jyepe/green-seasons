@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LoadingView } from '@/components/ThemedView';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 type FilterStatus = 'all' | OrderStatus;
@@ -142,12 +143,7 @@ export default function AdminOrdersScreen() {
 
       {/* Orders List */}
       {ordersQuery.isLoading && allOrders.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Loading orders...
-          </Text>
-        </View>
+        <LoadingView message="Loading orders..." />
       ) : filteredOrders.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons
@@ -249,16 +245,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   emptyState: {
     flex: 1,
