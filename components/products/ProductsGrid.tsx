@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
-import { ProductCard, ProductItem } from '@/components/ProductCard';
+import { ProductCard, ProductItem } from './ProductCard';
 import React from 'react';
 import {
   ActivityIndicator,
