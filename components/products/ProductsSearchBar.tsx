@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface ProductsSearchBarProps {
   searchQuery: string;
@@ -37,6 +37,20 @@ export default function ProductsSearchBar({
           accessibilityLabel="Search products"
           accessibilityRole="search"
         />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchQuery('')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Clear search"
+            accessibilityRole="button"
+          >
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
