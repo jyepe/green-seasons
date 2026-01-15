@@ -208,6 +208,7 @@ export default function CheckoutScreen() {
       const order = await createOrderMutation.mutateAsync({
         restaurantId: activeRestaurantId,
         deliveryAt: state.deliveryDate,
+        paymentMethod: state.paymentMethod,
       });
       Alert.alert(
         'Order Placed Successfully!',

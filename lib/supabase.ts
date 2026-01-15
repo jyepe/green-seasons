@@ -804,11 +804,13 @@ export type CreateOrderFromCartResult = {
 
 export async function createOrderFromCart(
   restaurantId: string,
-  deliveryAt: Date
+  deliveryAt: Date,
+  paymentMethod: string
 ): Promise<CreateOrderFromCartResult> {
   const { data, error } = await supabase.rpc('fn_create_order_from_cart', {
     p_restaurant_id: restaurantId,
     p_delivery_at: deliveryAt.toISOString(),
+    p_payment_method: paymentMethod,
   });
 
   if (error) {
