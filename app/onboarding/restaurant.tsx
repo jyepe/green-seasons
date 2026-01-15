@@ -38,7 +38,7 @@ export default function RestaurantOnboardingScreen() {
   const cityRef = useRef<TextInput>(null);
   const postalCodeRef = useRef<TextInput>(null);
 
-  const validateField = (field: string, value: string): string => {
+  const validateField = (field: keyof CreateRestaurantParams, value: string): string => {
     switch (field) {
       case 'name':
         if (!value.trim()) return 'Restaurant name is required';
@@ -74,13 +74,11 @@ export default function RestaurantOnboardingScreen() {
     const newErrors: Record<string, string> = {};
     let isValid = true;
 
-    Object.keys(formData).forEach(field => {
+    Object.keys(formData).forEach(key => {
+      const field = key as keyof CreateRestaurantParams;
       if (field === 'address_line2' || field === 'country') return; // Optional fields
 
-      const error = validateField(
-        field,
-        formData[field as keyof CreateRestaurantParams] || ''
-      );
+      const error = validateField(field, formData[field] || '');
       if (error) {
         newErrors[field] = error;
         isValid = false;
@@ -91,10 +89,10 @@ export default function RestaurantOnboardingScreen() {
     return isValid;
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof CreateRestaurantParams, value: string) => {
     dispatch({
       type: 'SET_FIELD',
-      field: field as keyof CreateRestaurantParams,
+      field: field,
       value,
     });
 
@@ -104,8 +102,8 @@ export default function RestaurantOnboardingScreen() {
     }
   };
 
-  const handleFieldBlur = (field: string) => {
-    const value = formData[field as keyof CreateRestaurantParams] || '';
+  const handleFieldBlur = (field: keyof CreateRestaurantParams) => {
+    const value = formData[field] || '';
     const error = validateField(field, value);
     if (error) {
       dispatch({ type: 'SET_ERROR', field, error });
@@ -162,6 +160,8 @@ export default function RestaurantOnboardingScreen() {
 
       // Invalidate user info cache to trigger refetch
       invalidateUserInfo();
+
+      dispatch({ type: 'RESET_SUBMISSION' }); // Reset loading state after success
 
       Alert.alert(
         'Success!',
