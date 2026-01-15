@@ -35,7 +35,7 @@ import {
   checkoutReducer,
   initialCheckoutState,
   type PaymentMethod,
-} from '../lib/utils/checkout-state';
+} from '../reducers/checkoutReducer';
 
 type PaymentOption = {
   value: PaymentMethod;

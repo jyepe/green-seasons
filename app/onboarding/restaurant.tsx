@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useReducer, useRef } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { createRestaurant, type CreateRestaurantParams } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
@@ -13,21 +13,18 @@ import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import GradientText from '@/components/ui/GradientText';
 import { validateMiamiDadeAddress } from '@/lib/utils/validateMiamiDadeAddress';
+import {
+  initialState,
+  restaurantOnboardingReducer,
+} from '@/reducers/restaurantOnboardingReducer';
 
 export default function RestaurantOnboardingScreen() {
-  const [formData, setFormData] = useState<CreateRestaurantParams>({
-    name: '',
-    address_line1: '',
-    address_line2: '',
-    city: '',
-    postal_code: '',
-    country: 'US',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [addressValidationError, setAddressValidationError] = useState<
-    string | null
-  >(null);
+  const [state, dispatch] = useReducer(
+    restaurantOnboardingReducer,
+    initialState
+  );
+  const { formData, errors, isLoading, addressValidationError } = state;
+
   const router = useRouter();
   const invalidateUserInfo = useInvalidateUserInfo();
   const { data: isUserAdmin } = useAdmin();
@@ -41,7 +38,7 @@ export default function RestaurantOnboardingScreen() {
   const cityRef = useRef<TextInput>(null);
   const postalCodeRef = useRef<TextInput>(null);
 
-  const validateField = (field: string, value: string): string => {
+  const validateField = (field: keyof CreateRestaurantParams, value: string): string => {
     switch (field) {
       case 'name':
         if (!value.trim()) return 'Restaurant name is required';
@@ -77,37 +74,39 @@ export default function RestaurantOnboardingScreen() {
     const newErrors: Record<string, string> = {};
     let isValid = true;
 
-    Object.keys(formData).forEach(field => {
+    Object.keys(formData).forEach(key => {
+      const field = key as keyof CreateRestaurantParams;
       if (field === 'address_line2' || field === 'country') return; // Optional fields
 
-      const error = validateField(
-        field,
-        formData[field as keyof CreateRestaurantParams] || ''
-      );
+      const error = validateField(field, formData[field] || '');
       if (error) {
         newErrors[field] = error;
         isValid = false;
       }
     });
 
-    setErrors(newErrors);
+    dispatch({ type: 'SET_ERRORS', errors: newErrors });
     return isValid;
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof CreateRestaurantParams, value: string) => {
+    dispatch({
+      type: 'SET_FIELD',
+      field: field,
+      value,
+    });
 
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      dispatch({ type: 'CLEAR_ERROR', field });
     }
   };
 
-  const handleFieldBlur = (field: string) => {
-    const value = formData[field as keyof CreateRestaurantParams] || '';
+  const handleFieldBlur = (field: keyof CreateRestaurantParams) => {
+    const value = formData[field] || '';
     const error = validateField(field, value);
     if (error) {
-      setErrors(prev => ({ ...prev, [field]: error }));
+      dispatch({ type: 'SET_ERROR', field, error });
     }
   };
 
@@ -137,8 +136,7 @@ export default function RestaurantOnboardingScreen() {
       return;
     }
 
-    setIsLoading(true);
-    setAddressValidationError(null);
+    dispatch({ type: 'START_SUBMISSION' });
 
     try {
       // Validate address is within Miami-Dade County
@@ -149,11 +147,12 @@ export default function RestaurantOnboardingScreen() {
       );
 
       if (!validationResult.isValid || !validationResult.isMiamiDade) {
-        setAddressValidationError(
-          validationResult.errorMessage ||
-            'Address validation failed. Please try again.'
-        );
-        setIsLoading(false);
+        dispatch({
+          type: 'SET_SUBMISSION_ERROR',
+          error:
+            validationResult.errorMessage ||
+            'Address validation failed. Please try again.',
+        });
         return;
       }
 
@@ -161,6 +160,8 @@ export default function RestaurantOnboardingScreen() {
 
       // Invalidate user info cache to trigger refetch
       invalidateUserInfo();
+
+      dispatch({ type: 'RESET_SUBMISSION' }); // Reset loading state after success
 
       Alert.alert(
         'Success!',
@@ -188,9 +189,8 @@ export default function RestaurantOnboardingScreen() {
         errorMessage = error.message;
       }
 
+      dispatch({ type: 'RESET_SUBMISSION' }); // Stop loading
       Alert.alert('Error', errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -209,7 +209,7 @@ export default function RestaurantOnboardingScreen() {
         <View
           style={[styles.iconContainer, { backgroundColor: colors.primary }]}
         >
-          <Ionicons name="restaurant" size={32} color="white" />
+          <Ionicons name="restaurant" size={32} color={colors.surface} />
         </View>
         <GradientText
           colors={['#7FD8B5', '#FFBE88']}
@@ -217,7 +217,7 @@ export default function RestaurantOnboardingScreen() {
         >
           Create Your Restaurant
         </GradientText>
-        <Text style={[styles.subtitle, { color: '#000000' }]}>
+        <Text style={[styles.subtitle, { color: colors.text }]}>
           Set up your restaurant profile to start ordering fresh produce
         </Text>
       </View>
@@ -300,9 +300,17 @@ export default function RestaurantOnboardingScreen() {
           </View>
 
           {addressValidationError && (
-            <View style={styles.disclaimerContainer}>
-              <Ionicons name="warning" size={20} color="#B45309" />
-              <Text style={styles.disclaimerText}>
+            <View
+              style={[
+                styles.disclaimerContainer,
+                {
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.warning,
+                },
+              ]}
+            >
+              <Ionicons name="warning" size={20} color={colors.warning} />
+              <Text style={[styles.disclaimerText, { color: colors.text }]}>
                 {addressValidationError}
               </Text>
             </View>
@@ -329,6 +337,7 @@ export default function RestaurantOnboardingScreen() {
     </AuthContainer>
   );
 }
+
 const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 20,
@@ -382,9 +391,7 @@ const styles = StyleSheet.create({
   disclaimerContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
     borderWidth: 1,
-    borderColor: '#F59E0B',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -392,7 +399,6 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     flex: 1,
-    color: '#B45309',
     fontSize: 14,
     lineHeight: 20,
   },
