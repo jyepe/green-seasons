@@ -206,7 +206,7 @@ export default function SignupScreen() {
       {/* Subtitle */}
       <View style={styles.subtitleContainer}>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Join Green Seasons and start ordering fresh produce
+          Create an account to start ordering fresh produce
         </Text>
       </View>
 
@@ -273,7 +273,9 @@ export default function SignupScreen() {
             onSubmitEditing={() => handleNextField('phone')}
             onBlur={() => handleFieldBlur('phone')}
             error={errors.phone}
-            helperText={!errors.phone ? "Enter 10 digits (e.g., 5551234567)" : undefined}
+            helperText={
+              !errors.phone ? 'Enter 10 digits (e.g., 5551234567)' : undefined
+            }
             containerStyle={styles.inputSpacing}
           />
 
@@ -324,9 +326,7 @@ export default function SignupScreen() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text
-          style={[styles.footerText, { color: colors.textSecondary }]}
-        >
+        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
           Already have an account?{' '}
         </Text>
         <TouchableOpacity onPress={handleLoginPress}>

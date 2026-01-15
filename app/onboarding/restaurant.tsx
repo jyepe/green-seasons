@@ -12,21 +12,7 @@ import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import GradientText from '@/components/ui/GradientText';
-
-const SUPPORTED_CITIES = [
-  'miami',
-  'fort lauderdale',
-  'hialeah',
-  'miami beach',
-  'kendall',
-];
-
-const getUnsupportedCityError = () => {
-  const formattedCities = SUPPORTED_CITIES.map(
-    city => city.charAt(0).toUpperCase() + city.slice(1)
-  ).join(', ');
-  return `We currently only service the ${formattedCities} area.`;
-};
+import { validateMiamiDadeAddress } from '@/lib/utils/validateMiamiDadeAddress';
 
 export default function RestaurantOnboardingScreen() {
   const [formData, setFormData] = useState<CreateRestaurantParams>({
@@ -39,6 +25,9 @@ export default function RestaurantOnboardingScreen() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [addressValidationError, setAddressValidationError] = useState<
+    string | null
+  >(null);
   const router = useRouter();
   const invalidateUserInfo = useInvalidateUserInfo();
   const { data: isUserAdmin } = useAdmin();
@@ -69,8 +58,6 @@ export default function RestaurantOnboardingScreen() {
         if (!value.trim()) return 'City is required';
         if (value.trim().length < 2)
           return 'City must be at least 2 characters';
-        if (!SUPPORTED_CITIES.includes(value.trim().toLowerCase()))
-          return getUnsupportedCityError();
         return '';
 
       case 'postal_code':
@@ -116,6 +103,14 @@ export default function RestaurantOnboardingScreen() {
     }
   };
 
+  const handleFieldBlur = (field: string) => {
+    const value = formData[field as keyof CreateRestaurantParams] || '';
+    const error = validateField(field, value);
+    if (error) {
+      setErrors(prev => ({ ...prev, [field]: error }));
+    }
+  };
+
   const handleNextField = (currentField: string) => {
     switch (currentField) {
       case 'name':
@@ -143,8 +138,25 @@ export default function RestaurantOnboardingScreen() {
     }
 
     setIsLoading(true);
+    setAddressValidationError(null);
 
     try {
+      // Validate address is within Miami-Dade County
+      const validationResult = await validateMiamiDadeAddress(
+        formData.address_line1,
+        formData.city,
+        formData.postal_code
+      );
+
+      if (!validationResult.isValid || !validationResult.isMiamiDade) {
+        setAddressValidationError(
+          validationResult.errorMessage ||
+            'Address validation failed. Please try again.'
+        );
+        setIsLoading(false);
+        return;
+      }
+
       await createRestaurant(formData);
 
       // Invalidate user info cache to trigger refetch
@@ -195,7 +207,7 @@ export default function RestaurantOnboardingScreen() {
     <AuthContainer contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
         <View
-          style={[styles.iconContainer, { backgroundColor: colors.primary }]} 
+          style={[styles.iconContainer, { backgroundColor: colors.primary }]}
         >
           <Ionicons name="restaurant" size={32} color="white" />
         </View>
@@ -222,6 +234,7 @@ export default function RestaurantOnboardingScreen() {
             autoCorrect={false}
             returnKeyType="next"
             onSubmitEditing={() => handleNextField('name')}
+            onBlur={() => handleFieldBlur('name')}
             error={errors.name}
             containerStyle={styles.inputSpacing}
           />
@@ -236,6 +249,7 @@ export default function RestaurantOnboardingScreen() {
             autoCorrect={false}
             returnKeyType="next"
             onSubmitEditing={() => handleNextField('address_line1')}
+            onBlur={() => handleFieldBlur('address_line1')}
             error={errors.address_line1}
             containerStyle={styles.inputSpacing}
           />
@@ -264,6 +278,7 @@ export default function RestaurantOnboardingScreen() {
               autoCorrect={false}
               returnKeyType="next"
               onSubmitEditing={() => handleNextField('city')}
+              onBlur={() => handleFieldBlur('city')}
               error={errors.city}
               containerStyle={styles.halfWidth}
             />
@@ -278,10 +293,20 @@ export default function RestaurantOnboardingScreen() {
               maxLength={10}
               returnKeyType="done"
               onSubmitEditing={() => handleNextField('postal_code')}
+              onBlur={() => handleFieldBlur('postal_code')}
               error={errors.postal_code}
               containerStyle={styles.halfWidth}
             />
           </View>
+
+          {addressValidationError && (
+            <View style={styles.disclaimerContainer}>
+              <Ionicons name="warning" size={20} color="#B45309" />
+              <Text style={styles.disclaimerText}>
+                {addressValidationError}
+              </Text>
+            </View>
+          )}
 
           <AuthButton
             title="Create Restaurant"
@@ -353,5 +378,22 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     marginTop: 16,
+  },
+  disclaimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  disclaimerText: {
+    flex: 1,
+    color: '#B45309',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
