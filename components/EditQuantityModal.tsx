@@ -50,10 +50,19 @@ export function EditQuantityModal({
           style={[styles.modalContent, { backgroundColor: colors.surface }]}
         >
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+            <Text
+              style={[styles.modalTitle, { color: colors.text }]}
+              accessibilityRole="header"
+            >
               Edit Quantity
             </Text>
-            <TouchableOpacity onPress={onClose} style={styles.modalCloseButton}>
+            <TouchableOpacity
+              onPress={onClose}
+              style={styles.modalCloseButton}
+              accessibilityRole="button"
+              accessibilityLabel="Close modal"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -85,6 +94,8 @@ export function EditQuantityModal({
                   keyboardType="number-pad"
                   selectTextOnFocus
                   autoFocus
+                  accessibilityLabel="Quantity"
+                  accessibilityHint="Enter the new quantity"
                 />
               </View>
               <View style={styles.modalActions}>
@@ -95,6 +106,8 @@ export function EditQuantityModal({
                     { borderColor: colors.border },
                   ]}
                   onPress={onClose}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel editing"
                 >
                   <Text
                     style={[styles.modalButtonText, { color: colors.text }]}
@@ -110,6 +123,12 @@ export function EditQuantityModal({
                   ]}
                   onPress={onSave}
                   disabled={updatingItemId === editingItem.item_id}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save quantity"
+                  accessibilityState={{
+                    disabled: updatingItemId === editingItem.item_id,
+                    busy: updatingItemId === editingItem.item_id,
+                  }}
                 >
                   {updatingItemId === editingItem.item_id ? (
                     <ActivityIndicator size="small" color="white" />
