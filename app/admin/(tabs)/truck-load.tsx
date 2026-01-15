@@ -95,6 +95,10 @@ export default function AdminTruckLoadScreen() {
   };
 
   const getDisplayPrice = (itemId: string): string => {
+    const item = items.find(i => i.item_id === itemId);
+    if (item?.finalized && item?.finalized_amount != null) {
+      return item.finalized_amount.toFixed(2);
+    }
     return editedPrices[itemId] ?? '';
   };
 
