@@ -35,7 +35,7 @@ import {
   checkoutReducer,
   initialCheckoutState,
   type PaymentMethod,
-} from './checkout-state';
+} from '../lib/utils/checkout-state';
 
 type PaymentOption = {
   value: PaymentMethod;
@@ -70,10 +70,14 @@ export default function CheckoutScreen() {
     enabled: isUserAdmin === true,
   });
 
-  const [state, dispatch] = useReducer(checkoutReducer, initialCheckoutState, (initial) => ({
-    ...initial,
-    selectedRestaurantId: restaurantId || null,
-  }));
+  const [state, dispatch] = useReducer(
+    checkoutReducer,
+    initialCheckoutState,
+    initial => ({
+      ...initial,
+      selectedRestaurantId: restaurantId || null,
+    })
+  );
 
   // Update selectedRestaurantId when restaurantId (from props/user) becomes available
   useEffect(() => {
@@ -104,7 +108,10 @@ export default function CheckoutScreen() {
   useEffect(() => {
     dispatch({
       type: 'SYNC_RESTAURANT_DATA',
-      payload: { restaurant: restaurant || null, selectedRestaurant: selectedRestaurant || null },
+      payload: {
+        restaurant: restaurant || null,
+        selectedRestaurant: selectedRestaurant || null,
+      },
     });
   }, [restaurant, selectedRestaurant]);
 
@@ -115,7 +122,7 @@ export default function CheckoutScreen() {
       payload: {
         isUserAdmin: !!isUserAdmin,
         userInfo: userInfo || null,
-        ownerInfo: ownerInfo || null
+        ownerInfo: ownerInfo || null,
       },
     });
   }, [isUserAdmin, ownerInfo, userInfo]);
@@ -269,7 +276,9 @@ export default function CheckoutScreen() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-            onScrollBeginDrag={() => dispatch({ type: 'SET_DROPDOWN_VISIBLE', payload: false })}
+            onScrollBeginDrag={() =>
+              dispatch({ type: 'SET_DROPDOWN_VISIBLE', payload: false })
+            }
           >
             {!restaurant && (
               <View
@@ -345,7 +354,9 @@ export default function CheckoutScreen() {
                         {state.restaurantName || 'Select a restaurant'}
                       </Text>
                       <Ionicons
-                        name={state.dropdownVisible ? 'chevron-up' : 'chevron-down'}
+                        name={
+                          state.dropdownVisible ? 'chevron-up' : 'chevron-down'
+                        }
                         size={20}
                         color={colors.textSecondary}
                       />
@@ -377,7 +388,8 @@ export default function CheckoutScreen() {
                               accessibilityRole="button"
                               accessibilityLabel={rest.name}
                               accessibilityState={{
-                                selected: state.selectedRestaurantId === rest.id,
+                                selected:
+                                  state.selectedRestaurantId === rest.id,
                               }}
                             >
                               <Text
@@ -472,7 +484,9 @@ export default function CheckoutScreen() {
                       },
                     ]}
                     value={state.email}
-                    onChangeText={(text) => dispatch({ type: 'SET_EMAIL', payload: text })}
+                    onChangeText={text =>
+                      dispatch({ type: 'SET_EMAIL', payload: text })
+                    }
                     placeholder="Enter email address"
                     placeholderTextColor={colors.textSecondary}
                     keyboardType="email-address"
@@ -589,7 +603,12 @@ export default function CheckoutScreen() {
                     },
                   ]}
                   value={state.specialInstructions}
-                  onChangeText={(text) => dispatch({ type: 'SET_SPECIAL_INSTRUCTIONS', payload: text })}
+                  onChangeText={text =>
+                    dispatch({
+                      type: 'SET_SPECIAL_INSTRUCTIONS',
+                      payload: text,
+                    })
+                  }
                   placeholder="Loading dock instructions, specific requirements, etc."
                   placeholderTextColor={colors.tabIconDefault}
                   multiline
@@ -620,7 +639,12 @@ export default function CheckoutScreen() {
                   <TouchableOpacity
                     key={option.value}
                     style={styles.paymentOption}
-                    onPress={() => dispatch({ type: 'SET_PAYMENT_METHOD', payload: option.value })}
+                    onPress={() =>
+                      dispatch({
+                        type: 'SET_PAYMENT_METHOD',
+                        payload: option.value,
+                      })
+                    }
                     accessibilityRole="radio"
                     accessibilityState={{ checked: selected }}
                     accessibilityLabel={option.label}
