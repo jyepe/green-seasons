@@ -174,16 +174,6 @@ export default function CheckoutScreen() {
 
   const paymentOptions: PaymentOption[] = [
     {
-      value: 'net30',
-      icon: 'document-text',
-      label: 'Net 30 Invoice (Existing Customers)',
-    },
-    {
-      value: 'credit',
-      icon: 'card',
-      label: 'Credit Card',
-    },
-    {
       value: 'cash',
       icon: 'cash',
       label: 'Cash on Delivery',
