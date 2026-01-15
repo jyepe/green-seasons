@@ -28,8 +28,8 @@ export function RevenueByRestaurantList({
   // Sort by revenue descending to ensure proper ranking even if RPC ordering changes
   const topRestaurants = useMemo(() => {
     return [...data].sort((a, b) => {
-      const revenueA = a.final_revenue > 0 ? a.final_revenue : a.revenue;
-      const revenueB = b.final_revenue > 0 ? b.final_revenue : b.revenue;
+      const revenueA = a.final_revenue || a.revenue;
+      const revenueB = b.final_revenue || b.revenue;
       return revenueB - revenueA;
     });
   }, [data]);
@@ -85,9 +85,7 @@ export function RevenueByRestaurantList({
                 </Text>
                 <Text style={[styles.statValue, { color: colors.text }]}>
                   {formatCurrency(
-                    restaurant.final_revenue > 0
-                      ? restaurant.final_revenue
-                      : restaurant.revenue
+                    restaurant.final_revenue || restaurant.revenue
                   )}
                 </Text>
                 <Text
