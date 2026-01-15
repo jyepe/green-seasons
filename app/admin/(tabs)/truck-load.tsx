@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LoadingView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import {
@@ -157,12 +158,7 @@ export default function AdminTruckLoadScreen() {
       </View>
 
       {truckLoadQuery.isLoading && items.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Loading truck load...
-          </Text>
-        </View>
+        <LoadingView message="Loading truck load..." />
       ) : items.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="cube-outline" size={64} color={colors.textTertiary} />
@@ -342,17 +338,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 32,
     gap: 12,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    marginTop: 16,
   },
   emptyState: {
     flex: 1,

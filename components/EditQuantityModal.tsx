@@ -50,7 +50,10 @@ export function EditQuantityModal({
           style={[styles.modalContent, { backgroundColor: colors.surface }]}
         >
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+            <Text
+              style={[styles.modalTitle, { color: colors.text }]}
+              accessibilityRole="header"
+            >
               Edit Quantity
             </Text>
             <TouchableOpacity
@@ -119,6 +122,11 @@ export function EditQuantityModal({
                   onPress={onSave}
                   disabled={updatingItemId === editingItem.item_id}
                   accessibilityRole="button"
+                  accessibilityLabel="Save quantity"
+                  accessibilityState={{
+                    disabled: updatingItemId === editingItem.item_id,
+                    busy: updatingItemId === editingItem.item_id,
+                  }}
                 >
                   {updatingItemId === editingItem.item_id ? (
                     <ActivityIndicator size="small" color="white" />

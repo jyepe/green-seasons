@@ -10,9 +10,19 @@ import {
   TouchableOpacity,
   View,
   FlexStyle,
+  ScrollView,
 } from 'react-native';
 
-// --- Shared Helpers ---
+// --- Shared Types & Helpers ---
+
+export type FilterStatus = 'all' | OrderStatus;
+
+export const FILTER_LABELS: Record<FilterStatus, string> = {
+  all: 'All',
+  pending: 'Pending',
+  in_transit: 'In Transit',
+  delivered: 'Delivered',
+};
 
 export const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) {
@@ -42,6 +52,110 @@ export const getStatusColor = (
 ) => {
   return colors.orderStatus[status];
 };
+
+// --- Shared UI Components ---
+
+interface OrderFilterTabsProps {
+  activeFilter: FilterStatus;
+  onFilterChange: (status: FilterStatus) => void;
+}
+
+export function OrderFilterTabs({
+  activeFilter,
+  onFilterChange,
+}: OrderFilterTabsProps) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <View style={styles.filterContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterContent}
+      >
+        {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
+          <TouchableOpacity
+            key={status}
+            style={[
+              styles.filterTab,
+              activeFilter === status && {
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              },
+              activeFilter !== status && {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+            onPress={() => onFilterChange(status)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: activeFilter === status }}
+            accessibilityLabel={`Filter by ${FILTER_LABELS[status]}`}
+          >
+            <Text
+              style={[
+                styles.filterText,
+                activeFilter === status
+                  ? { color: 'white' }
+                  : { color: colors.textSecondary },
+              ]}
+            >
+              {FILTER_LABELS[status]}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+interface OrderListEmptyStateProps {
+  activeFilter: FilterStatus;
+  onClearFilter: () => void;
+  emptyMessageAll?: string;
+}
+
+export function OrderListEmptyState({
+  activeFilter,
+  onClearFilter,
+  emptyMessageAll = "You haven't placed any orders yet.",
+}: OrderListEmptyStateProps) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <View style={styles.emptyState}>
+      <Ionicons
+        name={activeFilter === 'all' ? 'cube-outline' : 'filter-circle-outline'}
+        size={64}
+        color={colors.textTertiary}
+      />
+      <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
+        No Orders Found
+      </Text>
+      <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+        {activeFilter === 'all'
+          ? emptyMessageAll
+          : `No orders found with status "${FILTER_LABELS[activeFilter]}".`}
+      </Text>
+      {activeFilter !== 'all' && (
+        <TouchableOpacity
+          style={[styles.clearFilterButton, { borderColor: colors.primary }]}
+          onPress={onClearFilter}
+          accessibilityRole="button"
+          accessibilityLabel="Clear filter"
+        >
+          <Text
+            style={[styles.clearFilterButtonText, { color: colors.primary }]}
+          >
+            Clear Filter
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
 
 // --- Base Component ---
 
@@ -200,6 +314,55 @@ export const styles = StyleSheet.create({
   statusText: {
     color: 'white',
     fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  filterContainer: {
+    paddingVertical: 12,
+  },
+  filterContent: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  filterTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  clearFilterButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  clearFilterButtonText: {
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },

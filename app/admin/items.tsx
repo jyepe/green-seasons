@@ -1,4 +1,5 @@
 import { ItemFormModal } from '@/components/admin/ItemFormModal';
+import { LoadingView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import {
@@ -210,12 +211,7 @@ export default function AdminItemsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {isLoading && !items ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading items...
-            </Text>
-          </View>
+          <LoadingView message="Loading items..." />
         ) : filteredItems.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons
@@ -481,16 +477,6 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 20,
     gap: 12,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   emptyState: {
     flex: 1,

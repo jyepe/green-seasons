@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,8 +31,11 @@ import {
   type Restaurant,
 } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
-
-type PaymentMethod = 'net30' | 'credit' | 'cash';
+import {
+  checkoutReducer,
+  initialCheckoutState,
+  type PaymentMethod,
+} from './checkout-state';
 
 type PaymentOption = {
   value: PaymentMethod;
@@ -67,47 +70,21 @@ export default function CheckoutScreen() {
     enabled: isUserAdmin === true,
   });
 
-  // Restaurant Information
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
-    string | null
-  >(restaurantId || null);
-  const [restaurantName, setRestaurantName] = useState('');
-  const [contactPerson, setContactPerson] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [state, dispatch] = useReducer(checkoutReducer, initialCheckoutState, (initial) => ({
+    ...initial,
+    selectedRestaurantId: restaurantId || null,
+  }));
 
-  // Delivery Information
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
-  const [iosPickerVisible, setIosPickerVisible] = useState(false);
-  const [iosTempDate, setIosTempDate] = useState<Date>(new Date());
-  const [specialInstructions, setSpecialInstructions] = useState('');
-
-  // Payment Method
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('net30');
-
+  // Update selectedRestaurantId when restaurantId (from props/user) becomes available
   useEffect(() => {
-    if (!userInfo) {
-      setContactPerson('');
-      setEmail('');
-      setPhoneNumber('');
-      return;
+    if (restaurantId && !state.selectedRestaurantId) {
+      dispatch({ type: 'SET_SELECTED_RESTAURANT_ID', payload: restaurantId });
     }
-
-    const fullName = [userInfo.first_name, userInfo.last_name]
-      .filter(Boolean)
-      .join(' ')
-      .trim();
-
-    setContactPerson(fullName || userInfo.email || '');
-    setEmail(userInfo.email ?? '');
-    setPhoneNumber(userInfo.phone ?? '');
-  }, [userInfo]);
+  }, [restaurantId, state.selectedRestaurantId]);
 
   // Load restaurant data when selected restaurant changes
   const { data: selectedRestaurant } = useRestaurant(
-    selectedRestaurantId || undefined
+    state.selectedRestaurantId || undefined
   );
 
   // Get owner info when admin selects a restaurant
@@ -120,92 +97,32 @@ export default function CheckoutScreen() {
     enabled:
       isUserAdmin === true &&
       !!selectedRestaurant?.owner_id &&
-      !!selectedRestaurantId,
+      !!state.selectedRestaurantId,
   });
 
+  // Sync state with restaurant data
   useEffect(() => {
-    if (!restaurant && !selectedRestaurant) {
-      setRestaurantName('');
-      setDeliveryAddress('');
-      return;
-    }
-
-    const activeRestaurant = selectedRestaurant || restaurant;
-    if (!activeRestaurant) return;
-
-    setRestaurantName(activeRestaurant.name ?? '');
-
-    const formattedAddress = [
-      activeRestaurant.address_line1,
-      activeRestaurant.address_line2,
-      [activeRestaurant.city, activeRestaurant.postal_code]
-        .filter(Boolean)
-        .join(', '),
-      activeRestaurant.country,
-    ]
-      .filter(part => part && part.trim().length > 0)
-      .join('\n');
-
-    setDeliveryAddress(formattedAddress || '');
+    dispatch({
+      type: 'SYNC_RESTAURANT_DATA',
+      payload: { restaurant: restaurant || null, selectedRestaurant: selectedRestaurant || null },
+    });
   }, [restaurant, selectedRestaurant]);
 
-  // Auto-populate contact info when admin selects restaurant
+  // Sync contact info based on user/admin status and available data
   useEffect(() => {
-    if (isUserAdmin && ownerInfo) {
-      // Admin has selected a restaurant - use owner info
-      const fullName = [ownerInfo.first_name, ownerInfo.last_name]
-        .filter(Boolean)
-        .join(' ')
-        .trim();
-      setContactPerson(fullName || '');
-      // Explicitly set email, clearing it if owner has no email
-      setEmail(ownerInfo.email ?? '');
-      setPhoneNumber(ownerInfo.phone ?? '');
-    } else if (isUserAdmin && !ownerInfo && userInfo) {
-      // Admin without selected restaurant - use admin's own info
-      const fullName = [userInfo.first_name, userInfo.last_name]
-        .filter(Boolean)
-        .join(' ')
-        .trim();
-      setContactPerson(fullName || userInfo.email || '');
-      setEmail(userInfo.email ?? '');
-      setPhoneNumber(userInfo.phone ?? '');
-    } else if (!isUserAdmin) {
-      // Reset to current user info if not admin
-      if (userInfo) {
-        const fullName = [userInfo.first_name, userInfo.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
-        setContactPerson(fullName || userInfo.email || '');
-        setEmail(userInfo.email ?? '');
-        setPhoneNumber(userInfo.phone ?? '');
-      } else {
-        // Clear fields if not admin and no user info
-        setContactPerson('');
-        setEmail('');
-        setPhoneNumber('');
-      }
-    }
+    dispatch({
+      type: 'SYNC_CONTACT_DATA',
+      payload: {
+        isUserAdmin: !!isUserAdmin,
+        userInfo: userInfo || null,
+        ownerInfo: ownerInfo || null
+      },
+    });
   }, [isUserAdmin, ownerInfo, userInfo]);
 
   // Handle restaurant selection for admin
   const handleRestaurantSelect = (rest: Restaurant) => {
-    setSelectedRestaurantId(rest.id);
-    setRestaurantName(rest.name);
-    setDropdownVisible(false);
-
-    // Auto-populate delivery address
-    const formattedAddress = [
-      rest.address_line1,
-      rest.address_line2,
-      [rest.city, rest.postal_code].filter(Boolean).join(', '),
-      rest.country,
-    ]
-      .filter(part => part && part.trim().length > 0)
-      .join('\n');
-
-    setDeliveryAddress(formattedAddress || '');
+    dispatch({ type: 'SELECT_ADMIN_RESTAURANT', payload: rest });
   };
 
   const handleAndroidDateChange = (
@@ -213,12 +130,12 @@ export default function CheckoutScreen() {
     selectedDate?: Date
   ) => {
     if (event.type === 'set' && selectedDate) {
-      setDeliveryDate(selectedDate);
+      dispatch({ type: 'SET_DELIVERY_DATE', payload: selectedDate });
     }
   };
 
   const handleShowDatePicker = () => {
-    const baseDate = deliveryDate ?? new Date();
+    const baseDate = state.deliveryDate ?? new Date();
     if (Platform.OS === 'android') {
       DateTimePickerAndroid.open({
         value: baseDate,
@@ -227,8 +144,7 @@ export default function CheckoutScreen() {
         onChange: handleAndroidDateChange,
       });
     } else {
-      setIosTempDate(baseDate);
-      setIosPickerVisible(true);
+      dispatch({ type: 'OPEN_IOS_PICKER', payload: baseDate });
     }
   };
 
@@ -237,17 +153,16 @@ export default function CheckoutScreen() {
     selectedDate?: Date
   ) => {
     if (selectedDate) {
-      setIosTempDate(selectedDate);
+      dispatch({ type: 'SET_IOS_TEMP_DATE', payload: selectedDate });
     }
   };
 
   const handleIosConfirm = () => {
-    setDeliveryDate(iosTempDate);
-    setIosPickerVisible(false);
+    dispatch({ type: 'CONFIRM_IOS_DATE' });
   };
 
   const handleIosCancel = () => {
-    setIosPickerVisible(false);
+    dispatch({ type: 'CANCEL_IOS_DATE' });
   };
 
   const paymentOptions: PaymentOption[] = [
@@ -273,7 +188,7 @@ export default function CheckoutScreen() {
 
   const handlePlaceOrder = async () => {
     const activeRestaurantId = isUserAdmin
-      ? selectedRestaurantId
+      ? state.selectedRestaurantId
       : restaurantId;
 
     if (!activeRestaurantId) {
@@ -284,7 +199,7 @@ export default function CheckoutScreen() {
       return;
     }
 
-    if (!deliveryDate) {
+    if (!state.deliveryDate) {
       Alert.alert(
         'Delivery Date Required',
         'Please select a preferred delivery date before placing your order.'
@@ -295,7 +210,7 @@ export default function CheckoutScreen() {
     try {
       const order = await createOrderMutation.mutateAsync({
         restaurantId: activeRestaurantId,
-        deliveryAt: deliveryDate,
+        deliveryAt: state.deliveryDate,
       });
       Alert.alert(
         'Order Placed Successfully!',
@@ -320,8 +235,8 @@ export default function CheckoutScreen() {
     }
   };
 
-  const deliveryDateLabel = deliveryDate
-    ? formatDate(deliveryDate)
+  const deliveryDateLabel = state.deliveryDate
+    ? formatDate(state.deliveryDate)
     : 'Select delivery date';
 
   return (
@@ -354,7 +269,7 @@ export default function CheckoutScreen() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-            onScrollBeginDrag={() => setDropdownVisible(false)}
+            onScrollBeginDrag={() => dispatch({ type: 'SET_DROPDOWN_VISIBLE', payload: false })}
           >
             {!restaurant && (
               <View
@@ -413,29 +328,29 @@ export default function CheckoutScreen() {
                           justifyContent: 'space-between',
                         },
                       ]}
-                      onPress={() => setDropdownVisible(!dropdownVisible)}
+                      onPress={() => dispatch({ type: 'TOGGLE_DROPDOWN' })}
                       accessibilityRole="combobox"
                       accessibilityLabel="Select a restaurant"
-                      accessibilityState={{ expanded: dropdownVisible }}
+                      accessibilityState={{ expanded: state.dropdownVisible }}
                     >
                       <Text
                         style={{
-                          color: restaurantName
+                          color: state.restaurantName
                             ? colors.text
                             : colors.textSecondary,
                           fontSize: 16,
                           flex: 1,
                         }}
                       >
-                        {restaurantName || 'Select a restaurant'}
+                        {state.restaurantName || 'Select a restaurant'}
                       </Text>
                       <Ionicons
-                        name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
+                        name={state.dropdownVisible ? 'chevron-up' : 'chevron-down'}
                         size={20}
                         color={colors.textSecondary}
                       />
                     </TouchableOpacity>
-                    {dropdownVisible && (
+                    {state.dropdownVisible && (
                       <View
                         style={[
                           styles.dropdown,
@@ -454,7 +369,7 @@ export default function CheckoutScreen() {
                               key={rest.id}
                               style={[
                                 styles.dropdownItem,
-                                selectedRestaurantId === rest.id && {
+                                state.selectedRestaurantId === rest.id && {
                                   backgroundColor: colors.primary + '20',
                                 },
                               ]}
@@ -462,14 +377,14 @@ export default function CheckoutScreen() {
                               accessibilityRole="button"
                               accessibilityLabel={rest.name}
                               accessibilityState={{
-                                selected: selectedRestaurantId === rest.id,
+                                selected: state.selectedRestaurantId === rest.id,
                               }}
                             >
                               <Text
                                 style={[
                                   styles.dropdownItemText,
                                   { color: colors.text },
-                                  selectedRestaurantId === rest.id && {
+                                  state.selectedRestaurantId === rest.id && {
                                     color: colors.primary,
                                     fontWeight: '600',
                                   },
@@ -495,7 +410,7 @@ export default function CheckoutScreen() {
                     ]}
                   >
                     <Text style={{ color: colors.text, fontSize: 16 }}>
-                      {restaurantName}
+                      {state.restaurantName}
                     </Text>
                   </View>
                 )}
@@ -516,7 +431,7 @@ export default function CheckoutScreen() {
                   ]}
                 >
                   <Text style={{ color: colors.text, fontSize: 16 }}>
-                    {contactPerson}
+                    {state.contactPerson}
                   </Text>
                 </View>
               </View>
@@ -536,7 +451,7 @@ export default function CheckoutScreen() {
                   ]}
                 >
                   <Text style={{ color: colors.text, fontSize: 16 }}>
-                    {phoneNumber}
+                    {state.phoneNumber}
                   </Text>
                 </View>
               </View>
@@ -556,8 +471,8 @@ export default function CheckoutScreen() {
                         borderWidth: 1,
                       },
                     ]}
-                    value={email}
-                    onChangeText={setEmail}
+                    value={state.email}
+                    onChangeText={(text) => dispatch({ type: 'SET_EMAIL', payload: text })}
                     placeholder="Enter email address"
                     placeholderTextColor={colors.textSecondary}
                     keyboardType="email-address"
@@ -577,7 +492,7 @@ export default function CheckoutScreen() {
                     ]}
                   >
                     <Text style={{ color: colors.text, fontSize: 16 }}>
-                      {email}
+                      {state.email}
                     </Text>
                   </View>
                 )}
@@ -615,7 +530,7 @@ export default function CheckoutScreen() {
                   <Text
                     style={{ color: colors.text, fontSize: 16, lineHeight: 22 }}
                   >
-                    {deliveryAddress}
+                    {state.deliveryAddress}
                   </Text>
                 </View>
               </View>
@@ -643,7 +558,7 @@ export default function CheckoutScreen() {
                       style={[
                         styles.dateValue,
                         {
-                          color: deliveryDate
+                          color: state.deliveryDate
                             ? colors.text
                             : colors.textSecondary,
                         },
@@ -673,8 +588,8 @@ export default function CheckoutScreen() {
                       color: colors.text,
                     },
                   ]}
-                  value={specialInstructions}
-                  onChangeText={setSpecialInstructions}
+                  value={state.specialInstructions}
+                  onChangeText={(text) => dispatch({ type: 'SET_SPECIAL_INSTRUCTIONS', payload: text })}
                   placeholder="Loading dock instructions, specific requirements, etc."
                   placeholderTextColor={colors.tabIconDefault}
                   multiline
@@ -699,13 +614,13 @@ export default function CheckoutScreen() {
               </Text>
 
               {paymentOptions.map(option => {
-                const selected = paymentMethod === option.value;
+                const selected = state.paymentMethod === option.value;
 
                 return (
                   <TouchableOpacity
                     key={option.value}
                     style={styles.paymentOption}
-                    onPress={() => setPaymentMethod(option.value)}
+                    onPress={() => dispatch({ type: 'SET_PAYMENT_METHOD', payload: option.value })}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: selected }}
                     accessibilityLabel={option.label}
@@ -775,7 +690,7 @@ export default function CheckoutScreen() {
           <Modal
             transparent
             animationType="slide"
-            visible={iosPickerVisible}
+            visible={state.iosPickerVisible}
             onRequestClose={handleIosCancel}
           >
             <View style={styles.modalBackdrop}>
@@ -819,7 +734,7 @@ export default function CheckoutScreen() {
                   </TouchableOpacity>
                 </View>
                 <DateTimePicker
-                  value={iosTempDate}
+                  value={state.iosTempDate}
                   mode="date"
                   display="inline"
                   onChange={handleIosDateChange}
