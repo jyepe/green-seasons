@@ -1,31 +1,26 @@
 import { AdminOrderListItem } from '@/components/AdminOrderListItem';
+import {
+  FilterStatus,
+  OrderFilterTabs,
+  OrderListEmptyState,
+} from '@/components/OrderListItem';
+import { LoadingView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
-import { getAdminOrders, OrderStatus } from '@/lib/supabase';
+import { getAdminOrders } from '@/lib/supabase';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LoadingView } from '@/components/ThemedView';
-import { useInfiniteQuery } from '@tanstack/react-query';
-
-type FilterStatus = 'all' | OrderStatus;
-
-const FILTER_LABELS: Record<FilterStatus, string> = {
-  all: 'All',
-  pending: 'Pending',
-  in_transit: 'In Transit',
-  delivered: 'Delivered',
-};
 
 const ORDERS_PAGE_SIZE = 50;
 
@@ -104,84 +99,20 @@ export default function AdminOrdersScreen() {
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContent}
-        >
-          {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
-            <TouchableOpacity
-              key={status}
-              style={[
-                styles.filterTab,
-                activeFilter === status && {
-                  backgroundColor: colors.primary,
-                  borderColor: colors.primary,
-                },
-                activeFilter !== status && {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-              onPress={() => setActiveFilter(status)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === status
-                    ? { color: 'white' }
-                    : { color: colors.textSecondary },
-                ]}
-              >
-                {FILTER_LABELS[status]}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+      <OrderFilterTabs
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+      />
 
       {/* Orders List */}
       {ordersQuery.isLoading && allOrders.length === 0 ? (
         <LoadingView message="Loading orders..." />
       ) : filteredOrders.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons
-            name={
-              activeFilter === 'all' ? 'cube-outline' : 'filter-circle-outline'
-            }
-            size={64}
-            color={colors.textTertiary}
-          />
-          <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-            No Orders Found
-          </Text>
-          <Text
-            style={[styles.emptyStateText, { color: colors.textSecondary }]}
-          >
-            {activeFilter === 'all'
-              ? 'No orders found in the database.'
-              : `No orders found with status "${FILTER_LABELS[activeFilter]}".`}
-          </Text>
-          {activeFilter !== 'all' && (
-            <TouchableOpacity
-              style={[
-                styles.clearFilterButton,
-                { borderColor: colors.primary },
-              ]}
-              onPress={() => setActiveFilter('all')}
-            >
-              <Text
-                style={[
-                  styles.clearFilterButtonText,
-                  { color: colors.primary },
-                ]}
-              >
-                Clear Filter
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <OrderListEmptyState
+          activeFilter={activeFilter}
+          onClearFilter={() => setActiveFilter('all')}
+          emptyMessageAll="No orders found in the database."
+        />
       ) : (
         <FlatList
           data={filteredOrders}
@@ -224,57 +155,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
-  filterContainer: {
-    paddingVertical: 12,
-  },
-  filterContent: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  filterTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'Inter_600SemiBold',
-  },
   listContent: {
     padding: 20,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  clearFilterButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  clearFilterButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
   footerLoader: {
     paddingVertical: 20,

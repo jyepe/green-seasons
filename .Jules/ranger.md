@@ -5,3 +5,7 @@
 ## 2024-05-24 - [Repeated Loading States]
 **Learning:** High duplication of "View > ActivityIndicator + Text" pattern for loading states across screens.
 **Action:** Centralized into `LoadingView` in `components/ThemedView.tsx` to standardize loading UI.
+
+## 2024-05-24 - [Order List UI Primitives]
+**Learning:** Filter tabs and Empty State UI were duplicated across User and Admin order lists.
+**Action:** Extracted `OrderFilterTabs` and `OrderListEmptyState` into `components/OrderListItem.tsx` to sit alongside the list item components, creating a cohesive "Order List" domain module.
