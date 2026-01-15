@@ -209,7 +209,7 @@ export default function RestaurantOnboardingScreen() {
         <View
           style={[styles.iconContainer, { backgroundColor: colors.primary }]}
         >
-          <Ionicons name="restaurant" size={32} color="white" />
+          <Ionicons name="restaurant" size={32} color={colors.surface} />
         </View>
         <GradientText
           colors={['#7FD8B5', '#FFBE88']}
@@ -217,7 +217,7 @@ export default function RestaurantOnboardingScreen() {
         >
           Create Your Restaurant
         </GradientText>
-        <Text style={[styles.subtitle, { color: '#000000' }]}>
+        <Text style={[styles.subtitle, { color: colors.text }]}>
           Set up your restaurant profile to start ordering fresh produce
         </Text>
       </View>
@@ -300,9 +300,17 @@ export default function RestaurantOnboardingScreen() {
           </View>
 
           {addressValidationError && (
-            <View style={styles.disclaimerContainer}>
-              <Ionicons name="warning" size={20} color="#B45309" />
-              <Text style={styles.disclaimerText}>
+            <View
+              style={[
+                styles.disclaimerContainer,
+                {
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.warning,
+                },
+              ]}
+            >
+              <Ionicons name="warning" size={20} color={colors.warning} />
+              <Text style={[styles.disclaimerText, { color: colors.text }]}>
                 {addressValidationError}
               </Text>
             </View>
@@ -383,9 +391,7 @@ const styles = StyleSheet.create({
   disclaimerContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
     borderWidth: 1,
-    borderColor: '#F59E0B',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -393,7 +399,6 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     flex: 1,
-    color: '#B45309',
     fontSize: 14,
     lineHeight: 20,
   },
