@@ -1112,6 +1112,7 @@ export async function getAdminChartOrdersByDay(
 export type AdminChartRevenueByDay = {
   day: string;
   revenue: number;
+  final_revenue: number;
 };
 
 /**
@@ -1139,6 +1140,7 @@ export async function getAdminChartRevenueByDay(
   return (data || []).map((row: Record<string, unknown>) => ({
     day: row.day as string,
     revenue: parseFloat(String(row.revenue ?? '0')),
+    final_revenue: parseFloat(String(row.final_revenue ?? '0')),
   }));
 }
 
@@ -1147,6 +1149,7 @@ export type AdminChartRevenueByRestaurant = {
   restaurant_name: string;
   orders_count: number;
   revenue: number;
+  final_revenue: number;
 };
 
 // ============================================================================
@@ -1356,6 +1359,7 @@ export async function getAdminChartRevenueByRestaurant(
     restaurant_name: row.restaurant_name as string,
     orders_count: parseInt(String(row.orders_count ?? '0'), 10),
     revenue: parseFloat(String(row.revenue ?? '0')),
+    final_revenue: parseFloat(String(row.final_revenue ?? '0')),
   }));
 }
 
