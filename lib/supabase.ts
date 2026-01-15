@@ -1411,7 +1411,7 @@ export async function getAdminTruckLoadSummary(
     item_image_url: (row.item_image_url as string | null) ?? null,
     finalized: row.finalized === true,
     finalized_amount:
-      row.finalized_amount !== null && row.finalized_amount !== undefined
+      row.finalized_amount != null
         ? parseFloat(String(row.finalized_amount))
         : null,
   }));

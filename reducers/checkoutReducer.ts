@@ -38,7 +38,7 @@ export const initialCheckoutState: CheckoutState = {
   specialInstructions: '',
   iosPickerVisible: false,
   iosTempDate: new Date(),
-  paymentMethod: 'net30',
+  paymentMethod: 'cash',
 };
 
 export type CheckoutAction =
