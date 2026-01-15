@@ -804,11 +804,13 @@ export type CreateOrderFromCartResult = {
 
 export async function createOrderFromCart(
   restaurantId: string,
-  deliveryAt: Date
+  deliveryAt: Date,
+  paymentMethod: string
 ): Promise<CreateOrderFromCartResult> {
   const { data, error } = await supabase.rpc('fn_create_order_from_cart', {
     p_restaurant_id: restaurantId,
     p_delivery_at: deliveryAt.toISOString(),
+    p_payment_method: paymentMethod,
   });
 
   if (error) {
@@ -1112,6 +1114,7 @@ export async function getAdminChartOrdersByDay(
 export type AdminChartRevenueByDay = {
   day: string;
   revenue: number;
+  final_revenue: number;
 };
 
 /**
@@ -1139,6 +1142,7 @@ export async function getAdminChartRevenueByDay(
   return (data || []).map((row: Record<string, unknown>) => ({
     day: row.day as string,
     revenue: parseFloat(String(row.revenue ?? '0')),
+    final_revenue: parseFloat(String(row.final_revenue ?? '0')),
   }));
 }
 
@@ -1147,6 +1151,7 @@ export type AdminChartRevenueByRestaurant = {
   restaurant_name: string;
   orders_count: number;
   revenue: number;
+  final_revenue: number;
 };
 
 // ============================================================================
@@ -1356,6 +1361,7 @@ export async function getAdminChartRevenueByRestaurant(
     restaurant_name: row.restaurant_name as string,
     orders_count: parseInt(String(row.orders_count ?? '0'), 10),
     revenue: parseFloat(String(row.revenue ?? '0')),
+    final_revenue: parseFloat(String(row.final_revenue ?? '0')),
   }));
 }
 
@@ -1368,6 +1374,7 @@ export type AdminTruckLoadItem = {
   item_name: string;
   item_image_url: string | null;
   finalized: boolean;
+  finalized_amount: number | null;
 };
 
 /**
@@ -1403,6 +1410,10 @@ export async function getAdminTruckLoadSummary(
     item_name: row.item_name as string,
     item_image_url: (row.item_image_url as string | null) ?? null,
     finalized: row.finalized === true,
+    finalized_amount:
+      row.finalized_amount != null
+        ? parseFloat(String(row.finalized_amount))
+        : null,
   }));
 }
 

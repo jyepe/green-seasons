@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  createOrderFromCart,
-  getOrdersForUser,
-  type Order,
-} from '@/lib/supabase';
+import { createOrderFromCart, getOrdersForUser } from '@/lib/supabase';
 import { CART_QUERY_KEY } from './useCart';
 
 export const ORDERS_QUERY_KEY = ['orders'] as const;
@@ -25,10 +21,12 @@ export function useCreateOrder() {
     mutationFn: ({
       restaurantId,
       deliveryAt,
+      paymentMethod,
     }: {
       restaurantId: string;
       deliveryAt: Date;
-    }) => createOrderFromCart(restaurantId, deliveryAt),
+      paymentMethod: string;
+    }) => createOrderFromCart(restaurantId, deliveryAt, paymentMethod),
     onSuccess: () => {
       // Invalidate cart query since cart is cleared after order creation
       queryClient.invalidateQueries({

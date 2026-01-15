@@ -65,7 +65,7 @@ export function RevenueByDayList({
             {formatDate(item.day)}
           </Text>
           <Text style={[styles.revenueValue, { color: colors.text }]}>
-            {formatCurrency(item.revenue)}
+            {formatCurrency(item.final_revenue || item.revenue)}
           </Text>
         </View>
       ))}
