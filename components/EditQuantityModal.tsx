@@ -59,8 +59,8 @@ export function EditQuantityModal({
             <TouchableOpacity
               onPress={onClose}
               style={styles.modalCloseButton}
-              accessibilityRole="button"
               accessibilityLabel="Close modal"
+              accessibilityRole="button"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="close" size={24} color={colors.text} />
@@ -95,7 +95,6 @@ export function EditQuantityModal({
                   selectTextOnFocus
                   autoFocus
                   accessibilityLabel="Quantity"
-                  accessibilityHint="Enter the new quantity"
                 />
               </View>
               <View style={styles.modalActions}>
@@ -107,7 +106,6 @@ export function EditQuantityModal({
                   ]}
                   onPress={onClose}
                   accessibilityRole="button"
-                  accessibilityLabel="Cancel editing"
                 >
                   <Text
                     style={[styles.modalButtonText, { color: colors.text }]}
