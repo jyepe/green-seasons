@@ -29,6 +29,10 @@ export function ThemedView({
   return <View style={[{ backgroundColor }, style]} {...otherProps} />;
 }
 
+/**
+ * Shared loading view with spinner and text.
+ * Replaces duplicated "View > ActivityIndicator + Text" patterns.
+ */
 export function LoadingView({
   message = 'Loading...',
   style,
