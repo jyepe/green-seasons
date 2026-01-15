@@ -51,8 +51,7 @@ export function restaurantOnboardingReducer(
         errors: action.errors,
       };
     case 'CLEAR_ERROR':
-      const newErrors = { ...state.errors };
-      delete newErrors[action.field];
+      const { [action.field]: _, ...newErrors } = state.errors;
       return {
         ...state,
         errors: newErrors,
