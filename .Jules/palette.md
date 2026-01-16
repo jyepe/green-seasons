@@ -19,3 +19,8 @@
 
 **Learning:** Applying `accessibilityLabel` to a container (like `TouchableOpacity`) hides all accessible elements inside it. This is great for icon buttons (hides the icon artifact) but dangerous if the button contains text that should be read.
 **Action:** Only put `accessibilityLabel` on the `TouchableOpacity` if it's an icon-only button or if you want to override the reading of the children completely.
+
+## 2024-05-22 - Toast Accessibility
+
+**Learning:** Toast notifications are often implemented as visual-only `Animated.View` layers. Without `accessibilityRole="alert"` and `accessibilityLiveRegion="polite"`, screen readers completely ignore them, leaving users unaware of success or error states.
+**Action:** Always add these props to temporary notification components to ensure announcements.

@@ -65,8 +65,16 @@ export function Toast({
           backgroundColor,
         },
       ]}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={`${type === 'success' ? 'Success' : 'Error'}: ${message}`}
     >
-      <Ionicons name={iconName} size={20} color="white" />
+      <Ionicons
+        name={iconName}
+        size={20}
+        color="white"
+        importantForAccessibility="no-hide-descendants"
+      />
       <Text style={styles.message}>{message}</Text>
     </Animated.View>
   );
