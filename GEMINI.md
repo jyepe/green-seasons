@@ -40,7 +40,8 @@ The app uses Expo Router's file-based routing:
 
 ### 3. State Management
 
-- **Server State:** Handled by `TanStack Query` with a default stale time of 5 minutes.
+- **Server State:** Handled by `TanStack Query`.
+  - **Cart Logic:** `hooks/useCart.ts` uses a `staleTime` of 15 seconds. This is **not** a polling interval. It means data is cached for 15 seconds. If a component requests data within that window, the cached version is served without a network request. Refetches occur on window focus (via `useCartRefetchOnFocus`) or when data is explicitly invalidated (e.g., after adding an item).
 - **Local State:** React `useState` and Context API for theming (`hooks/useTheme.tsx`).
 
 ### 4. Authorization & Roles
