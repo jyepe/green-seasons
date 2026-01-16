@@ -205,6 +205,7 @@ export const generateInvoiceHtml = (
           <div>
             <div class="company-name">${COMPANY_INFO.name}</div>
             <div class="company-tagline">${COMPANY_INFO.tagline}</div>
+            <div class="company-tagline">${COMPANY_INFO.address}</div>
           </div>
           <div class="invoice-title">
             <h1>INVOICE</h1>
