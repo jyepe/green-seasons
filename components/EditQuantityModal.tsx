@@ -1,15 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
-import {
-  ActivityIndicator,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
+import { ThemedModal, ModalFooter } from '@/components/ThemedView';
 
 export type EditingItem = {
   item_id: string;
@@ -39,138 +31,56 @@ export function EditQuantityModal({
   const colors = Colors[colorScheme];
 
   return (
-    <Modal
+    <ThemedModal
       visible={editingItem !== null}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
+      onClose={onClose}
+      title="Edit Quantity"
+      maxWidth={400}
     >
-      <View style={styles.modalOverlay}>
-        <View
-          style={[styles.modalContent, { backgroundColor: colors.surface }]}
-        >
-          <View style={styles.modalHeader}>
-            <Text
-              style={[styles.modalTitle, { color: colors.text }]}
-              accessibilityRole="header"
-            >
-              Edit Quantity
+      {editingItem && (
+        <>
+          <Text style={[styles.modalItemName, { color: colors.text }]}>
+            {editingItem.item_name}
+          </Text>
+          <Text
+            style={[styles.modalItemPrice, { color: colors.textSecondary }]}
+          >
+            ${editingItem.item_price.toFixed(2)} each
+          </Text>
+          <View style={styles.modalQuantityContainer}>
+            <Text style={[styles.modalLabel, { color: colors.text }]}>
+              Quantity
             </Text>
-            <TouchableOpacity
-              onPress={onClose}
-              style={styles.modalCloseButton}
-              accessibilityLabel="Close modal"
-              accessibilityRole="button"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="close" size={24} color={colors.text} />
-            </TouchableOpacity>
+            <TextInput
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.background,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              value={editQuantity}
+              onChangeText={setEditQuantity}
+              keyboardType="number-pad"
+              selectTextOnFocus
+              autoFocus
+              accessibilityLabel="Quantity"
+            />
           </View>
-          {editingItem && (
-            <>
-              <Text style={[styles.modalItemName, { color: colors.text }]}>
-                {editingItem.item_name}
-              </Text>
-              <Text
-                style={[styles.modalItemPrice, { color: colors.textSecondary }]}
-              >
-                ${editingItem.item_price.toFixed(2)} each
-              </Text>
-              <View style={styles.modalQuantityContainer}>
-                <Text style={[styles.modalLabel, { color: colors.text }]}>
-                  Quantity
-                </Text>
-                <TextInput
-                  style={[
-                    styles.modalInput,
-                    {
-                      backgroundColor: colors.background,
-                      borderColor: colors.border,
-                      color: colors.text,
-                    },
-                  ]}
-                  value={editQuantity}
-                  onChangeText={setEditQuantity}
-                  keyboardType="number-pad"
-                  selectTextOnFocus
-                  autoFocus
-                  accessibilityLabel="Quantity"
-                />
-              </View>
-              <View style={styles.modalActions}>
-                <TouchableOpacity
-                  style={[
-                    styles.modalButton,
-                    styles.modalButtonCancel,
-                    { borderColor: colors.border },
-                  ]}
-                  onPress={onClose}
-                  accessibilityRole="button"
-                >
-                  <Text
-                    style={[styles.modalButtonText, { color: colors.text }]}
-                  >
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.modalButton,
-                    styles.modalButtonSave,
-                    { backgroundColor: colors.primary },
-                  ]}
-                  onPress={onSave}
-                  disabled={updatingItemId === editingItem.item_id}
-                  accessibilityRole="button"
-                  accessibilityLabel="Save quantity"
-                  accessibilityState={{
-                    disabled: updatingItemId === editingItem.item_id,
-                    busy: updatingItemId === editingItem.item_id,
-                  }}
-                >
-                  {updatingItemId === editingItem.item_id ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    <Text style={styles.modalButtonTextSave}>Save</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-      </View>
-    </Modal>
+          <ModalFooter
+            onCancel={onClose}
+            onSave={onSave}
+            isLoading={updatingItemId === editingItem.item_id}
+            isSaveDisabled={updatingItemId === editingItem.item_id}
+          />
+        </>
+      )}
+    </ThemedModal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 400,
-    borderRadius: 16,
-    padding: 24,
-    gap: 16,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  modalCloseButton: {
-    padding: 4,
-  },
   modalItemName: {
     fontSize: 18,
     fontWeight: '600',
@@ -193,32 +103,5 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     fontWeight: '600',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalButtonCancel: {
-    borderWidth: 1,
-  },
-  modalButtonSave: {
-    // backgroundColor set inline
-  },
-  modalButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalButtonTextSave: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
   },
 });

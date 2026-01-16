@@ -9,3 +9,7 @@
 ## 2024-05-24 - [Order List UI Primitives]
 **Learning:** Filter tabs and Empty State UI were duplicated across User and Admin order lists.
 **Action:** Extracted `OrderFilterTabs` and `OrderListEmptyState` into `components/OrderListItem.tsx` to sit alongside the list item components, creating a cohesive "Order List" domain module.
+
+## 2025-05-24 - [Consolidating Modals]
+**Learning:** Found multiple modals (EditQuantity, ItemForm) sharing identical overlay/header structure but duplicating 50+ lines of styles and markup.
+**Action:** Extracted `ThemedModal` (shell) and `ModalFooter` (actions) into `components/ThemedView.tsx` to standardize modal UI and reduce boilerplate.
