@@ -833,8 +833,7 @@ export type OrderDetailItem = {
   order_status: string;
   placed_at: string;
   delivery_at: string | null;
-  restaurant_id: string;
-  restaurant_name: string;
+  restaurant: Restaurant;
   customer_id: string;
   subtotal: number;
   total: number;

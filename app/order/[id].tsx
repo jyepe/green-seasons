@@ -358,7 +358,7 @@ export default function OrderDetailsScreen() {
               Restaurant
             </Text>
             <Text style={[styles.summaryValue, { color: colors.text }]}>
-              {orderSummary.restaurant_name}
+              {orderSummary.restaurant.name}
             </Text>
           </View>
 

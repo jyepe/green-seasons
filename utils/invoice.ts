@@ -215,7 +215,12 @@ export const generateInvoiceHtml = (
         <div class="info-section">
           <div class="info-block">
             <h3>Restaurant</h3>
-            <p><strong>${escapeHtml(orderSummary.restaurant_name)}</strong></p>
+            <p>
+              <strong>${escapeHtml(orderSummary.restaurant.name)}</strong><br/>
+              ${escapeHtml(orderSummary.restaurant.address_line1)}<br/>
+              ${orderSummary.restaurant.address_line2 ? `${escapeHtml(orderSummary.restaurant.address_line2)}<br/>` : ''}
+              ${escapeHtml(orderSummary.restaurant.city)}, ${escapeHtml(orderSummary.restaurant.postal_code)}
+            </p>
           </div>
           <div class="info-block">
             <h3>Order Date</h3>
