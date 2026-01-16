@@ -7,8 +7,8 @@ export function useAdmin() {
   return useQuery({
     queryKey: ADMIN_STATUS_QUERY_KEY,
     queryFn: isAdmin,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: Infinity, // Never refetch automatically (static for session)
+    gcTime: Infinity, // Keep data in cache until manually removed
     retry: false, // Don't retry if user is not admin
   });
 }

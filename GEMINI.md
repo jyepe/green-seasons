@@ -43,7 +43,16 @@ The app uses Expo Router's file-based routing:
 - **Server State:** Handled by `TanStack Query` with a default stale time of 5 minutes.
 - **Local State:** React `useState` and Context API for theming (`hooks/useTheme.tsx`).
 
-### 4. Design System
+### 4. Authorization & Roles
+
+- **Admin Status:**
+  - **Source of Truth:** Database RPC function `fn_is_admin`.
+  - **State Tracking:** Managed via TanStack Query key `['admin-status']` in `hooks/useAdmin.ts`.
+  - **Mechanism:** The `useAdmin` hook fetches status with `staleTime: Infinity` (effectively static for the session). Login flows manually prime this cache using `useSetAdminStatus`.
+- **Employee Status:**
+  - Checked via `isEmployee()` in `lib/supabase.ts` which inspects the user's role in the `userInfo` object.
+
+### 5. Design System
 
 - **Theming:** Supports Light/Dark modes.
 - **Colors:** Defined in `constants/Colors.ts`.
