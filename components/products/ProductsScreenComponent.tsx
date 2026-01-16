@@ -4,7 +4,7 @@ import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
 import { useToggleFavorite } from '@/hooks/useFavorite';
 import { Toast } from '@/components/ui/Toast';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { Alert, StyleSheet, AccessibilityInfo } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductsScreenHeader from './ProductsScreenHeader';
@@ -12,15 +12,25 @@ import ProductsDisclaimer from './ProductsDisclaimer';
 import ProductsSearchBar from './ProductsSearchBar';
 import ProductsGrid from './ProductsGrid';
 import PaginationControls from './PaginationControls';
+import {
+  initialState,
+  productsScreenReducer,
+} from './ProductsScreenState';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ProductsScreenComponent() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pendingItemId, setPendingItemId] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
+  // Use a reducer to manage complex state transitions and avoid synchronization issues
+  // between search query, pagination, and optimistic cart updates.
+  const [state, dispatch] = useReducer(productsScreenReducer, initialState);
+  const {
+    searchQuery,
+    currentPage,
+    pendingItemId,
+    showToast,
+    stepperItems,
+  } = state;
+
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const { data: items, isLoading, error } = useItems();
@@ -59,23 +69,17 @@ export default function ProductsScreenComponent() {
       };
     }, [items, searchQuery, currentPage]);
 
+  // Sync state with props/external data
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  useEffect(() => {
+    // If page becomes invalid (e.g. items filtered out), clamp it
     if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+      dispatch({ type: 'SET_PAGE', payload: totalPages });
     }
   }, [currentPage, totalPages]);
 
-  // Sync stepper items with cart when cart updates
   useEffect(() => {
     if (cartItems) {
-      const updatedStepperItems = Object.fromEntries(
-        cartItems.map(item => [item.item_id, item.quantity])
-      );
-      setStepperItems(updatedStepperItems);
+      dispatch({ type: 'SYNC_CART_ITEMS', payload: cartItems });
     }
   }, [cartItems]);
 
@@ -115,36 +119,37 @@ export default function ProductsScreenComponent() {
   );
 
   const handleAddToCart = async (itemId: string) => {
-    setPendingItemId(itemId);
+    dispatch({ type: 'ADD_TO_CART_START', payload: itemId });
     try {
       await addToCartMutation.mutateAsync({
         itemId,
         quantityDelta: 1,
       });
       // Show success toast
-      setShowToast(true);
+      dispatch({ type: 'ADD_TO_CART_SUCCESS' });
       AccessibilityInfo.announceForAccessibility('Item added to cart');
       // Stepper will be shown automatically when cart updates
     } catch (error) {
       // Error is already logged in the supabase function
+      dispatch({ type: 'ADD_TO_CART_ERROR' });
       handleCartError(error, 'Failed to add item to cart. Please try again.');
-    } finally {
-      setPendingItemId(null);
     }
   };
 
   const handleUpdateCartQuantity = async (itemId: string, delta: number) => {
     const currentQuantity = getStepperQuantity(itemId);
     const newQuantity = Math.max(0, currentQuantity + delta);
+    const cartQty = getCartQuantity(itemId);
 
-    // If quantity would be 0 or less, allow it (will trigger removal)
-    setStepperItems(prev => ({ ...prev, [itemId]: newQuantity }));
+    // Optimistically update
+    dispatch({
+      type: 'UPDATE_QUANTITY_OPTIMISTIC',
+      payload: { itemId, quantity: newQuantity },
+    });
 
-    setPendingItemId(itemId);
     try {
       // Calculate the delta needed
-      const cartQuantity = getCartQuantity(itemId);
-      const quantityDelta = newQuantity - cartQuantity;
+      const quantityDelta = newQuantity - cartQty;
 
       // Always call the mutation, even if delta is 0 (to handle removal case)
       // The RPC function will handle deletion when quantity becomes <= 0
@@ -153,34 +158,22 @@ export default function ProductsScreenComponent() {
         quantityDelta,
       });
 
-      // If item was removed (quantity is now 0), clear stepper state
+      // If item was removed (quantity is now 0), Accessibility announcement
       if (newQuantity <= 0) {
-        setStepperItems(prev => {
-          const { [itemId]: _, ...rest } = prev;
-          return rest;
-        });
         AccessibilityInfo.announceForAccessibility('Item removed from cart');
-      } else {
-        // Optional: announce update, but can be spammy. Maybe just for specific increments if needed.
       }
     } catch (error) {
       handleCartError(error, 'Failed to update cart. Please try again.');
-      // Revert on error - restore to current cart quantity
-      const cartQty = getCartQuantity(itemId);
-      setStepperItems(prev => {
-        if (cartQty > 0) {
-          return { ...prev, [itemId]: cartQty };
-        }
-        const { [itemId]: _, ...rest } = prev;
-        return rest;
+      // Revert on error
+      dispatch({
+        type: 'UPDATE_QUANTITY_ERROR',
+        payload: { itemId, quantity: cartQty },
       });
-    } finally {
-      setPendingItemId(null);
     }
   };
 
   const handleToastHide = useCallback(() => {
-    setShowToast(false);
+    dispatch({ type: 'HIDE_TOAST' });
   }, []);
 
   const handleToggleFavorite = useCallback(
@@ -209,7 +202,7 @@ export default function ProductsScreenComponent() {
   );
 
   const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
+    dispatch({ type: 'SET_PAGE', payload: newPage });
     AccessibilityInfo.announceForAccessibility(
       `Page ${newPage} of ${totalPages}`
     );
@@ -232,7 +225,9 @@ export default function ProductsScreenComponent() {
 
       <ProductsSearchBar
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        setSearchQuery={query =>
+          dispatch({ type: 'SET_SEARCH_QUERY', payload: query })
+        }
       />
 
       <ProductsGrid
