@@ -12,6 +12,7 @@ import {
   FlexStyle,
   ScrollView,
 } from 'react-native';
+import { formatCurrency } from '@/utils/currency';
 
 // --- Shared Types & Helpers ---
 
@@ -168,6 +169,10 @@ export interface BaseOrderListItemProps {
   headerContent?: React.ReactNode;
   footerContent?: React.ReactNode;
   headerAlign?: FlexStyle['alignItems'];
+  /** Total amount to display. If omitted, no total is shown. */
+  totalAmount?: number;
+  /** Finalized total amount. If null/undefined or 0, totalAmount is considered unfinalized. */
+  finalTotalAmount?: number | null;
 }
 
 /**
@@ -184,9 +189,16 @@ export function BaseOrderListItem({
   headerContent,
   footerContent,
   headerAlign = 'center',
+  totalAmount,
+  finalTotalAmount,
 }: BaseOrderListItemProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+
+  // Determine display amount and finalization status
+  const isFinalized = finalTotalAmount != null && finalTotalAmount > 0;
+  const displayAmount = isFinalized ? finalTotalAmount : totalAmount;
+  const showTotal = totalAmount !== undefined;
 
   // Default header shows just the Order ID
   const defaultHeader = (
@@ -236,6 +248,27 @@ export function BaseOrderListItem({
             <Text style={styles.statusText}>{formatStatus(status)}</Text>
           </View>
           {footerContent}
+          {showTotal && (
+            <View style={styles.amountContainer}>
+              <Text
+                style={[styles.totalAmount, { color: colors.primary }]}
+                accessibilityLabel={`Total: ${formatCurrency(displayAmount ?? 0)}`}
+              >
+                {formatCurrency(displayAmount ?? 0)}
+              </Text>
+              {!isFinalized && (
+                <Text
+                  style={[
+                    styles.disclaimerText,
+                    { color: colors.textSecondary },
+                  ]}
+                  accessibilityLabel="Price not finalized"
+                >
+                  Price not finalized
+                </Text>
+              )}
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -263,6 +296,8 @@ export function OrderListItem({ order }: OrderListItemProps) {
           params: { id: order.id },
         })
       }
+      totalAmount={order.total_amount}
+      finalTotalAmount={order.final_total_amount}
     />
   );
 }
@@ -316,6 +351,19 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  amountContainer: {
+    marginLeft: 'auto',
+    alignItems: 'flex-end',
+  },
+  totalAmount: {
+    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 2,
   },
   filterContainer: {
     paddingVertical: 12,
