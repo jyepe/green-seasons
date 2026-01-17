@@ -51,8 +51,7 @@ export const pluralize = (text: string, count: number): string => {
 
 export const generateInvoiceHtml = (
   orderDetails: OrderDetailItem[],
-  orderSummary: OrderDetailItem,
-  statusColor: string
+  orderSummary: OrderDetailItem
 ) => {
   if (!orderSummary) return '';
 
@@ -140,7 +139,6 @@ export const generateInvoiceHtml = (
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            background: ${statusColor};
             color: white;
             margin-top: 8px;
           }

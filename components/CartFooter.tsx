@@ -1,4 +1,5 @@
 import {
+  Platform,
   StyleSheet,
   Text,
   TextStyle,
@@ -8,6 +9,7 @@ import {
 import type { AnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 
@@ -24,6 +26,7 @@ export function CartFooter({
 }: CartFooterProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+  const tabBarHeight = useBottomTabBarHeight();
 
   return (
     <>
@@ -34,6 +37,7 @@ export function CartFooter({
           {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
+            paddingBottom: Platform.OS === 'ios' ? 16 + tabBarHeight : 16,
           },
         ]}
       >

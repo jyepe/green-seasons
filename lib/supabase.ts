@@ -382,7 +382,7 @@ export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaura
     supabase
       .from('profiles')
       .select('id, first_name, last_name')
-      .eq('role', 'employee'),
+      .in('role', ['employee', 'admin']),
     supabase.from('restaurants').select('id, name'),
     supabase
       .from('employee_restaurant_relation')
@@ -479,6 +479,8 @@ export type Order = {
   delivery_at?: string | null;
   created_at: string;
   updated_at: string;
+  total_amount: number;
+  final_total_amount: number | null;
 };
 
 export async function getOrdersForUser(userId: string): Promise<Order[]> {

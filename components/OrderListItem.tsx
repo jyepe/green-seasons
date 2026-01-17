@@ -12,6 +12,7 @@ import {
   FlexStyle,
   ScrollView,
 } from 'react-native';
+import { formatCurrency } from '@/utils/currency';
 
 // --- Shared Types & Helpers ---
 
@@ -51,6 +52,15 @@ export const getStatusColor = (
   colors: typeof Colors.light
 ) => {
   return colors.orderStatus[status];
+};
+
+export const STATUS_CONFIG: Record<
+  OrderStatus,
+  { label: string; icon: keyof typeof Ionicons.glyphMap }
+> = {
+  pending: { label: 'Pending', icon: 'time-outline' },
+  in_transit: { label: 'In Transit', icon: 'car-outline' },
+  delivered: { label: 'Delivered', icon: 'checkmark-circle-outline' },
 };
 
 // --- Shared UI Components ---
@@ -168,6 +178,10 @@ export interface BaseOrderListItemProps {
   headerContent?: React.ReactNode;
   footerContent?: React.ReactNode;
   headerAlign?: FlexStyle['alignItems'];
+  /** Total amount to display. If omitted, no total is shown. */
+  totalAmount?: number;
+  /** Finalized total amount. If null/undefined or 0, totalAmount is considered unfinalized. */
+  finalTotalAmount?: number | null;
 }
 
 /**
@@ -184,9 +198,16 @@ export function BaseOrderListItem({
   headerContent,
   footerContent,
   headerAlign = 'center',
+  totalAmount,
+  finalTotalAmount,
 }: BaseOrderListItemProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+
+  // Determine display amount and finalization status
+  const isFinalized = finalTotalAmount != null && finalTotalAmount > 0;
+  const displayAmount = isFinalized ? finalTotalAmount : totalAmount;
+  const showTotal = totalAmount !== undefined;
 
   // Default header shows just the Order ID
   const defaultHeader = (
@@ -230,12 +251,45 @@ export function BaseOrderListItem({
           <View
             style={[
               styles.statusBadge,
-              { backgroundColor: getStatusColor(status, colors) },
+              { backgroundColor: getStatusColor(status, colors) + '20' },
             ]}
           >
-            <Text style={styles.statusText}>{formatStatus(status)}</Text>
+            <Ionicons
+              name={STATUS_CONFIG[status].icon}
+              size={14}
+              color={getStatusColor(status, colors)}
+            />
+            <Text
+              style={[
+                styles.statusText,
+                { color: getStatusColor(status, colors) },
+              ]}
+            >
+              {STATUS_CONFIG[status].label}
+            </Text>
           </View>
           {footerContent}
+          {showTotal && (
+            <View style={styles.amountContainer}>
+              <Text
+                style={[styles.totalAmount, { color: colors.primary }]}
+                accessibilityLabel={`Total: ${formatCurrency(displayAmount ?? 0)}`}
+              >
+                {formatCurrency(displayAmount ?? 0)}
+              </Text>
+              {!isFinalized && (
+                <Text
+                  style={[
+                    styles.disclaimerText,
+                    { color: colors.textSecondary },
+                  ]}
+                  accessibilityLabel="Price not finalized"
+                >
+                  Price not finalized
+                </Text>
+              )}
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -263,6 +317,8 @@ export function OrderListItem({ order }: OrderListItemProps) {
           params: { id: order.id },
         })
       }
+      totalAmount={order.total_amount}
+      finalTotalAmount={order.final_total_amount}
     />
   );
 }
@@ -305,17 +361,33 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    gap: 4,
   },
   statusText: {
-    color: 'white',
     fontSize: 12,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
+  },
+  amountContainer: {
+    marginLeft: 'auto',
+    alignItems: 'flex-end',
+  },
+  totalAmount: {
+    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 2,
   },
   filterContainer: {
     paddingVertical: 12,

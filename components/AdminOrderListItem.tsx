@@ -59,6 +59,8 @@ export function AdminOrderListItem({ order }: AdminOrderListItemProps) {
       headerContent={headerContent}
       footerContent={footerContent}
       headerAlign="flex-start"
+      totalAmount={order.total_amount}
+      finalTotalAmount={order.final_total_amount}
     />
   );
 }
