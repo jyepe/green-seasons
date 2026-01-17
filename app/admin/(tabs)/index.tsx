@@ -247,10 +247,9 @@ export default function AdminDashboardScreen() {
           <KPICard
             ordersCount={kpisQuery.data?.orders_count ?? 0}
             totalRevenue={
-              kpisQuery.data?.final_total_revenue != null &&
-              kpisQuery.data.final_total_revenue > 0
-                ? kpisQuery.data.final_total_revenue
-                : (kpisQuery.data?.total_revenue ?? 0)
+              (kpisQuery.data?.final_total_revenue ?? 0) > 0
+                ? kpisQuery.data?.final_total_revenue ?? 0
+                : kpisQuery.data?.total_revenue ?? 0
             }
             isLoading={kpisQuery.isLoading}
           />
