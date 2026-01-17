@@ -132,7 +132,11 @@ export function TopItemsCard({
           <Text
             style={[styles.cell, styles.revenueCell, { color: colors.primary }]}
           >
-            {formatCurrency(item.revenue)}
+            {formatCurrency(
+              item.final_revenue != null && item.final_revenue > 0
+                ? item.final_revenue
+                : item.revenue
+            )}
           </Text>
         </View>
       ))}

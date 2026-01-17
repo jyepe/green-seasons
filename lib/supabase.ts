@@ -951,6 +951,7 @@ export type AdminTopItem = {
   unit: string;
   quantity: number;
   revenue: number;
+  final_revenue: number | null;
 };
 
 /**
@@ -983,6 +984,7 @@ export async function getAdminTopItems(
         unit: '',
         quantity: 0,
         revenue: 0,
+        final_revenue: 0,
       };
     }
 
@@ -994,6 +996,10 @@ export async function getAdminTopItems(
       unit: String(record.unit ?? ''),
       quantity: parseFloat(String(record.quantity ?? '0')),
       revenue: parseFloat(String(record.revenue ?? '0')),
+      final_revenue:
+        record.final_revenue != null
+          ? parseFloat(String(record.final_revenue))
+          : null,
     };
   });
 }
