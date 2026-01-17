@@ -59,6 +59,7 @@ export default function AdminOrdersScreen() {
     getNextPageParam: lastPage => {
       return lastPage.nextCursor;
     },
+    staleTime: 10_000, // 10 seconds - refetch on mount if data is stale
   });
 
   const allOrders = useMemo(

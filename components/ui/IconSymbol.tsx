@@ -17,6 +17,7 @@ const MAPPING = {
   'leaf.fill': 'eco',
   'cart.fill': 'shopping-cart',
   'truck.fill': 'local-shipping',
+  'dollarsign.circle.fill': 'attach-money',
   'person.fill': 'person',
   'sun.max.fill': 'wb-sunny',
   'moon.fill': 'nightlight-round',

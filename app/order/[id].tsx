@@ -5,6 +5,7 @@ import {
   ORDER_DETAILS_QUERY_KEY,
 } from '@/hooks/useOrderDetails';
 import { useEmployee } from '@/hooks/useEmployee';
+import { useAdmin } from '@/hooks/useAdmin';
 import { updateOrderStatus } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toast } from '@/components/ui/Toast';
@@ -46,6 +47,7 @@ export default function OrderDetailsScreen() {
     error,
   } = useOrderDetails(id);
   const { data: isEmployee = false } = useEmployee();
+  const { data: isAdmin = false } = useAdmin();
   const queryClient = useQueryClient();
 
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -283,7 +285,7 @@ export default function OrderDetailsScreen() {
             >
               Status
             </Text>
-            {isEmployee ? (
+            {isEmployee || isAdmin ? (
               <TouchableOpacity
                 style={[
                   styles.statusDropdown,

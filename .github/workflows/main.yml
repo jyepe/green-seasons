@@ -28,4 +28,4 @@ jobs:
         run: npm ci
 
       - name: Trigger Preview build on EAS
-        run: eas build --profile preview --platform android --non-interactive --no-wait
+        run: eas build --profile preview --platform all --non-interactive --no-wait
