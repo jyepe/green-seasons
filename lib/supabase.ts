@@ -915,6 +915,7 @@ export async function isAdmin(): Promise<boolean> {
 export type AdminMonthKPIs = {
   orders_count: number;
   total_revenue: number;
+  final_total_revenue: number | null;
 };
 
 /**
@@ -942,6 +943,10 @@ export async function getAdminMonthKPIs(
   return {
     orders_count: result?.orders_count ?? 0,
     total_revenue: parseFloat(result?.total_revenue ?? '0'),
+    final_total_revenue:
+      result?.final_total_revenue != null
+        ? parseFloat(String(result.final_total_revenue))
+        : null,
   };
 }
 
