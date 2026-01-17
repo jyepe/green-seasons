@@ -480,7 +480,7 @@ export type Order = {
   created_at: string;
   updated_at: string;
   total_amount: number;
-  final_total_amount: number;
+  final_total_amount: number | null;
 };
 
 export async function getOrdersForUser(userId: string): Promise<Order[]> {
