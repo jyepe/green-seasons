@@ -109,18 +109,22 @@ export default function OrderDetailsScreen() {
 
     try {
       setIsPreviewingPdf(true);
-      const html = generateInvoiceHtml(
-        orderDetails,
-        orderSummary,
-        getStatusColor(orderSummary.order_status)
-      );
+      const html = generateInvoiceHtml(orderDetails, orderSummary);
       await Print.printAsync({ html });
-    } catch (error) {
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('Error previewing invoice:', error);
+    } catch (err) {
+      // Don't show error if user just cancelled the preview
+      const isCancelled =
+        err instanceof Error &&
+        (err.message.toLowerCase().includes('cancel') ||
+          err.message.toLowerCase().includes('dismissed'));
+
+      if (!isCancelled) {
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.error('Error previewing invoice:', err);
+        }
+        Alert.alert('Error', 'Failed to preview invoice. Please try again.');
       }
-      Alert.alert('Error', 'Failed to preview invoice. Please try again.');
     } finally {
       setIsPreviewingPdf(false);
     }
@@ -132,11 +136,7 @@ export default function OrderDetailsScreen() {
 
     try {
       setIsDownloadingPdf(true);
-      const html = generateInvoiceHtml(
-        orderDetails,
-        orderSummary,
-        getStatusColor(orderSummary.order_status)
-      );
+      const html = generateInvoiceHtml(orderDetails, orderSummary);
 
       // Generate PDF file
       const { uri } = await Print.printToFileAsync({
