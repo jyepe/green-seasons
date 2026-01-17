@@ -989,7 +989,7 @@ export async function getAdminTopItems(
         unit: '',
         quantity: 0,
         revenue: 0,
-        final_revenue: 0,
+        final_revenue: null,
       };
     }
 
