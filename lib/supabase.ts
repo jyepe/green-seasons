@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ENV } from '@/config/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
+import { formatLocalDateString } from '@/lib/utils/dateUtils';
 
 const supabaseUrl = ENV.SUPABASE_URL;
 const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;
@@ -915,6 +916,7 @@ export async function isAdmin(): Promise<boolean> {
 export type AdminMonthKPIs = {
   orders_count: number;
   total_revenue: number;
+  final_total_revenue: number | null;
 };
 
 /**
@@ -942,6 +944,10 @@ export async function getAdminMonthKPIs(
   return {
     orders_count: result?.orders_count ?? 0,
     total_revenue: parseFloat(result?.total_revenue ?? '0'),
+    final_total_revenue:
+      result?.final_total_revenue != null
+        ? parseFloat(String(result.final_total_revenue))
+        : null,
   };
 }
 
@@ -951,6 +957,7 @@ export type AdminTopItem = {
   unit: string;
   quantity: number;
   revenue: number;
+  final_revenue: number | null;
 };
 
 /**
@@ -983,6 +990,7 @@ export async function getAdminTopItems(
         unit: '',
         quantity: 0,
         revenue: 0,
+        final_revenue: null,
       };
     }
 
@@ -994,6 +1002,10 @@ export async function getAdminTopItems(
       unit: String(record.unit ?? ''),
       quantity: parseFloat(String(record.quantity ?? '0')),
       revenue: parseFloat(String(record.revenue ?? '0')),
+      final_revenue:
+        record.final_revenue != null
+          ? parseFloat(String(record.final_revenue))
+          : null,
     };
   });
 }
@@ -1250,7 +1262,7 @@ export async function getEmployeeTruckLoadSummary(
   const params: { p_delivery_date?: string; p_tz?: string } = {};
 
   if (deliveryDate) {
-    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+    params.p_delivery_date = formatLocalDateString(deliveryDate);
   }
 
   params.p_tz = tz;
@@ -1386,7 +1398,7 @@ export async function getAdminTruckLoadSummary(
   const params: { p_delivery_date?: string; p_tz?: string } = {};
 
   if (deliveryDate) {
-    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+    params.p_delivery_date = formatLocalDateString(deliveryDate);
   }
 
   params.p_tz = tz;
@@ -1429,7 +1441,7 @@ export async function adminFinalizePricingForDay(
   prices: AdminFinalizePricingItem[]
 ): Promise<void> {
   const { error } = await supabase.rpc('fn_admin_finalize_pricing_for_day', {
-    p_delivery_day: deliveryDay.toISOString().slice(0, 10),
+    p_delivery_day: formatLocalDateString(deliveryDay),
     p_prices: prices,
   });
 

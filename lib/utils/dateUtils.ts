@@ -11,6 +11,20 @@ export function parseLocalDate(dayStr: string): Date {
 }
 
 /**
+ * Formats a Date object to a YYYY-MM-DD string using local time.
+ * This is the inverse of parseLocalDate and avoids UTC timezone issues.
+ *
+ * @param date - Date object to format
+ * @returns Date string in YYYY-MM-DD format (local time)
+ */
+export function formatLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Formats a date string in YYYY-MM-DD format to a readable string.
  *
  * @param dayStr - Date string in YYYY-MM-DD format

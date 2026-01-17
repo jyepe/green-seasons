@@ -56,6 +56,7 @@ export function productsScreenReducer(
       return {
         ...state,
         stepperItems: updatedStepperItems,
+        pendingItemId: null,
       };
     }
     case 'ADD_TO_CART_START':

@@ -149,6 +149,7 @@ export default function CheckoutScreen() {
         mode: 'date',
         display: 'calendar',
         onChange: handleAndroidDateChange,
+        minimumDate: new Date(),
       });
     } else {
       dispatch({ type: 'OPEN_IOS_PICKER', payload: baseDate });
@@ -756,6 +757,7 @@ export default function CheckoutScreen() {
                   themeVariant={colorScheme === 'dark' ? 'dark' : 'light'}
                   textColor={colors.text}
                   style={styles.iosPicker}
+                  minimumDate={new Date()}
                 />
               </View>
             </View>
