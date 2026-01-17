@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ENV } from '@/config/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
+import { formatLocalDateString } from '@/lib/utils/dateUtils';
 
 const supabaseUrl = ENV.SUPABASE_URL;
 const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;
@@ -1261,7 +1262,7 @@ export async function getEmployeeTruckLoadSummary(
   const params: { p_delivery_date?: string; p_tz?: string } = {};
 
   if (deliveryDate) {
-    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+    params.p_delivery_date = formatLocalDateString(deliveryDate);
   }
 
   params.p_tz = tz;
@@ -1397,7 +1398,7 @@ export async function getAdminTruckLoadSummary(
   const params: { p_delivery_date?: string; p_tz?: string } = {};
 
   if (deliveryDate) {
-    params.p_delivery_date = deliveryDate.toISOString().slice(0, 10);
+    params.p_delivery_date = formatLocalDateString(deliveryDate);
   }
 
   params.p_tz = tz;
@@ -1440,7 +1441,7 @@ export async function adminFinalizePricingForDay(
   prices: AdminFinalizePricingItem[]
 ): Promise<void> {
   const { error } = await supabase.rpc('fn_admin_finalize_pricing_for_day', {
-    p_delivery_day: deliveryDay.toISOString().slice(0, 10),
+    p_delivery_day: formatLocalDateString(deliveryDay),
     p_prices: prices,
   });
 
