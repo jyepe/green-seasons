@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   RefreshControl,
@@ -99,12 +99,14 @@ export default function AdminDashboardScreen() {
   const kpisQuery = useQuery({
     queryKey: ['admin-kpis', dateRange.start.toISOString()],
     queryFn: () => getAdminMonthKPIs(dateRange.start, dateRange.end),
+    staleTime: 10_000,
   });
 
   // Top Items Query
   const topItemsQuery = useQuery({
     queryKey: ['admin-top-items', dateRange.start.toISOString()],
     queryFn: () => getAdminTopItems(dateRange.start, dateRange.end, 5),
+    staleTime: 10_000,
   });
 
   // Orders Query
@@ -119,6 +121,7 @@ export default function AdminDashboardScreen() {
       );
       return result.orders;
     },
+    staleTime: 10_000,
   });
 
   // Limit to 5 most recent orders for display (already handled by query limit)
@@ -131,12 +134,14 @@ export default function AdminDashboardScreen() {
   const ordersByDayQuery = useQuery({
     queryKey: ['admin-chart-orders-by-day', dateRange.start.toISOString()],
     queryFn: () => getAdminChartOrdersByDay(dateRange.start, dateRange.end),
+    staleTime: 10_000,
   });
 
   // Revenue by Day Chart Query
   const revenueByDayQuery = useQuery({
     queryKey: ['admin-chart-revenue-by-day', dateRange.start.toISOString()],
     queryFn: () => getAdminChartRevenueByDay(dateRange.start, dateRange.end),
+    staleTime: 10_000,
   });
 
   // Revenue by Restaurant Chart Query
@@ -147,6 +152,7 @@ export default function AdminDashboardScreen() {
     ],
     queryFn: () =>
       getAdminChartRevenueByRestaurant(dateRange.start, dateRange.end, 5),
+    staleTime: 10_000,
   });
 
   // Refresh all data
@@ -165,13 +171,6 @@ export default function AdminDashboardScreen() {
     revenueByDayQuery,
     revenueByRestaurantQuery,
   ]);
-
-  useFocusEffect(
-    useCallback(() => {
-      onRefresh();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-  );
 
   const isRefreshing =
     kpisQuery.isRefetching ||

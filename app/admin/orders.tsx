@@ -10,8 +10,8 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 import { getAdminOrders } from '@/lib/supabase';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -59,14 +59,8 @@ export default function AdminOrdersScreen() {
     getNextPageParam: lastPage => {
       return lastPage.nextCursor;
     },
+    staleTime: 10_000, // 10 seconds - refetch on mount if data is stale
   });
-
-  useFocusEffect(
-    useCallback(() => {
-      ordersQuery.refetch();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-  );
 
   const allOrders = useMemo(
     () => ordersQuery.data?.pages.flatMap(page => page.orders) ?? [],
