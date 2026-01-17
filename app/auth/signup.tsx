@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import React, { useState, useRef } from 'react';
+import React, { useReducer, useRef } from 'react';
 import {
   Alert,
   StyleSheet,
@@ -17,18 +17,14 @@ import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import PasswordRequirements from '@/components/auth/PasswordRequirements';
+import {
+  initialSignupState,
+  signupReducer,
+  type SignupFormData,
+} from '@/reducers/signupReducer';
 
 export default function SignupScreen() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [state, dispatch] = useReducer(signupReducer, initialSignupState);
   const router = useRouter();
   const invalidateUserInfo = useInvalidateUserInfo();
 
@@ -40,8 +36,8 @@ export default function SignupScreen() {
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof SignupFormData, value: string) => {
+    dispatch({ type: 'SET_FIELD', field, value });
   };
 
   const handleNextField = (currentField: string) => {
@@ -67,23 +63,6 @@ export default function SignupScreen() {
         break;
       default:
         break;
-    }
-  };
-
-  const handleFieldBlur = (field: string) => {
-    const error = validateField(
-      field,
-      formData[field as keyof typeof formData]
-    );
-    setErrors(prev => ({ ...prev, [field]: error }));
-
-    // Special case for confirm password - also validate when password changes
-    if (field === 'password') {
-      const confirmPasswordError = validateField(
-        'confirmPassword',
-        formData.confirmPassword
-      );
-      setErrors(prev => ({ ...prev, confirmPassword: confirmPasswordError }));
     }
   };
 
@@ -123,7 +102,7 @@ export default function SignupScreen() {
 
       case 'confirmPassword':
         if (!value) return 'Please confirm your password';
-        if (value !== formData.password) return 'Passwords do not match';
+        if (value !== state.formData.password) return 'Passwords do not match';
         return '';
 
       default:
@@ -131,14 +110,35 @@ export default function SignupScreen() {
     }
   };
 
+  const handleFieldBlur = (field: string) => {
+    const error = validateField(
+      field,
+      state.formData[field as keyof typeof state.formData]
+    );
+    dispatch({ type: 'SET_ERROR', field, error });
+
+    // Special case for confirm password - also validate when password changes
+    if (field === 'password') {
+      const confirmPasswordError = validateField(
+        'confirmPassword',
+        state.formData.confirmPassword
+      );
+      dispatch({
+        type: 'SET_ERROR',
+        field: 'confirmPassword',
+        error: confirmPasswordError,
+      });
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     let isValid = true;
 
-    Object.keys(formData).forEach(field => {
+    Object.keys(state.formData).forEach(field => {
       const error = validateField(
         field,
-        formData[field as keyof typeof formData]
+        state.formData[field as keyof typeof state.formData]
       );
       if (error) {
         newErrors[field] = error;
@@ -146,15 +146,15 @@ export default function SignupScreen() {
       }
     });
 
-    setErrors(newErrors);
+    dispatch({ type: 'SET_ALL_ERRORS', errors: newErrors });
     return isValid;
   };
 
   const isFormValid = (): boolean => {
-    return Object.keys(formData).every(field => {
+    return Object.keys(state.formData).every(field => {
       const error = validateField(
         field,
-        formData[field as keyof typeof formData]
+        state.formData[field as keyof typeof state.formData]
       );
       return !error;
     });
@@ -165,15 +165,15 @@ export default function SignupScreen() {
       return;
     }
 
-    setIsLoading(true);
+    dispatch({ type: 'SUBMIT_START' });
 
     try {
       await signUpUser({
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
+        email: state.formData.email,
+        password: state.formData.password,
+        firstName: state.formData.firstName,
+        lastName: state.formData.lastName,
+        phone: state.formData.phone,
       });
 
       // Invalidate user info cache to trigger refetch when user logs in
@@ -191,7 +191,7 @@ export default function SignupScreen() {
           : 'Failed to create account. Please try again.';
       Alert.alert('Error', errorMessage);
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SUBMIT_END' });
     }
   };
 
@@ -219,13 +219,13 @@ export default function SignupScreen() {
               ref={firstNameRef}
               label="First Name *"
               placeholder="John"
-              value={formData.firstName}
+              value={state.formData.firstName}
               onChangeText={value => handleInputChange('firstName', value)}
               autoCapitalize="words"
               returnKeyType="next"
               onSubmitEditing={() => handleNextField('firstName')}
               onBlur={() => handleFieldBlur('firstName')}
-              error={errors.firstName}
+              error={state.errors.firstName}
               containerStyle={styles.halfWidth}
             />
 
@@ -233,13 +233,13 @@ export default function SignupScreen() {
               ref={lastNameRef}
               label="Last Name *"
               placeholder="Doe"
-              value={formData.lastName}
+              value={state.formData.lastName}
               onChangeText={value => handleInputChange('lastName', value)}
               autoCapitalize="words"
               returnKeyType="next"
               onSubmitEditing={() => handleNextField('lastName')}
               onBlur={() => handleFieldBlur('lastName')}
-              error={errors.lastName}
+              error={state.errors.lastName}
               containerStyle={styles.halfWidth}
             />
           </View>
@@ -249,7 +249,7 @@ export default function SignupScreen() {
             ref={emailRef}
             label="Email *"
             placeholder="john@restaurant.com"
-            value={formData.email}
+            value={state.formData.email}
             onChangeText={value => handleInputChange('email', value)}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -257,7 +257,7 @@ export default function SignupScreen() {
             returnKeyType="next"
             onSubmitEditing={() => handleNextField('email')}
             onBlur={() => handleFieldBlur('email')}
-            error={errors.email}
+            error={state.errors.email}
             containerStyle={styles.inputSpacing}
           />
 
@@ -266,15 +266,17 @@ export default function SignupScreen() {
             ref={phoneRef}
             label="Phone Number *"
             placeholder="(555) 123-4567"
-            value={formData.phone}
+            value={state.formData.phone}
             onChangeText={value => handleInputChange('phone', value)}
             keyboardType="phone-pad"
             returnKeyType="next"
             onSubmitEditing={() => handleNextField('phone')}
             onBlur={() => handleFieldBlur('phone')}
-            error={errors.phone}
+            error={state.errors.phone}
             helperText={
-              !errors.phone ? 'Enter 10 digits (e.g., 5551234567)' : undefined
+              !state.errors.phone
+                ? 'Enter 10 digits (e.g., 5551234567)'
+                : undefined
             }
             containerStyle={styles.inputSpacing}
           />
@@ -284,7 +286,7 @@ export default function SignupScreen() {
             ref={passwordRef}
             label="Password *"
             placeholder="Create a password"
-            value={formData.password}
+            value={state.formData.password}
             onChangeText={value => handleInputChange('password', value)}
             secureTextEntry
             autoCapitalize="none"
@@ -292,7 +294,7 @@ export default function SignupScreen() {
             returnKeyType="next"
             onSubmitEditing={() => handleNextField('password')}
             onBlur={() => handleFieldBlur('password')}
-            error={errors.password}
+            error={state.errors.password}
             containerStyle={styles.inputSpacing}
           />
 
@@ -301,7 +303,7 @@ export default function SignupScreen() {
             ref={confirmPasswordRef}
             label="Confirm Password *"
             placeholder="Confirm your password"
-            value={formData.confirmPassword}
+            value={state.formData.confirmPassword}
             onChangeText={value => handleInputChange('confirmPassword', value)}
             secureTextEntry
             autoCapitalize="none"
@@ -309,7 +311,7 @@ export default function SignupScreen() {
             returnKeyType="done"
             onSubmitEditing={() => handleNextField('confirmPassword')}
             onBlur={() => handleFieldBlur('confirmPassword')}
-            error={errors.confirmPassword}
+            error={state.errors.confirmPassword}
             containerStyle={styles.inputSpacing}
           />
 
@@ -318,7 +320,7 @@ export default function SignupScreen() {
           <AuthButton
             title="Create Account"
             onPress={handleSignup}
-            isLoading={isLoading}
+            isLoading={state.isLoading}
             disabled={!isFormValid()}
           />
         </View>
