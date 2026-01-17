@@ -257,6 +257,7 @@ export default function CheckoutScreen() {
             style={styles.loadingContainer}
             accessible={true}
             accessibilityLabel="Loading checkout details"
+            accessibilityLiveRegion="polite"
           >
             <ActivityIndicator size="small" color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
@@ -331,7 +332,12 @@ export default function CheckoutScreen() {
                       ]}
                       onPress={() => dispatch({ type: 'TOGGLE_DROPDOWN' })}
                       accessibilityRole="combobox"
-                      accessibilityLabel="Select a restaurant"
+                      accessibilityLabel={
+                        state.restaurantName
+                          ? `Restaurant, ${state.restaurantName}`
+                          : 'Select a restaurant'
+                      }
+                      accessibilityHint="Double tap to change restaurant"
                       accessibilityState={{ expanded: state.dropdownVisible }}
                     >
                       <Text
