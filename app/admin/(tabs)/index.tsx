@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   RefreshControl,
@@ -166,6 +166,13 @@ export default function AdminDashboardScreen() {
     revenueByRestaurantQuery,
   ]);
 
+  useFocusEffect(
+    useCallback(() => {
+      onRefresh();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
+
   const isRefreshing =
     kpisQuery.isRefetching ||
     topItemsQuery.isRefetching ||
@@ -248,8 +255,8 @@ export default function AdminDashboardScreen() {
             ordersCount={kpisQuery.data?.orders_count ?? 0}
             totalRevenue={
               (kpisQuery.data?.final_total_revenue ?? 0) > 0
-                ? kpisQuery.data?.final_total_revenue ?? 0
-                : kpisQuery.data?.total_revenue ?? 0
+                ? (kpisQuery.data?.final_total_revenue ?? 0)
+                : (kpisQuery.data?.total_revenue ?? 0)
             }
             isLoading={kpisQuery.isLoading}
           />
