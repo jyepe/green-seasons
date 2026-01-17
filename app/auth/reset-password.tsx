@@ -1,16 +1,10 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, updateUserPassword } from '@/lib/supabase';
 import { validatePassword } from '@/utils/validation';
-import AuthContainer from '@/components/auth/AuthContainer';
+import AuthContainer, { AuthHeader } from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
@@ -96,21 +90,11 @@ export default function ResetPasswordScreen() {
 
   return (
     <AuthContainer>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('@/assets/images/green-seasons-icon-1024.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </View>
-        <Text style={styles.title}>
-          <Text style={styles.titleGreen}>New</Text>{' '}
-          <Text style={styles.titleOrange}>Password</Text>
-        </Text>
-        <Text style={styles.subtitle}>Enter your new password below</Text>
-      </View>
+      <AuthHeader
+        firstWord="New"
+        secondWord="Password"
+        subtitle="Enter your new password below"
+      />
 
       {/* Form */}
       <AuthCard>
@@ -173,50 +157,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
     color: '#666',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  logoImage: {
-    width: 60,
-    height: 60,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-    fontFamily: 'Inter_700Bold',
-  },
-  titleGreen: {
-    color: '#4CAF50',
-  },
-  titleOrange: {
-    color: '#FF9800',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    color: '#666',
-    paddingHorizontal: 20,
   },
   form: {
     marginBottom: 0,
