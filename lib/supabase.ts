@@ -382,7 +382,7 @@ export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaura
     supabase
       .from('profiles')
       .select('id, first_name, last_name')
-      .eq('role', 'employee'),
+      .in('role', ['employee', 'admin']),
     supabase.from('restaurants').select('id, name'),
     supabase
       .from('employee_restaurant_relation')
