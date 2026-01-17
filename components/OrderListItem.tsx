@@ -54,6 +54,15 @@ export const getStatusColor = (
   return colors.orderStatus[status];
 };
 
+export const STATUS_CONFIG: Record<
+  OrderStatus,
+  { label: string; icon: keyof typeof Ionicons.glyphMap }
+> = {
+  pending: { label: 'Pending', icon: 'time-outline' },
+  in_transit: { label: 'In Transit', icon: 'car-outline' },
+  delivered: { label: 'Delivered', icon: 'checkmark-circle-outline' },
+};
+
 // --- Shared UI Components ---
 
 interface OrderFilterTabsProps {
@@ -242,10 +251,22 @@ export function BaseOrderListItem({
           <View
             style={[
               styles.statusBadge,
-              { backgroundColor: getStatusColor(status, colors) },
+              { backgroundColor: getStatusColor(status, colors) + '20' },
             ]}
           >
-            <Text style={styles.statusText}>{formatStatus(status)}</Text>
+            <Ionicons
+              name={STATUS_CONFIG[status].icon}
+              size={14}
+              color={getStatusColor(status, colors)}
+            />
+            <Text
+              style={[
+                styles.statusText,
+                { color: getStatusColor(status, colors) },
+              ]}
+            >
+              {STATUS_CONFIG[status].label}
+            </Text>
           </View>
           {footerContent}
           {showTotal && (
@@ -340,14 +361,17 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    gap: 4,
   },
   statusText: {
-    color: 'white',
     fontSize: 12,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
