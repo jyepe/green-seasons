@@ -1,16 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { resetPassword } from '@/lib/supabase';
-import AuthContainer from '@/components/auth/AuthContainer';
+import AuthContainer, { AuthHeader } from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
@@ -56,25 +49,15 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthContainer>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('@/assets/images/green-seasons-icon-1024.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </View>
-        <Text style={styles.title}>
-          <Text style={styles.titleGreen}>Reset</Text>{' '}
-          <Text style={styles.titleOrange}>Password</Text>
-        </Text>
-        <Text style={styles.subtitle}>
-          {emailSent
+      <AuthHeader
+        firstWord="Reset"
+        secondWord="Password"
+        subtitle={
+          emailSent
             ? 'Check your email for reset instructions'
-            : 'Enter your email to receive a password reset link'}
-        </Text>
-      </View>
+            : 'Enter your email to receive a password reset link'
+        }
+      />
 
       {/* Form */}
       {!emailSent ? (
@@ -116,8 +99,8 @@ export default function ForgotPasswordScreen() {
               <Text style={styles.emailText}>{email}</Text>
             </Text>
             <Text style={styles.successSubtext}>
-              Please check your inbox and follow the instructions to reset
-              your password.
+              Please check your inbox and follow the instructions to reset your
+              password.
             </Text>
           </View>
         </AuthCard>
@@ -134,50 +117,6 @@ export default function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  logoImage: {
-    width: 60,
-    height: 60,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-    fontFamily: 'Inter_700Bold',
-  },
-  titleGreen: {
-    color: '#4CAF50',
-  },
-  titleOrange: {
-    color: '#FF9800',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    color: '#666',
-    paddingHorizontal: 20,
-  },
   form: {
     marginBottom: 0,
   },

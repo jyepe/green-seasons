@@ -13,3 +13,7 @@
 ## 2025-05-24 - [Consolidating Modals]
 **Learning:** Found multiple modals (EditQuantity, ItemForm) sharing identical overlay/header structure but duplicating 50+ lines of styles and markup.
 **Action:** Extracted `ThemedModal` (shell) and `ModalFooter` (actions) into `components/ThemedView.tsx` to standardize modal UI and reduce boilerplate.
+
+## 2025-05-24 - [Consolidating Auth Headers]
+**Learning:** Near-duplicate headers in Auth screens (Login, ForgotPassword, ResetPassword) shared 95% of markup and styles. Extracted to `AuthHeader` in `AuthContainer.tsx` since it's the parent layout context.
+**Action:** Look for repeated "Logo + Title" patterns in other feature modules and consolidate into their respective container/layout components.

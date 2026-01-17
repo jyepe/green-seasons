@@ -1,18 +1,11 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
 import { useSetEmployeeStatus } from '@/hooks/useEmployee';
-import AuthContainer from '@/components/auth/AuthContainer';
+import AuthContainer, { AuthHeader } from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
@@ -102,23 +95,11 @@ export default function LoginScreen() {
 
   return (
     <AuthContainer>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('@/assets/images/green-seasons-icon-1024.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </View>
-        <Text style={styles.title}>
-          <Text style={styles.titleGreen}>Green</Text>{' '}
-          <Text style={styles.titleOrange}>Seasons</Text>
-        </Text>
-        <Text style={styles.subtitle}>
-          Fresh produce for your restaurant
-        </Text>
-      </View>
+      <AuthHeader
+        firstWord="Green"
+        secondWord="Seasons"
+        subtitle="Fresh produce for your restaurant"
+      />
 
       {/* Form */}
       <AuthCard>
@@ -152,9 +133,7 @@ export default function LoginScreen() {
               style={styles.forgotPassword}
               onPress={handleForgotPasswordPress}
             >
-              <Text style={styles.forgotPasswordText}>
-                Forgot Password?
-              </Text>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
 
@@ -169,9 +148,7 @@ export default function LoginScreen() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Don&apos;t have an account?{' '}
-        </Text>
+        <Text style={styles.footerText}>Don&apos;t have an account? </Text>
         <TouchableOpacity onPress={handleSignupPress}>
           <Text style={styles.signupLink}>Sign Up</Text>
         </TouchableOpacity>
@@ -181,49 +158,6 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  logoImage: {
-    width: 60,
-    height: 60,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-    fontFamily: 'Inter_700Bold',
-  },
-  titleGreen: {
-    color: '#4CAF50',
-  },
-  titleOrange: {
-    color: '#FF9800',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    color: '#666',
-  },
   form: {
     marginBottom: 0,
   },
