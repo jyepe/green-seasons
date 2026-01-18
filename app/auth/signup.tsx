@@ -6,13 +6,12 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { signUpUser } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
 import { validatePassword } from '@/utils/validation';
-import AuthContainer from '@/components/auth/AuthContainer';
+import AuthContainer, { AuthFooter } from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
@@ -327,16 +326,11 @@ export default function SignupScreen() {
       </AuthCard>
 
       {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-          Already have an account?{' '}
-        </Text>
-        <TouchableOpacity onPress={handleLoginPress}>
-          <Text style={[styles.loginLink, { color: colors.primary }]}>
-            Sign In
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <AuthFooter
+        text="Already have an account? "
+        linkText="Sign In"
+        onLinkPress={handleLoginPress}
+      />
     </AuthContainer>
   );
 }
@@ -368,19 +362,5 @@ const styles = StyleSheet.create({
   },
   inputSpacing: {
     marginBottom: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  loginLink: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
 });

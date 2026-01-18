@@ -5,7 +5,10 @@ import * as Haptics from 'expo-haptics';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
 import { useSetEmployeeStatus } from '@/hooks/useEmployee';
-import AuthContainer, { AuthHeader } from '@/components/auth/AuthContainer';
+import AuthContainer, {
+  AuthFooter,
+  AuthHeader,
+} from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
@@ -147,12 +150,11 @@ export default function LoginScreen() {
       </AuthCard>
 
       {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-        <TouchableOpacity onPress={handleSignupPress}>
-          <Text style={styles.signupLink}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
+      <AuthFooter
+        text="Don't have an account? "
+        linkText="Sign Up"
+        onLinkPress={handleSignupPress}
+      />
     </AuthContainer>
   );
 }
@@ -179,21 +181,5 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginBottom: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    color: '#666',
-  },
-  signupLink: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    color: '#4CAF50',
   },
 });

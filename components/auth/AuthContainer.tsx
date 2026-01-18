@@ -9,9 +9,27 @@ import {
   ViewStyle,
   Image,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AuthBackground from './AuthBackground';
+
+interface AuthFooterProps {
+  text?: string;
+  linkText: string;
+  onLinkPress: () => void;
+}
+
+export function AuthFooter({ text, linkText, onLinkPress }: AuthFooterProps) {
+  return (
+    <View style={styles.footer}>
+      {text && <Text style={styles.footerText}>{text}</Text>}
+      <TouchableOpacity onPress={onLinkPress} accessibilityRole="button">
+        <Text style={styles.footerLink}>{linkText}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 interface AuthHeaderProps {
   firstWord: string;
@@ -143,5 +161,21 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#666',
     paddingHorizontal: 20,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    color: '#666',
+  },
+  footerLink: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    color: '#4CAF50',
   },
 });
