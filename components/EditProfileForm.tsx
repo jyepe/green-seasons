@@ -3,7 +3,7 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 import { useUpdateUserInfo, useUserInfo } from '@/hooks/useUserInfo';
 import type { UpdateUserInfoParams } from '@/lib/supabase';
 import { Stack, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,6 +16,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { initialState, profileReducer } from '@/reducers/editProfileReducer';
+
+// -----------------------------------------------------------------------------
+// Component
+// -----------------------------------------------------------------------------
 
 export function EditProfileForm() {
   const router = useRouter();
@@ -24,19 +29,20 @@ export function EditProfileForm() {
   const { data: userInfo, isLoading: isUserLoading } = useUserInfo();
   const updateUserInfoMutation = useUpdateUserInfo();
 
-  const [email, setEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [state, dispatch] = useReducer(profileReducer, initialState);
+  const { email, firstName, lastName, phone, isInitialized } = state;
 
   useEffect(() => {
     if (userInfo && !isInitialized) {
-      setEmail(userInfo.email || '');
-      setFirstName(userInfo.first_name || '');
-      setLastName(userInfo.last_name || '');
-      setPhone(userInfo.phone || '');
-      setIsInitialized(true);
+      dispatch({
+        type: 'INITIALIZE',
+        payload: {
+          email: userInfo.email || '',
+          firstName: userInfo.first_name || '',
+          lastName: userInfo.last_name || '',
+          phone: userInfo.phone || '',
+        },
+      });
     }
   }, [userInfo, isInitialized]);
 
@@ -144,7 +150,9 @@ export function EditProfileForm() {
                 },
               ]}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={text =>
+                dispatch({ type: 'SET_EMAIL', payload: text })
+              }
               placeholder="Email"
               placeholderTextColor={colors.textSecondary}
               keyboardType="email-address"
@@ -167,7 +175,9 @@ export function EditProfileForm() {
                 },
               ]}
               value={firstName}
-              onChangeText={setFirstName}
+              onChangeText={text =>
+                dispatch({ type: 'SET_FIRST_NAME', payload: text })
+              }
               placeholder="First Name"
               placeholderTextColor={colors.textSecondary}
             />
@@ -187,7 +197,9 @@ export function EditProfileForm() {
                 },
               ]}
               value={lastName}
-              onChangeText={setLastName}
+              onChangeText={text =>
+                dispatch({ type: 'SET_LAST_NAME', payload: text })
+              }
               placeholder="Last Name"
               placeholderTextColor={colors.textSecondary}
             />
@@ -207,7 +219,9 @@ export function EditProfileForm() {
                 },
               ]}
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={text =>
+                dispatch({ type: 'SET_PHONE', payload: text })
+              }
               placeholder="Phone Number"
               placeholderTextColor={colors.textSecondary}
               keyboardType="phone-pad"
