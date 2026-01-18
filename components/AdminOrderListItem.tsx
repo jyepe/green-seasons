@@ -4,9 +4,11 @@ import { AdminOrder } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { formatCurrency } from '@/utils/currency';
 import {
   BaseOrderListItem,
   formatDate,
+  STATUS_CONFIG,
   styles as baseStyles,
 } from './OrderListItem';
 
@@ -44,8 +46,21 @@ export function AdminOrderListItem({ order }: AdminOrderListItemProps) {
     </Text>
   );
 
+  const accessibilityLabel = [
+    `Order #${order.order_id.slice(0, 8)}`,
+    `from ${order.restaurant_name}`,
+    `by ${buyerName}`,
+    STATUS_CONFIG[order.status].label,
+    `${order.items_count} items`,
+    `Date: ${formatDate(order.created_at)}`,
+    `Delivery: ${formatDate(order.delivery_at)}`,
+    `Total: ${formatCurrency(order.final_total_amount || order.total_amount)}`,
+    'Double tap to view details',
+  ].join(', ');
+
   return (
     <BaseOrderListItem
+      accessibilityLabel={accessibilityLabel}
       orderId={order.order_id}
       status={order.status}
       dateLabel={`Date: ${formatDate(order.created_at)}`}
