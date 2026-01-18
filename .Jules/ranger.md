@@ -17,3 +17,7 @@
 ## 2025-05-24 - [Consolidating Auth Headers]
 **Learning:** Near-duplicate headers in Auth screens (Login, ForgotPassword, ResetPassword) shared 95% of markup and styles. Extracted to `AuthHeader` in `AuthContainer.tsx` since it's the parent layout context.
 **Action:** Look for repeated "Logo + Title" patterns in other feature modules and consolidate into their respective container/layout components.
+
+## 2025-05-24 - [Consolidating Auth Footers]
+**Learning:** Auth screens (Login, Signup, ForgotPassword) shared identical "Text + Link" footer pattern but with duplicated styles and markup.
+**Action:** Extracted `AuthFooter` to `components/auth/AuthContainer.tsx` to standardize layout and reduce boilerplate in auth screens.

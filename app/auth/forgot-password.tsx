@@ -1,9 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { resetPassword } from '@/lib/supabase';
-import AuthContainer, { AuthHeader } from '@/components/auth/AuthContainer';
+import AuthContainer, {
+  AuthFooter,
+  AuthHeader,
+} from '@/components/auth/AuthContainer';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
@@ -107,11 +110,7 @@ export default function ForgotPasswordScreen() {
       )}
 
       {/* Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={handleBackToLogin}>
-          <Text style={styles.backLink}>Back to Login</Text>
-        </TouchableOpacity>
-      </View>
+      <AuthFooter linkText="Back to Login" onLinkPress={handleBackToLogin} />
     </AuthContainer>
   );
 }
@@ -160,16 +159,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginTop: 8,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backLink: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    color: '#4CAF50',
   },
 });
