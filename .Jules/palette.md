@@ -24,3 +24,8 @@
 
 **Learning:** Toast notifications are often implemented as visual-only `Animated.View` layers. Without `accessibilityRole="alert"` and `accessibilityLiveRegion="polite"`, screen readers completely ignore them, leaving users unaware of success or error states.
 **Action:** Always add these props to temporary notification components to ensure announcements.
+
+## 2024-05-23 - Comprehensive List Item Labels
+
+**Learning:** When a list item is a single interactive touch target, applying an `accessibilityLabel` to the container hides all child text (status, price, date). This prevents screen reader users from accessing critical order details unless they are explicitly included in the container's label.
+**Action:** When making a complex list item accessible as a single button, construct a comprehensive `accessibilityLabel` that concatenates all visual information (e.g., "Order #123, Status: Delivered, Total: $50") so nothing is lost.

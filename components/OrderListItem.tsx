@@ -182,6 +182,11 @@ export interface BaseOrderListItemProps {
   totalAmount?: number;
   /** Finalized total amount. If null/undefined or 0, totalAmount is considered unfinalized. */
   finalTotalAmount?: number | null;
+  /**
+   * Accessible label for the list item.
+   * If omitted, a default label is constructed from order ID, status, dates, and total.
+   */
+  accessibilityLabel?: string;
 }
 
 /**
@@ -200,6 +205,7 @@ export function BaseOrderListItem({
   headerAlign = 'center',
   totalAmount,
   finalTotalAmount,
+  accessibilityLabel,
 }: BaseOrderListItemProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
@@ -216,12 +222,27 @@ export function BaseOrderListItem({
     </Text>
   );
 
+  const statusLabel = STATUS_CONFIG[status].label;
+  const formattedAmount = formatCurrency(displayAmount ?? 0);
+
+  const defaultAccessibilityLabel = [
+    `Order #${orderId.slice(0, 8)}`,
+    statusLabel,
+    dateLabel,
+    deliveryLabel,
+    showTotal ? `Total: ${formattedAmount}` : null,
+    !isFinalized && showTotal ? 'Price not finalized' : null,
+    'Double tap to view details',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <TouchableOpacity
       style={styles.orderItem}
       onPress={onPress}
       activeOpacity={0.7}
-      accessibilityLabel={`View order details for order #${orderId.slice(0, 8)}`}
+      accessibilityLabel={accessibilityLabel || defaultAccessibilityLabel}
       accessibilityRole="button"
     >
       <View
