@@ -1,4 +1,10 @@
-import { EmployeeOrderListItem, FilterChip } from '@/components/employee';
+import { EmployeeOrderListItem } from '@/components/employee';
+import {
+  FILTER_LABELS,
+  FilterStatus,
+  OrderFilterChip,
+  OrderListEmptyState,
+} from '@/components/OrderListItem';
 import { LoadingView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
@@ -18,16 +24,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
-
-type OrderStatus = 'pending' | 'in_transit' | 'delivered';
-type FilterStatus = 'all' | OrderStatus;
-
-const FILTER_LABELS: Record<FilterStatus, string> = {
-  all: 'All',
-  pending: 'Pending',
-  in_transit: 'In Transit',
-  delivered: 'Delivered',
-};
 
 const ORDERS_PAGE_SIZE = 25;
 
@@ -120,7 +116,7 @@ export default function EmployeeOrdersScreen() {
           contentContainerStyle={styles.filterContent}
         >
           {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
-            <FilterChip
+            <OrderFilterChip
               key={status}
               label={FILTER_LABELS[status]}
               isActive={activeFilter === status}
@@ -138,7 +134,7 @@ export default function EmployeeOrdersScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterContent}
         >
-          <FilterChip
+          <OrderFilterChip
             key="all-restaurants"
             label="All Restaurants"
             isActive={activeRestaurant === 'all'}
@@ -147,7 +143,7 @@ export default function EmployeeOrdersScreen() {
           />
 
           {restaurantOptions.map(name => (
-            <FilterChip
+            <OrderFilterChip
               key={name}
               label={name}
               isActive={activeRestaurant === name}
@@ -162,46 +158,19 @@ export default function EmployeeOrdersScreen() {
       {ordersQuery.isLoading && allOrders.length === 0 ? (
         <LoadingView message="Loading orders..." />
       ) : filteredOrders.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons
-            name={
-              activeFilter === 'all' ? 'cube-outline' : 'filter-circle-outline'
-            }
-            size={64}
-            color={colors.textTertiary}
-          />
-          <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-            No Orders Found
-          </Text>
-          <Text
-            style={[styles.emptyStateText, { color: colors.textSecondary }]}
-          >
-            {activeFilter === 'all' && activeRestaurant === 'all'
+        <OrderListEmptyState
+          activeFilter={activeFilter}
+          onClearFilter={() => {
+            setActiveFilter('all');
+            setActiveRestaurant('all');
+          }}
+          message={
+            activeFilter === 'all' && activeRestaurant === 'all'
               ? 'No orders assigned to you yet.'
-              : 'No orders found matching the selected filters.'}
-          </Text>
-          {(activeFilter !== 'all' || activeRestaurant !== 'all') && (
-            <TouchableOpacity
-              style={[
-                styles.clearFilterButton,
-                { borderColor: colors.primary },
-              ]}
-              onPress={() => {
-                setActiveFilter('all');
-                setActiveRestaurant('all');
-              }}
-            >
-              <Text
-                style={[
-                  styles.clearFilterButtonText,
-                  { color: colors.primary },
-                ]}
-              >
-                Clear Filters
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              : 'No orders found matching the selected filters.'
+          }
+          showClearButton={activeFilter !== 'all' || activeRestaurant !== 'all'}
+        />
       ) : (
         <FlatList
           data={filteredOrders}
@@ -253,36 +222,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  clearFilterButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  clearFilterButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
   },
   footerLoader: {
     paddingVertical: 20,

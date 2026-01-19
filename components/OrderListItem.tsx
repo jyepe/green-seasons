@@ -65,6 +65,54 @@ export const STATUS_CONFIG: Record<
 
 // --- Shared UI Components ---
 
+export interface OrderFilterChipProps {
+  label: string;
+  isActive: boolean;
+  onPress: () => void;
+  /** Optional override for colors, otherwise uses useAppColorScheme */
+  colors?: typeof Colors.light;
+}
+
+export function OrderFilterChip({
+  label,
+  isActive,
+  onPress,
+  colors: propColors,
+}: OrderFilterChipProps) {
+  const colorScheme = useAppColorScheme();
+  const colors = propColors || Colors[colorScheme];
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.filterTab,
+        isActive && {
+          backgroundColor: colors.primary,
+          borderColor: colors.primary,
+        },
+        !isActive && {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+        },
+      ]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+      accessibilityLabel={`Filter by ${label}`}
+      accessibilityHint={isActive ? 'Currently active filter' : 'Tap to filter'}
+    >
+      <Text
+        style={[
+          styles.filterText,
+          isActive ? { color: 'white' } : { color: colors.textSecondary },
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 interface OrderFilterTabsProps {
   activeFilter: FilterStatus;
   onFilterChange: (status: FilterStatus) => void;
@@ -74,9 +122,6 @@ export function OrderFilterTabs({
   activeFilter,
   onFilterChange,
 }: OrderFilterTabsProps) {
-  const colorScheme = useAppColorScheme();
-  const colors = Colors[colorScheme];
-
   return (
     <View style={styles.filterContainer}>
       <ScrollView
@@ -85,35 +130,12 @@ export function OrderFilterTabs({
         contentContainerStyle={styles.filterContent}
       >
         {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
-          <TouchableOpacity
+          <OrderFilterChip
             key={status}
-            style={[
-              styles.filterTab,
-              activeFilter === status && {
-                backgroundColor: colors.primary,
-                borderColor: colors.primary,
-              },
-              activeFilter !== status && {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
+            label={FILTER_LABELS[status]}
+            isActive={activeFilter === status}
             onPress={() => onFilterChange(status)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: activeFilter === status }}
-            accessibilityLabel={`Filter by ${FILTER_LABELS[status]}`}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                activeFilter === status
-                  ? { color: 'white' }
-                  : { color: colors.textSecondary },
-              ]}
-            >
-              {FILTER_LABELS[status]}
-            </Text>
-          </TouchableOpacity>
+          />
         ))}
       </ScrollView>
     </View>
@@ -124,15 +146,34 @@ interface OrderListEmptyStateProps {
   activeFilter: FilterStatus;
   onClearFilter: () => void;
   emptyMessageAll?: string;
+  /** Optional explicit message to override the default text logic */
+  message?: string;
+  /** Optional explicit control for showing the clear button */
+  showClearButton?: boolean;
 }
 
 export function OrderListEmptyState({
   activeFilter,
   onClearFilter,
   emptyMessageAll = "You haven't placed any orders yet.",
+  message,
+  showClearButton,
 }: OrderListEmptyStateProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+
+  // Logic to determine if we should show the clear button
+  // If showClearButton is provided, use it. Otherwise fallback to checking activeFilter.
+  const shouldShowClearButton =
+    showClearButton !== undefined ? showClearButton : activeFilter !== 'all';
+
+  // Logic to determine the text to display
+  // If message is provided, use it. Otherwise fallback to checking activeFilter.
+  const displayMessage =
+    message ||
+    (activeFilter === 'all'
+      ? emptyMessageAll
+      : `No orders found with status "${FILTER_LABELS[activeFilter]}".`);
 
   return (
     <View style={styles.emptyState}>
@@ -145,11 +186,9 @@ export function OrderListEmptyState({
         No Orders Found
       </Text>
       <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
-        {activeFilter === 'all'
-          ? emptyMessageAll
-          : `No orders found with status "${FILTER_LABELS[activeFilter]}".`}
+        {displayMessage}
       </Text>
-      {activeFilter !== 'all' && (
+      {shouldShowClearButton && (
         <TouchableOpacity
           style={[styles.clearFilterButton, { borderColor: colors.primary }]}
           onPress={onClearFilter}

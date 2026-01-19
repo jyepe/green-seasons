@@ -21,3 +21,7 @@
 ## 2025-05-24 - [Consolidating Auth Footers]
 **Learning:** Auth screens (Login, Signup, ForgotPassword) shared identical "Text + Link" footer pattern but with duplicated styles and markup.
 **Action:** Extracted `AuthFooter` to `components/auth/AuthContainer.tsx` to standardize layout and reduce boilerplate in auth screens.
+
+## 2025-05-24 - [Consolidating Filter Chips & Empty States]
+**Learning:** `OrderFilterTabs` implemented chips inline, while `EmployeeOrdersScreen` used a separate `FilterChip` component. Also `OrderListEmptyState` was too specific (hardcoded text logic), causing `EmployeeOrdersScreen` to duplicate the empty state UI.
+**Action:** Extracted `OrderFilterChip` to `OrderListItem.tsx` and updated `OrderListEmptyState` to accept generic `message`/`showClearButton` props, allowing `EmployeeOrdersScreen` to reuse both.
