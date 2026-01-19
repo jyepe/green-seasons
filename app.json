@@ -4,7 +4,7 @@
     "slug": "green-seasons",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/green-seasons-icon-1024.png",
+    "icon": "./assets/images/adaptive-icon.png",
     "scheme": "greenseasons",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

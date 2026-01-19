@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCallback } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -37,20 +38,29 @@ export function SwipeableRow({
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
-  const { panGesture, animatedRowStyle, animatedDeleteStyle, translateX } =
-    useSwipeToDelete({
-      onDelete: () => onDeleteItem(item.item_id),
-      deleteActionWidth: DELETE_ACTION_WIDTH,
-    });
+  const {
+    panGesture,
+    animatedRowStyle,
+    animatedDeleteStyle,
+    translateX,
+    isSwiping,
+  } = useSwipeToDelete({
+    onDelete: () => onDeleteItem(item.item_id),
+    deleteActionWidth: DELETE_ACTION_WIDTH,
+  });
+
+  const handlePress = useCallback(() => {
+    // Only allow press when not swiping and the row has returned to (approximately) its resting position
+    if (!isSwiping.value && Math.abs(translateX.value) < 1) {
+      onItemPress(item);
+    }
+  }, [onItemPress, item, isSwiping, translateX]);
 
   return (
     <View>
       <GestureDetector gesture={panGesture}>
         <Animated.View style={animatedRowStyle}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => onItemPress(item)}
-          >
+          <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
             <View style={styles.cartItem}>
               <View
                 style={[
