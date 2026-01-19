@@ -48,11 +48,11 @@ export function SwipeableRow({
     deleteActionWidth: DELETE_ACTION_WIDTH,
   });
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     if (!isSwiping.value) {
       onItemPress(item);
     }
-  };
+  }, [onItemPress, item]);
 
   return (
     <View>
