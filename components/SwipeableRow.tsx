@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCallback } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -49,10 +50,11 @@ export function SwipeableRow({
   });
 
   const handlePress = useCallback(() => {
-    if (!isSwiping.value) {
+    // Only allow press when not swiping and the row has returned to (approximately) its resting position
+    if (!isSwiping.value && Math.abs(translateX.value) < 1) {
       onItemPress(item);
     }
-  }, [onItemPress, item]);
+  }, [onItemPress, item, isSwiping, translateX]);
 
   return (
     <View>
