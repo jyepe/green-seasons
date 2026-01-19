@@ -11,7 +11,11 @@ import {
 import { Item, CreateItemParams, UpdateItemParams } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useReducer } from 'react';
+import {
+  adminItemsReducer,
+  initialAdminItemsState,
+} from '@/reducers/adminItemsReducer';
 import {
   ActivityIndicator,
   Alert,
@@ -32,10 +36,11 @@ export default function AdminItemsScreen() {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isFormModalVisible, setIsFormModalVisible] = useState(false);
-  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [state, dispatch] = useReducer(
+    adminItemsReducer,
+    initialAdminItemsState
+  );
+  const { searchQuery, currentPage, isFormModalVisible, editingItem } = state;
 
   const { data: items, isLoading } = useAdminItems();
   const createItemMutation = useCreateItem();
@@ -69,23 +74,17 @@ export default function AdminItemsScreen() {
   const hasNext = safePage < totalPages;
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  useEffect(() => {
     if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+      dispatch({ type: 'SET_PAGE', payload: totalPages });
     }
   }, [currentPage, totalPages]);
 
   const handleAddItem = () => {
-    setEditingItem(null);
-    setIsFormModalVisible(true);
+    dispatch({ type: 'OPEN_CREATE_MODAL' });
   };
 
   const handleEditItem = (item: Item) => {
-    setEditingItem(item);
-    setIsFormModalVisible(true);
+    dispatch({ type: 'OPEN_EDIT_MODAL', payload: item });
   };
 
   const handleDeleteItem = (item: Item) => {
@@ -128,8 +127,7 @@ export default function AdminItemsScreen() {
         await createItemMutation.mutateAsync(data as CreateItemParams);
         Alert.alert('Success', 'Item created successfully.');
       }
-      setIsFormModalVisible(false);
-      setEditingItem(null);
+      dispatch({ type: 'CLOSE_MODAL' });
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -188,11 +186,13 @@ export default function AdminItemsScreen() {
           placeholder="Search items..."
           placeholderTextColor={colors.textSecondary + '80'}
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={query =>
+            dispatch({ type: 'SET_SEARCH_QUERY', payload: query })
+          }
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity
-            onPress={() => setSearchQuery('')}
+            onPress={() => dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })}
             style={styles.clearButton}
           >
             <Ionicons
@@ -274,7 +274,12 @@ export default function AdminItemsScreen() {
               { backgroundColor: colors.surface },
               !hasPrevious && styles.paginationButtonDisabled,
             ]}
-            onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            onPress={() =>
+              dispatch({
+                type: 'SET_PAGE',
+                payload: Math.max(currentPage - 1, 1),
+              })
+            }
             disabled={!hasPrevious}
           >
             <Ionicons
@@ -295,7 +300,10 @@ export default function AdminItemsScreen() {
               !hasNext && styles.paginationButtonDisabled,
             ]}
             onPress={() =>
-              setCurrentPage(prev => Math.min(prev + 1, totalPages))
+              dispatch({
+                type: 'SET_PAGE',
+                payload: Math.min(currentPage + 1, totalPages),
+              })
             }
             disabled={!hasNext}
           >
@@ -313,10 +321,7 @@ export default function AdminItemsScreen() {
         visible={isFormModalVisible}
         item={editingItem}
         isLoading={isLoadingMutation}
-        onClose={() => {
-          setIsFormModalVisible(false);
-          setEditingItem(null);
-        }}
+        onClose={() => dispatch({ type: 'CLOSE_MODAL' })}
         onSave={handleSaveItem}
       />
     </SafeAreaView>
