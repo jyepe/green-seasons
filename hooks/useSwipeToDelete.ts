@@ -58,6 +58,8 @@ export function useSwipeToDelete({
           stiffness: 200,
         });
       }
+    })
+    .onFinalize(() => {
       isSwiping.value = false;
     });
 
