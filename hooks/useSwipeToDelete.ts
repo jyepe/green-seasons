@@ -19,10 +19,14 @@ export function useSwipeToDelete({
   deleteActionWidth,
 }: UseSwipeToDeleteProps) {
   const translateX = useSharedValue(0);
+  const isSwiping = useSharedValue(false);
 
   const panGesture = Gesture.Pan()
     .activeOffsetX([-10, 10])
     .failOffsetY([-10, 10])
+    .onStart(() => {
+      isSwiping.value = true;
+    })
     .onUpdate(e => {
       const deltaX = e.translationX;
       if (deltaX < 0) {
@@ -54,6 +58,7 @@ export function useSwipeToDelete({
           stiffness: 200,
         });
       }
+      isSwiping.value = false;
     });
 
   const animatedRowStyle = useAnimatedStyle(() => ({
@@ -65,5 +70,11 @@ export function useSwipeToDelete({
     transform: [{ translateX: translateX.value + deleteActionWidth }],
   }));
 
-  return { panGesture, animatedRowStyle, animatedDeleteStyle, translateX };
+  return {
+    panGesture,
+    animatedRowStyle,
+    animatedDeleteStyle,
+    translateX,
+    isSwiping,
+  };
 }
