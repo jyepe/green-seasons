@@ -158,6 +158,7 @@ export function EditProfileForm() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel="Email"
             />
           </View>
 
@@ -180,6 +181,7 @@ export function EditProfileForm() {
               }
               placeholder="First Name"
               placeholderTextColor={colors.textSecondary}
+              accessibilityLabel="First Name"
             />
           </View>
 
@@ -202,6 +204,7 @@ export function EditProfileForm() {
               }
               placeholder="Last Name"
               placeholderTextColor={colors.textSecondary}
+              accessibilityLabel="Last Name"
             />
           </View>
 
@@ -225,6 +228,7 @@ export function EditProfileForm() {
               placeholder="Phone Number"
               placeholderTextColor={colors.textSecondary}
               keyboardType="phone-pad"
+              accessibilityLabel="Phone Number"
             />
           </View>
 
@@ -234,6 +238,10 @@ export function EditProfileForm() {
             disabled={updateUserInfoMutation.isPending}
             accessibilityLabel="Save Changes"
             accessibilityRole="button"
+            accessibilityState={{
+              busy: updateUserInfoMutation.isPending,
+              disabled: updateUserInfoMutation.isPending,
+            }}
           >
             {updateUserInfoMutation.isPending ? (
               <ActivityIndicator color="white" />
