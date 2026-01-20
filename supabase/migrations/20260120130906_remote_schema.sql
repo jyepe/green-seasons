@@ -1588,15 +1588,6 @@ CREATE UNIQUE INDEX "profiles_owned_restaurant_unique" ON "public"."profiles" US
 CREATE INDEX "profiles_role_idx" ON "public"."profiles" USING "btree" ("role");
 
 
-
-CREATE OR REPLACE TRIGGER "notify_admin_of_new_user" AFTER INSERT ON "public"."profiles" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://shswdtpsavantylqxyjy.supabase.co/functions/v1/admin-notified-new-user', 'POST', '{"Content-type":"application/json","x-webhook-secret":"&6tw!D4s46b&38m^FU4$4Viqo63*HB"}', '{}', '5000');
-
-
-
-CREATE OR REPLACE TRIGGER "order_confirmation_email" AFTER INSERT ON "public"."orders" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://shswdtpsavantylqxyjy.supabase.co/functions/v1/order-confirmation', 'POST', '{"Content-type":"application/json","x-webhook-secret":"&6tw!D4s46b&38m^FU4$4Viqo63*HB"}', '{}', '5000');
-
-
-
 CREATE OR REPLACE TRIGGER "set_cart_items_updated_at" BEFORE UPDATE ON "public"."cart_items" FOR EACH ROW EXECUTE FUNCTION "public"."set_updated_at"();
 
 
