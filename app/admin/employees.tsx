@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,10 @@ import {
   getEmployeesAndRestaurants,
   type EmployeeProfile,
 } from '@/lib/supabase';
+import {
+  employeeManagementReducer,
+  initialEmployeeManagementState,
+} from '@/reducers/employeeManagementReducer';
 
 function formatEmployeeName(employee: EmployeeProfile) {
   const parts = [employee.first_name, employee.last_name]
@@ -37,15 +41,16 @@ export default function EmployeeManagementScreen() {
   const colors = Colors[colorScheme];
   const queryClient = useQueryClient();
 
-  const [employeeDropdownVisible, setEmployeeDropdownVisible] = useState(false);
-  const [restaurantDropdownVisible, setRestaurantDropdownVisible] =
-    useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
-    null
+  const [state, dispatch] = useReducer(
+    employeeManagementReducer,
+    initialEmployeeManagementState
   );
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
-    string | null
-  >(null);
+  const {
+    employeeDropdownVisible,
+    restaurantDropdownVisible,
+    selectedEmployeeId,
+    selectedRestaurantId,
+  } = state;
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ['employees-and-restaurants'],
@@ -122,7 +127,7 @@ export default function EmployeeManagementScreen() {
       selectedEmployeeId &&
       !employees.find(e => e.id === selectedEmployeeId)
     ) {
-      setSelectedEmployeeId(null);
+      dispatch({ type: 'SELECT_EMPLOYEE', payload: null });
     }
   }, [employees, selectedEmployeeId]);
 
@@ -131,22 +136,16 @@ export default function EmployeeManagementScreen() {
       selectedRestaurantId &&
       !restaurants.find(r => r.id === selectedRestaurantId)
     ) {
-      setSelectedRestaurantId(null);
+      dispatch({ type: 'SELECT_RESTAURANT', payload: null });
     }
   }, [restaurants, selectedRestaurantId]);
 
   const toggleEmployeeDropdown = () => {
-    setEmployeeDropdownVisible(visible => {
-      if (!visible) setRestaurantDropdownVisible(false);
-      return !visible;
-    });
+    dispatch({ type: 'TOGGLE_EMPLOYEE_DROPDOWN' });
   };
 
   const toggleRestaurantDropdown = () => {
-    setRestaurantDropdownVisible(visible => {
-      if (!visible) setEmployeeDropdownVisible(false);
-      return !visible;
-    });
+    dispatch({ type: 'TOGGLE_RESTAURANT_DROPDOWN' });
   };
 
   return (
@@ -302,8 +301,10 @@ export default function EmployeeManagementScreen() {
                         { borderBottomColor: colors.border },
                       ]}
                       onPress={() => {
-                        setSelectedEmployeeId(employee.id);
-                        setEmployeeDropdownVisible(false);
+                        dispatch({
+                          type: 'SELECT_EMPLOYEE',
+                          payload: employee.id,
+                        });
                       }}
                       accessibilityLabel={`Select ${formatEmployeeName(employee)}`}
                       accessibilityRole="button"
@@ -484,8 +485,10 @@ export default function EmployeeManagementScreen() {
                         { borderBottomColor: colors.border },
                       ]}
                       onPress={() => {
-                        setSelectedRestaurantId(restaurant.id);
-                        setRestaurantDropdownVisible(false);
+                        dispatch({
+                          type: 'SELECT_RESTAURANT',
+                          payload: restaurant.id,
+                        });
                       }}
                       accessibilityLabel={`Select ${restaurant.name}`}
                       accessibilityRole="button"
