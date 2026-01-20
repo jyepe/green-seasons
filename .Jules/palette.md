@@ -29,3 +29,8 @@
 
 **Learning:** When a list item is a single interactive touch target, applying an `accessibilityLabel` to the container hides all child text (status, price, date). This prevents screen reader users from accessing critical order details unless they are explicitly included in the container's label.
 **Action:** When making a complex list item accessible as a single button, construct a comprehensive `accessibilityLabel` that concatenates all visual information (e.g., "Order #123, Status: Delivered, Total: $50") so nothing is lost.
+
+## 2024-05-24 - Loading State Announcements
+
+**Learning:** Loading states implemented with raw `ActivityIndicator` components are visual-only and provide no feedback to screen reader users that content is loading. This can lead to confusion about why the screen is static or empty.
+**Action:** Use a wrapper component (like `LoadingView`) that implements `accessibilityRole="alert"` and `accessibilityLiveRegion="polite"` to automatically announce "Loading..." when the spinner appears. Even for small inline spinners, providing an invisible accessibility label is crucial.

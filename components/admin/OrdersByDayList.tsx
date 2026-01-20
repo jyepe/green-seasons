@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils/dateUtils';
+import { LoadingView } from '@/components/ThemedView';
 
 type OrdersByDayListProps = {
   data: AdminChartOrdersByDay[];
@@ -29,7 +29,11 @@ export function OrdersByDayList({
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.primary} />
+        <LoadingView
+          size="small"
+          showText={false}
+          message="Loading orders..."
+        />
       </View>
     );
   }
