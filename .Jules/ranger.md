@@ -25,3 +25,7 @@
 ## 2025-05-24 - [Consolidating Filter Chips & Empty States]
 **Learning:** `OrderFilterTabs` implemented chips inline, while `EmployeeOrdersScreen` used a separate `FilterChip` component. Also `OrderListEmptyState` was too specific (hardcoded text logic), causing `EmployeeOrdersScreen` to duplicate the empty state UI.
 **Action:** Extracted `OrderFilterChip` to `OrderListItem.tsx` and updated `OrderListEmptyState` to accept generic `message`/`showClearButton` props, allowing `EmployeeOrdersScreen` to reuse both.
+
+## 2025-05-24 - [Consolidating Analytics Lists]
+**Learning:** `OrdersByDayList`, `RevenueByDayList`, and `RevenueByRestaurantList` shared identical loading, empty, and footer UI but differed in row rendering.
+**Action:** Extracted `AnalyticsDataList` (generic shell) to `components/admin/AnalyticsScreenLayout.tsx` to handle the boilerplate while accepting a `renderItem` prop for specific row content.
