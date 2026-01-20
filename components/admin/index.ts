@@ -1,4 +1,7 @@
-export { AnalyticsScreenLayout } from './AnalyticsScreenLayout';
+export {
+  AnalyticsScreenLayout,
+  AnalyticsDataList,
+} from './AnalyticsScreenLayout';
 export { ExpandableCard } from './ExpandableCard';
 export { KPICard } from './KPICard';
 export { TopItemsCard } from './TopItemsCard';
