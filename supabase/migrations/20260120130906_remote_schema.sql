@@ -1589,11 +1589,94 @@ CREATE INDEX "profiles_role_idx" ON "public"."profiles" USING "btree" ("role");
 
 
 
-CREATE OR REPLACE TRIGGER "notify_admin_of_new_user" AFTER INSERT ON "public"."profiles" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://shswdtpsavantylqxyjy.supabase.co/functions/v1/admin-notified-new-user', 'POST', '{"Content-type":"application/json","x-webhook-secret":"&6tw!D4s46b&38m^FU4$4Viqo63*HB"}', '{}', '5000');
+-- 0) Enable pg_net (async HTTP from triggers)
+create extension if not exists pg_net with schema extensions;
 
+-- 1) OPTIONAL but strongly recommended: use Vault so you don't hardcode secrets/URLs in migrations
+create extension if not exists vault with schema vault;
 
+-- One-time per environment (run manually in that project, NOT in migrations):
+-- select vault.create_secret('https://<THIS-PROJECT-REF>.supabase.co', 'edge_project_url');
+-- select vault.create_secret('<YOUR_WEBHOOK_SECRET>', 'edge_webhook_secret');
 
-CREATE OR REPLACE TRIGGER "order_confirmation_email" AFTER INSERT ON "public"."orders" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://shswdtpsavantylqxyjy.supabase.co/functions/v1/order-confirmation', 'POST', '{"Content-type":"application/json","x-webhook-secret":"&6tw!D4s46b&38m^FU4$4Viqo63*HB"}', '{}', '5000');
+create or replace function public.fn_edge_webhook_post()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions, net, vault
+as $$
+declare
+  base_url text;
+  secret   text;
+  url      text;
+  headers  jsonb;
+  payload  jsonb;
+begin
+  -- Read per-environment config from Vault (avoids hardcoding project-ref URLs + secrets)
+  select decrypted_secret into base_url
+  from vault.decrypted_secrets
+  where name = 'edge_project_url'
+  limit 1;
+
+  select decrypted_secret into secret
+  from vault.decrypted_secrets
+  where name = 'edge_webhook_secret'
+  limit 1;
+
+  if base_url is null then
+    raise exception 'Missing Vault secret edge_project_url';
+  end if;
+
+  if secret is null then
+    raise exception 'Missing Vault secret edge_webhook_secret';
+  end if;
+
+  -- Decide which Edge Function to call based on table
+  if tg_table_name = 'profiles' then
+    url := base_url || '/functions/v1/admin-notified-new-user';
+  elsif tg_table_name = 'orders' then
+    url := base_url || '/functions/v1/order-confirmation';
+  else
+    return new;
+  end if;
+
+  headers := jsonb_build_object(
+    'Content-Type', 'application/json',
+    'x-webhook-secret', secret
+  );
+
+  -- Match Supabase webhook-style payload (record + metadata)
+  payload := jsonb_build_object(
+    'type', tg_op,
+    'table', tg_table_name,
+    'schema', tg_table_schema,
+    'record', to_jsonb(new),
+    'old_record', null
+  );
+
+  perform net.http_post(
+    url := url,
+    body := payload,
+    headers := headers,
+    timeout_milliseconds := 5000
+  );
+
+  return new;
+end;
+$$;
+
+-- 2) Create triggers
+drop trigger if exists notify_admin_of_new_user on public.profiles;
+create trigger notify_admin_of_new_user
+after insert on public.profiles
+for each row
+execute function public.fn_edge_webhook_post();
+
+drop trigger if exists order_confirmation_email on public.orders;
+create trigger order_confirmation_email
+after insert on public.orders
+for each row
+execute function public.fn_edge_webhook_post();
 
 
 
