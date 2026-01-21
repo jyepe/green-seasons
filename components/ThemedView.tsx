@@ -47,7 +47,12 @@ export function LoadingView({
   const colors = Colors[colorScheme];
 
   return (
-    <View style={[styles.loadingContainer, style]} {...props}>
+    <View
+      style={[styles.loadingContainer, style]}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      {...props}
+    >
       <ActivityIndicator size="large" color={colors.primary} />
       <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
         {message}
