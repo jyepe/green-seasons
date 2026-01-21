@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   Modal,
   type ModalProps,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -178,6 +179,118 @@ export function ModalFooter({
   );
 }
 
+/**
+ * Shared dropdown component with label, selector, and list.
+ * Consolidates repeated dropdown logic in management screens.
+ */
+export function ThemedDropdown({
+  label,
+  value,
+  placeholder = 'Select an option',
+  isOpen,
+  onToggle,
+  items,
+  onSelect,
+  emptyMessage = 'No options available',
+}: {
+  label: string;
+  value: string | null | undefined;
+  placeholder?: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  items: { id: string | number; label: string }[];
+  onSelect: (id: string | number) => void;
+  emptyMessage?: string;
+}) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <>
+      <TouchableOpacity
+        style={[
+          styles.selector,
+          {
+            borderColor: colors.border,
+            backgroundColor: colors.inputBackground,
+          },
+        ]}
+        onPress={onToggle}
+        accessibilityLabel={`Open ${label} selector`}
+        accessibilityRole="button"
+      >
+        <View style={styles.selectorLabelContainer}>
+          <Text style={[styles.selectorLabel, { color: colors.textSecondary }]}>
+            {label}
+          </Text>
+          <Text
+            style={[styles.selectorValue, { color: colors.text }]}
+            numberOfLines={1}
+          >
+            {value || placeholder}
+          </Text>
+        </View>
+        <Ionicons
+          name={isOpen ? 'chevron-up' : 'chevron-down'}
+          size={20}
+          color={colors.textSecondary}
+        />
+      </TouchableOpacity>
+
+      {isOpen && items.length > 0 ? (
+        <ScrollView
+          style={[
+            styles.dropdown,
+            {
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+            },
+          ]}
+          nestedScrollEnabled
+        >
+          {items.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.dropdownItem,
+                { borderBottomColor: colors.border },
+              ]}
+              onPress={() => onSelect(item.id)}
+              accessibilityLabel={`Select ${item.label}`}
+              accessibilityRole="button"
+            >
+              <Text
+                style={[styles.dropdownItemTitle, { color: colors.text }]}
+                numberOfLines={1}
+              >
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      ) : null}
+
+      {isOpen && items.length === 0 ? (
+        <View
+          style={[
+            styles.emptyDropdown,
+            {
+              borderColor: colors.border,
+              backgroundColor: colors.inputBackground,
+            },
+          ]}
+        >
+          <Text
+            style={[styles.emptyDropdownText, { color: colors.textSecondary }]}
+          >
+            {emptyMessage}
+          </Text>
+        </View>
+      ) : null}
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
@@ -247,5 +360,56 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter_600SemiBold',
+  },
+  // Dropdown Styles
+  selector: {
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  selectorLabelContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  selectorLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
+  },
+  selectorValue: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  dropdown: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    maxHeight: 260,
+  },
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  dropdownItemTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  emptyDropdown: {
+    marginTop: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  emptyDropdownText: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
   },
 });
