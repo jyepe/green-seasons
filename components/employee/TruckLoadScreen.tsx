@@ -49,8 +49,8 @@ export default function TruckLoadScreen() {
   );
 
   const onRefresh = useCallback(() => {
-    truckLoadQuery.refetch();
-  }, [truckLoadQuery]);
+    refetch();
+  }, [refetch]);
 
   const items = truckLoadQuery.data ?? [];
 
