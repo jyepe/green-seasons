@@ -49,7 +49,10 @@ export default function UserProfile() {
             try {
               await deleteAccount();
               router.replace('/auth/login');
-            } catch {
+            } catch (error) {
+              if (__DEV__) {
+                console.error('Failed to delete account:', error);
+              }
               Alert.alert(
                 'Error',
                 'Failed to delete account. Please try again.'
