@@ -213,12 +213,17 @@ export default function UserProfile() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.logoutButton, { backgroundColor: colors.error }]}
+            style={[
+              styles.deleteAccountButton,
+              { borderColor: colors.error },
+            ]}
             onPress={handleDeleteAccount}
             accessibilityLabel="Delete Account"
             accessibilityRole="button"
           >
-            <Text style={styles.logoutButtonText}>Delete Account</Text>
+            <Text style={[styles.deleteAccountButtonText, { color: colors.error }]}>
+              Delete Account
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -322,6 +327,21 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  deleteAccountButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    backgroundColor: 'transparent',
+  },
+  deleteAccountButtonText: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',

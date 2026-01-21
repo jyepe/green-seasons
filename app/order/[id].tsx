@@ -56,6 +56,24 @@ export default function OrderDetailsScreen() {
 
   const [state, dispatch] = useReducer(orderReducer, initialState);
 
+  const invalidateOrderQueries = useCallback(async () => {
+    // Invalidate all order-related and admin dashboard queries efficiently
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+      }),
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return (
+            typeof key === 'string' &&
+            (key.startsWith('admin-') || key === 'admin-all-orders')
+          );
+        },
+      }),
+    ]);
+  }, [id, queryClient]);
+
   const handleChangeStatus = async (
     newStatus: 'pending' | 'in_transit' | 'delivered'
   ) => {
@@ -66,21 +84,7 @@ export default function OrderDetailsScreen() {
       dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false });
       await updateOrderStatus(orderSummary.order_id, newStatus);
 
-      // Invalidate all order-related and admin dashboard queries efficiently
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
-        }),
-        queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            return (
-              typeof key === 'string' &&
-              (key.startsWith('admin-') || key === 'admin-all-orders')
-            );
-          },
-        }),
-      ]);
+      await invalidateOrderQueries();
 
       dispatch({ type: 'SET_SHOW_STATUS_TOAST', payload: true });
     } catch (err) {
@@ -124,21 +128,7 @@ export default function OrderDetailsScreen() {
       dispatch({ type: 'SET_DATE_UPDATING', payload: true });
       await updateOrderDeliveryDate(orderSummary.order_id, date);
 
-      // Invalidate all order-related and admin dashboard queries efficiently
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
-        }),
-        queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            return (
-              typeof key === 'string' &&
-              (key.startsWith('admin-') || key === 'admin-all-orders')
-            );
-          },
-        }),
-      ]);
+      await invalidateOrderQueries();
 
       if (Platform.OS === 'ios') {
         dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false });
