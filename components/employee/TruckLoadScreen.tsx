@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { useFocusEffect } from 'expo-router';
 
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
@@ -38,6 +39,14 @@ export default function TruckLoadScreen() {
     refetchOnMount: true, // Refetch when component mounts (navigating to tab)
     refetchOnWindowFocus: false, // Don't refetch when window/tab gains focus
   });
+
+  const { refetch } = truckLoadQuery;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const onRefresh = useCallback(() => {
     truckLoadQuery.refetch();
