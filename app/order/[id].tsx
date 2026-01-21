@@ -1,6 +1,8 @@
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import {
   useOrderDetails,
   ORDER_DETAILS_QUERY_KEY,
@@ -89,7 +91,10 @@ export default function OrderDetailsScreen() {
     }
   };
 
-  const handleDateChange = async (event: any, selectedDate?: Date) => {
+  const handleDateChange = async (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
     // On Android, dismissing the picker returns undefined selectedDate
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
