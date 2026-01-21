@@ -1,12 +1,13 @@
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   useOrderDetails,
   ORDER_DETAILS_QUERY_KEY,
 } from '@/hooks/useOrderDetails';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useAdmin } from '@/hooks/useAdmin';
-import { updateOrderStatus } from '@/lib/supabase';
+import { updateOrderStatus, updateOrderDeliveryDate } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toast } from '@/components/ui/Toast';
 import {
@@ -54,6 +55,11 @@ export default function OrderDetailsScreen() {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [showStatusToast, setShowStatusToast] = useState(false);
 
+  // Date editing state
+  const [isUpdatingDate, setIsUpdatingDate] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState<Date | null>(null);
+
   const handleChangeStatus = async (
     newStatus: 'pending' | 'in_transit' | 'delivered'
   ) => {
@@ -82,6 +88,63 @@ export default function OrderDetailsScreen() {
       setIsUpdatingStatus(false);
     }
   };
+
+  const handleDateChange = async (event: any, selectedDate?: Date) => {
+    // On Android, dismissing the picker returns undefined selectedDate
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      // Only update if the user clicked "OK" (event.type === 'set')
+      if (event.type === 'set' && selectedDate) {
+        await saveDeliveryDate(selectedDate);
+      }
+      return;
+    }
+
+    if (selectedDate && orderSummary && Platform.OS === 'ios') {
+      // On iOS, we just update the temp date and wait for "Done"
+      setTempDate(selectedDate);
+    }
+  };
+
+  const saveDeliveryDate = async (date: Date) => {
+    if (!orderSummary) return;
+
+    try {
+      setIsUpdatingDate(true);
+      await updateOrderDeliveryDate(orderSummary.order_id, date);
+
+      await queryClient.invalidateQueries({
+        queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+      });
+
+      if (Platform.OS === 'ios') {
+        setShowDatePicker(false);
+      }
+
+      Alert.alert('Success', 'Delivery date updated successfully');
+    } catch (err) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error updating delivery date:', err);
+      }
+      Alert.alert(
+        'Error',
+        'Failed to update delivery date. Please try again later.'
+      );
+    } finally {
+      setIsUpdatingDate(false);
+    }
+  };
+
+  const openDatePicker = () => {
+    if (orderSummary?.delivery_at) {
+      setTempDate(new Date(orderSummary.delivery_at));
+    } else {
+      setTempDate(new Date());
+    }
+    setShowDatePicker(true);
+  };
+
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
@@ -348,9 +411,22 @@ export default function OrderDetailsScreen() {
             >
               Delivery Date
             </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
-              {formatDate(orderSummary.delivery_at)}
-            </Text>
+            {isAdmin ? (
+              <TouchableOpacity
+                style={styles.editableDateContainer}
+                onPress={openDatePicker}
+                disabled={isUpdatingDate}
+              >
+                <Text style={[styles.summaryValue, { color: colors.primary }]}>
+                  {formatDate(orderSummary.delivery_at)}
+                </Text>
+                <Ionicons name="pencil" size={16} color={colors.primary} />
+              </TouchableOpacity>
+            ) : (
+              <Text style={[styles.summaryValue, { color: colors.text }]}>
+                {formatDate(orderSummary.delivery_at)}
+              </Text>
+            )}
           </View>
 
           <View style={styles.summaryRow}>
@@ -540,6 +616,71 @@ export default function OrderDetailsScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Date Picker Modal/Component */}
+      {showDatePicker &&
+        (Platform.OS === 'ios' ? (
+          <Modal
+            visible={showDatePicker}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowDatePicker(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View
+                style={[
+                  styles.datePickerModal,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.datePickerHeader}>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                    <Text style={{ color: colors.error, fontSize: 16 }}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.dropdownTitle,
+                      { marginBottom: 0, color: colors.text },
+                    ]}
+                  >
+                    Select Date
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => tempDate && saveDeliveryDate(tempDate)}
+                  >
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontSize: 16,
+                        fontWeight: '600',
+                      }}
+                    >
+                      Done
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={tempDate || new Date()}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleDateChange}
+                  textColor={colors.text}
+                  minimumDate={new Date()}
+                />
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={tempDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            minimumDate={new Date()}
+          />
+        ))}
 
       {/* Status Dropdown Modal */}
       <Modal
@@ -873,5 +1014,36 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'Inter_400Regular',
     fontStyle: 'italic',
+  },
+  editableDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 4,
+  },
+  datePickerModal: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+    position: 'absolute',
+    bottom: 0,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
 });
