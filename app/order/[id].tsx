@@ -66,23 +66,21 @@ export default function OrderDetailsScreen() {
       dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false });
       await updateOrderStatus(orderSummary.order_id, newStatus);
 
-      await queryClient.invalidateQueries({
-        queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
-      });
-      await queryClient.invalidateQueries({ queryKey: ['admin-all-orders'] });
-      // Invalidate dashboard queries
-      await queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      await queryClient.invalidateQueries({ queryKey: ['admin-kpis'] });
-      await queryClient.invalidateQueries({ queryKey: ['admin-top-items'] });
-      await queryClient.invalidateQueries({
-        queryKey: ['admin-chart-orders-by-day'],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['admin-chart-revenue-by-day'],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['admin-chart-revenue-by-restaurant'],
-      });
+      // Invalidate all order-related and admin dashboard queries efficiently
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return (
+              typeof key === 'string' &&
+              (key.startsWith('admin-') || key === 'admin-all-orders')
+            );
+          },
+        }),
+      ]);
 
       dispatch({ type: 'SET_SHOW_STATUS_TOAST', payload: true });
     } catch (err) {
@@ -126,23 +124,21 @@ export default function OrderDetailsScreen() {
       dispatch({ type: 'SET_DATE_UPDATING', payload: true });
       await updateOrderDeliveryDate(orderSummary.order_id, date);
 
-      await queryClient.invalidateQueries({
-        queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
-      });
-      await queryClient.invalidateQueries({ queryKey: ['admin-all-orders'] });
-      // Invalidate dashboard queries
-      await queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      await queryClient.invalidateQueries({ queryKey: ['admin-kpis'] });
-      await queryClient.invalidateQueries({ queryKey: ['admin-top-items'] });
-      await queryClient.invalidateQueries({
-        queryKey: ['admin-chart-orders-by-day'],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['admin-chart-revenue-by-day'],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['admin-chart-revenue-by-restaurant'],
-      });
+      // Invalidate all order-related and admin dashboard queries efficiently
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return (
+              typeof key === 'string' &&
+              (key.startsWith('admin-') || key === 'admin-all-orders')
+            );
+          },
+        }),
+      ]);
 
       if (Platform.OS === 'ios') {
         dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false });
