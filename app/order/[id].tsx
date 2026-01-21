@@ -22,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -37,6 +37,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingView } from '@/components/ThemedView';
+import { orderReducer, initialState } from '@/reducers/orderReducer';
 
 export default function OrderDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -53,23 +54,16 @@ export default function OrderDetailsScreen() {
   const { data: isAdmin = false } = useAdmin();
   const queryClient = useQueryClient();
 
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-  const [showStatusToast, setShowStatusToast] = useState(false);
-
-  // Date editing state
-  const [isUpdatingDate, setIsUpdatingDate] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [tempDate, setTempDate] = useState<Date | null>(null);
+  const [state, dispatch] = useReducer(orderReducer, initialState);
 
   const handleChangeStatus = async (
     newStatus: 'pending' | 'in_transit' | 'delivered'
   ) => {
-    if (!orderSummary || isUpdatingStatus) return;
+    if (!orderSummary || state.status.isUpdating) return;
 
     try {
-      setIsUpdatingStatus(true);
-      setIsStatusDropdownOpen(false);
+      dispatch({ type: 'SET_STATUS_UPDATING', payload: true });
+      dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false });
       await updateOrderStatus(orderSummary.order_id, newStatus);
 
       await queryClient.invalidateQueries({
@@ -90,7 +84,7 @@ export default function OrderDetailsScreen() {
         queryKey: ['admin-chart-revenue-by-restaurant'],
       });
 
-      setShowStatusToast(true);
+      dispatch({ type: 'SET_SHOW_STATUS_TOAST', payload: true });
     } catch (err) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
@@ -101,7 +95,7 @@ export default function OrderDetailsScreen() {
         'Failed to update order status. Please try again later.'
       );
     } finally {
-      setIsUpdatingStatus(false);
+      dispatch({ type: 'SET_STATUS_UPDATING', payload: false });
     }
   };
 
@@ -111,7 +105,7 @@ export default function OrderDetailsScreen() {
   ) => {
     // On Android, dismissing the picker returns undefined selectedDate
     if (Platform.OS === 'android') {
-      setShowDatePicker(false);
+      dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false });
       // Only update if the user clicked "OK" (event.type === 'set')
       if (event.type === 'set' && selectedDate) {
         await saveDeliveryDate(selectedDate);
@@ -121,7 +115,7 @@ export default function OrderDetailsScreen() {
 
     if (selectedDate && orderSummary && Platform.OS === 'ios') {
       // On iOS, we just update the temp date and wait for "Done"
-      setTempDate(selectedDate);
+      dispatch({ type: 'SET_TEMP_DATE', payload: selectedDate });
     }
   };
 
@@ -129,7 +123,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsUpdatingDate(true);
+      dispatch({ type: 'SET_DATE_UPDATING', payload: true });
       await updateOrderDeliveryDate(orderSummary.order_id, date);
 
       await queryClient.invalidateQueries({
@@ -151,7 +145,7 @@ export default function OrderDetailsScreen() {
       });
 
       if (Platform.OS === 'ios') {
-        setShowDatePicker(false);
+        dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false });
       }
 
       Alert.alert('Success', 'Delivery date updated successfully');
@@ -165,21 +159,21 @@ export default function OrderDetailsScreen() {
         'Failed to update delivery date. Please try again later.'
       );
     } finally {
-      setIsUpdatingDate(false);
+      dispatch({ type: 'SET_DATE_UPDATING', payload: false });
     }
   };
 
   const openDatePicker = () => {
     if (orderSummary?.delivery_at) {
-      setTempDate(new Date(orderSummary.delivery_at));
+      dispatch({
+        type: 'SET_TEMP_DATE',
+        payload: new Date(orderSummary.delivery_at),
+      });
     } else {
-      setTempDate(new Date());
+      dispatch({ type: 'SET_TEMP_DATE', payload: new Date() });
     }
-    setShowDatePicker(true);
+    dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: true });
   };
-
-  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Get order summary (first item contains all order-level info)
   const orderSummary = orderDetails[0];
@@ -206,7 +200,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsPreviewingPdf(true);
+      dispatch({ type: 'SET_PDF_PREVIEWING', payload: true });
       const html = generateInvoiceHtml(orderDetails, orderSummary);
       await Print.printAsync({ html });
     } catch (err) {
@@ -224,7 +218,7 @@ export default function OrderDetailsScreen() {
         Alert.alert('Error', 'Failed to preview invoice. Please try again.');
       }
     } finally {
-      setIsPreviewingPdf(false);
+      dispatch({ type: 'SET_PDF_PREVIEWING', payload: false });
     }
   };
 
@@ -233,7 +227,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsDownloadingPdf(true);
+      dispatch({ type: 'SET_PDF_DOWNLOADING', payload: true });
       const html = generateInvoiceHtml(orderDetails, orderSummary);
 
       // Generate PDF file
@@ -267,7 +261,7 @@ export default function OrderDetailsScreen() {
       }
       Alert.alert('Error', 'Failed to download invoice. Please try again.');
     } finally {
-      setIsDownloadingPdf(false);
+      dispatch({ type: 'SET_PDF_DOWNLOADING', payload: false });
     }
   };
 
@@ -341,8 +335,10 @@ export default function OrderDetailsScreen() {
       <Toast
         message="Order status updated"
         type="success"
-        visible={showStatusToast}
-        onHide={() => setShowStatusToast(false)}
+        visible={state.status.showToast}
+        onHide={() =>
+          dispatch({ type: 'SET_SHOW_STATUS_TOAST', payload: false })
+        }
       />
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -386,10 +382,12 @@ export default function OrderDetailsScreen() {
                 style={[
                   styles.statusDropdown,
                   { borderColor: colors.border },
-                  isUpdatingStatus && styles.statusDropdownDisabled,
+                  state.status.isUpdating && styles.statusDropdownDisabled,
                 ]}
-                onPress={() => setIsStatusDropdownOpen(true)}
-                disabled={isUpdatingStatus}
+                onPress={() =>
+                  dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: true })
+                }
+                disabled={state.status.isUpdating}
               >
                 <View
                   style={[
@@ -448,7 +446,7 @@ export default function OrderDetailsScreen() {
               <TouchableOpacity
                 style={styles.editableDateContainer}
                 onPress={openDatePicker}
-                disabled={isUpdatingDate}
+                disabled={state.date.isUpdating}
               >
                 <Text style={[styles.summaryValue, { color: colors.primary }]}>
                   {formatDate(orderSummary.delivery_at)}
@@ -529,11 +527,11 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             style={[styles.invoiceButton, styles.previewButton]}
             onPress={handlePreviewInvoice}
-            disabled={isPreviewingPdf || isDownloadingPdf}
+            disabled={state.pdf.isPreviewing || state.pdf.isDownloading}
             accessibilityLabel="Preview invoice"
             accessibilityRole="button"
           >
-            {isPreviewingPdf ? (
+            {state.pdf.isPreviewing ? (
               <ActivityIndicator size="small" color="#16a34a" />
             ) : (
               <>
@@ -546,11 +544,11 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             style={[styles.invoiceButton, styles.downloadButton]}
             onPress={handleDownloadInvoice}
-            disabled={isPreviewingPdf || isDownloadingPdf}
+            disabled={state.pdf.isPreviewing || state.pdf.isDownloading}
             accessibilityLabel="Download invoice as PDF"
             accessibilityRole="button"
           >
-            {isDownloadingPdf ? (
+            {state.pdf.isDownloading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
@@ -651,13 +649,15 @@ export default function OrderDetailsScreen() {
       </ScrollView>
 
       {/* Date Picker Modal/Component */}
-      {showDatePicker &&
+      {state.date.showPicker &&
         (Platform.OS === 'ios' ? (
           <Modal
-            visible={showDatePicker}
+            visible={state.date.showPicker}
             transparent
             animationType="fade"
-            onRequestClose={() => setShowDatePicker(false)}
+            onRequestClose={() =>
+              dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false })
+            }
           >
             <View style={styles.modalOverlay}>
               <View
@@ -667,7 +667,11 @@ export default function OrderDetailsScreen() {
                 ]}
               >
                 <View style={styles.datePickerHeader}>
-                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false })
+                    }
+                  >
                     <Text style={{ color: colors.error, fontSize: 16 }}>
                       Cancel
                     </Text>
@@ -681,7 +685,10 @@ export default function OrderDetailsScreen() {
                     Select Date
                   </Text>
                   <TouchableOpacity
-                    onPress={() => tempDate && saveDeliveryDate(tempDate)}
+                    onPress={() =>
+                      state.date.tempDate &&
+                      saveDeliveryDate(state.date.tempDate)
+                    }
                   >
                     <Text
                       style={{
@@ -695,7 +702,7 @@ export default function OrderDetailsScreen() {
                   </TouchableOpacity>
                 </View>
                 <DateTimePicker
-                  value={tempDate || new Date()}
+                  value={state.date.tempDate || new Date()}
                   mode="date"
                   display="spinner"
                   onChange={handleDateChange}
@@ -707,7 +714,7 @@ export default function OrderDetailsScreen() {
           </Modal>
         ) : (
           <DateTimePicker
-            value={tempDate || new Date()}
+            value={state.date.tempDate || new Date()}
             mode="date"
             display="default"
             onChange={handleDateChange}
@@ -717,15 +724,19 @@ export default function OrderDetailsScreen() {
 
       {/* Status Dropdown Modal */}
       <Modal
-        visible={isStatusDropdownOpen}
+        visible={state.status.isDropdownOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setIsStatusDropdownOpen(false)}
+        onRequestClose={() =>
+          dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false })
+        }
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setIsStatusDropdownOpen(false)}
+          onPress={() =>
+            dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false })
+          }
         >
           <View
             style={[styles.dropdownModal, { backgroundColor: colors.surface }]}
@@ -747,7 +758,7 @@ export default function OrderDetailsScreen() {
                     { borderBottomColor: colors.border },
                   ]}
                   onPress={() => handleChangeStatus(status)}
-                  disabled={isUpdatingStatus || isActive}
+                  disabled={state.status.isUpdating || isActive}
                 >
                   <View
                     style={[
