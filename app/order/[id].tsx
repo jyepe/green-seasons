@@ -75,8 +75,19 @@ export default function OrderDetailsScreen() {
       await queryClient.invalidateQueries({
         queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
       });
+      await queryClient.invalidateQueries({ queryKey: ['admin-all-orders'] });
+      // Invalidate dashboard queries
+      await queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-kpis'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-top-items'] });
       await queryClient.invalidateQueries({
-        queryKey: ['admin-all-orders'],
+        queryKey: ['admin-chart-orders-by-day'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-chart-revenue-by-day'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-chart-revenue-by-restaurant'],
       });
 
       setShowStatusToast(true);
@@ -124,8 +135,19 @@ export default function OrderDetailsScreen() {
       await queryClient.invalidateQueries({
         queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
       });
+      await queryClient.invalidateQueries({ queryKey: ['admin-all-orders'] });
+      // Invalidate dashboard queries
+      await queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-kpis'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-top-items'] });
       await queryClient.invalidateQueries({
-        queryKey: ['admin-all-orders'],
+        queryKey: ['admin-chart-orders-by-day'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-chart-revenue-by-day'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-chart-revenue-by-restaurant'],
       });
 
       if (Platform.OS === 'ios') {
