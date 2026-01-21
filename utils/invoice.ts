@@ -131,17 +131,6 @@ export const generateInvoiceHtml = (
             line-height: 1.6;
             color: #374151;
           }
-          .status-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: white;
-            margin-top: 8px;
-          }
           table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -228,10 +217,6 @@ export const generateInvoiceHtml = (
           <div class="info-block">
             <h3>Delivery Date</h3>
             <p>${formatDate(orderSummary.delivery_at)}</p>
-          </div>
-          <div class="info-block">
-            <h3>Status</h3>
-            <span class="status-badge">${escapeHtml(formatStatus(orderSummary.order_status))}</span>
           </div>
         </div>
         

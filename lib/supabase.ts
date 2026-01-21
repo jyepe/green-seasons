@@ -891,6 +891,27 @@ export async function updateOrderStatus(
   }
 }
 
+/**
+ * Update the delivery date of an order
+ */
+export async function updateOrderDeliveryDate(
+  orderId: string,
+  deliveryDate: Date
+): Promise<void> {
+  const { error } = await supabase
+    .from('orders')
+    .update({ delivery_at: deliveryDate.toISOString() })
+    .eq('id', orderId);
+
+  if (error) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating order delivery date:', error);
+    }
+    throw error;
+  }
+}
+
 // ============================================================================
 // Admin Dashboard Functions
 // ============================================================================

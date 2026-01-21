@@ -1,12 +1,15 @@
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import {
   useOrderDetails,
   ORDER_DETAILS_QUERY_KEY,
 } from '@/hooks/useOrderDetails';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useAdmin } from '@/hooks/useAdmin';
-import { updateOrderStatus } from '@/lib/supabase';
+import { updateOrderStatus, updateOrderDeliveryDate } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toast } from '@/components/ui/Toast';
 import {
@@ -19,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -34,6 +37,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingView } from '@/components/ThemedView';
+import { orderReducer, initialState } from '@/reducers/orderReducer';
 
 export default function OrderDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,25 +54,35 @@ export default function OrderDetailsScreen() {
   const { data: isAdmin = false } = useAdmin();
   const queryClient = useQueryClient();
 
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-  const [showStatusToast, setShowStatusToast] = useState(false);
+  const [state, dispatch] = useReducer(orderReducer, initialState);
 
   const handleChangeStatus = async (
     newStatus: 'pending' | 'in_transit' | 'delivered'
   ) => {
-    if (!orderSummary || isUpdatingStatus) return;
+    if (!orderSummary || state.status.isUpdating) return;
 
     try {
-      setIsUpdatingStatus(true);
-      setIsStatusDropdownOpen(false);
+      dispatch({ type: 'SET_STATUS_UPDATING', payload: true });
+      dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false });
       await updateOrderStatus(orderSummary.order_id, newStatus);
 
-      await queryClient.invalidateQueries({
-        queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
-      });
+      // Invalidate all order-related and admin dashboard queries efficiently
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return (
+              typeof key === 'string' &&
+              (key.startsWith('admin-') || key === 'admin-all-orders')
+            );
+          },
+        }),
+      ]);
 
-      setShowStatusToast(true);
+      dispatch({ type: 'SET_SHOW_STATUS_TOAST', payload: true });
     } catch (err) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
@@ -79,11 +93,83 @@ export default function OrderDetailsScreen() {
         'Failed to update order status. Please try again later.'
       );
     } finally {
-      setIsUpdatingStatus(false);
+      dispatch({ type: 'SET_STATUS_UPDATING', payload: false });
     }
   };
-  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDateChange = async (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
+    // On Android, dismissing the picker returns undefined selectedDate
+    if (Platform.OS === 'android') {
+      dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false });
+      // Only update if the user clicked "OK" (event.type === 'set')
+      if (event.type === 'set' && selectedDate) {
+        await saveDeliveryDate(selectedDate);
+      }
+      return;
+    }
+
+    if (selectedDate && orderSummary && Platform.OS === 'ios') {
+      // On iOS, we just update the temp date and wait for "Done"
+      dispatch({ type: 'SET_TEMP_DATE', payload: selectedDate });
+    }
+  };
+
+  const saveDeliveryDate = async (date: Date) => {
+    if (!orderSummary) return;
+
+    try {
+      dispatch({ type: 'SET_DATE_UPDATING', payload: true });
+      await updateOrderDeliveryDate(orderSummary.order_id, date);
+
+      // Invalidate all order-related and admin dashboard queries efficiently
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return (
+              typeof key === 'string' &&
+              (key.startsWith('admin-') || key === 'admin-all-orders')
+            );
+          },
+        }),
+      ]);
+
+      if (Platform.OS === 'ios') {
+        dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false });
+      }
+
+      Alert.alert('Success', 'Delivery date updated successfully');
+    } catch (err) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Error updating delivery date:', err);
+      }
+      Alert.alert(
+        'Error',
+        'Failed to update delivery date. Please try again later.'
+      );
+    } finally {
+      dispatch({ type: 'SET_DATE_UPDATING', payload: false });
+    }
+  };
+
+  const openDatePicker = () => {
+    if (orderSummary?.delivery_at) {
+      dispatch({
+        type: 'SET_TEMP_DATE',
+        payload: new Date(orderSummary.delivery_at),
+      });
+    } else {
+      dispatch({ type: 'SET_TEMP_DATE', payload: new Date() });
+    }
+    dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: true });
+  };
 
   // Get order summary (first item contains all order-level info)
   const orderSummary = orderDetails[0];
@@ -110,7 +196,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsPreviewingPdf(true);
+      dispatch({ type: 'SET_PDF_PREVIEWING', payload: true });
       const html = generateInvoiceHtml(orderDetails, orderSummary);
       await Print.printAsync({ html });
     } catch (err) {
@@ -128,7 +214,7 @@ export default function OrderDetailsScreen() {
         Alert.alert('Error', 'Failed to preview invoice. Please try again.');
       }
     } finally {
-      setIsPreviewingPdf(false);
+      dispatch({ type: 'SET_PDF_PREVIEWING', payload: false });
     }
   };
 
@@ -137,7 +223,7 @@ export default function OrderDetailsScreen() {
     if (!orderSummary) return;
 
     try {
-      setIsDownloadingPdf(true);
+      dispatch({ type: 'SET_PDF_DOWNLOADING', payload: true });
       const html = generateInvoiceHtml(orderDetails, orderSummary);
 
       // Generate PDF file
@@ -171,7 +257,7 @@ export default function OrderDetailsScreen() {
       }
       Alert.alert('Error', 'Failed to download invoice. Please try again.');
     } finally {
-      setIsDownloadingPdf(false);
+      dispatch({ type: 'SET_PDF_DOWNLOADING', payload: false });
     }
   };
 
@@ -245,8 +331,10 @@ export default function OrderDetailsScreen() {
       <Toast
         message="Order status updated"
         type="success"
-        visible={showStatusToast}
-        onHide={() => setShowStatusToast(false)}
+        visible={state.status.showToast}
+        onHide={() =>
+          dispatch({ type: 'SET_SHOW_STATUS_TOAST', payload: false })
+        }
       />
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -290,10 +378,12 @@ export default function OrderDetailsScreen() {
                 style={[
                   styles.statusDropdown,
                   { borderColor: colors.border },
-                  isUpdatingStatus && styles.statusDropdownDisabled,
+                  state.status.isUpdating && styles.statusDropdownDisabled,
                 ]}
-                onPress={() => setIsStatusDropdownOpen(true)}
-                disabled={isUpdatingStatus}
+                onPress={() =>
+                  dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: true })
+                }
+                disabled={state.status.isUpdating}
               >
                 <View
                   style={[
@@ -348,9 +438,22 @@ export default function OrderDetailsScreen() {
             >
               Delivery Date
             </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
-              {formatDate(orderSummary.delivery_at)}
-            </Text>
+            {isAdmin ? (
+              <TouchableOpacity
+                style={styles.editableDateContainer}
+                onPress={openDatePicker}
+                disabled={state.date.isUpdating}
+              >
+                <Text style={[styles.summaryValue, { color: colors.primary }]}>
+                  {formatDate(orderSummary.delivery_at)}
+                </Text>
+                <Ionicons name="pencil" size={16} color={colors.primary} />
+              </TouchableOpacity>
+            ) : (
+              <Text style={[styles.summaryValue, { color: colors.text }]}>
+                {formatDate(orderSummary.delivery_at)}
+              </Text>
+            )}
           </View>
 
           <View style={styles.summaryRow}>
@@ -420,11 +523,11 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             style={[styles.invoiceButton, styles.previewButton]}
             onPress={handlePreviewInvoice}
-            disabled={isPreviewingPdf || isDownloadingPdf}
+            disabled={state.pdf.isPreviewing || state.pdf.isDownloading}
             accessibilityLabel="Preview invoice"
             accessibilityRole="button"
           >
-            {isPreviewingPdf ? (
+            {state.pdf.isPreviewing ? (
               <ActivityIndicator size="small" color="#16a34a" />
             ) : (
               <>
@@ -437,11 +540,11 @@ export default function OrderDetailsScreen() {
           <TouchableOpacity
             style={[styles.invoiceButton, styles.downloadButton]}
             onPress={handleDownloadInvoice}
-            disabled={isPreviewingPdf || isDownloadingPdf}
+            disabled={state.pdf.isPreviewing || state.pdf.isDownloading}
             accessibilityLabel="Download invoice as PDF"
             accessibilityRole="button"
           >
-            {isDownloadingPdf ? (
+            {state.pdf.isDownloading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
@@ -541,17 +644,95 @@ export default function OrderDetailsScreen() {
         </View>
       </ScrollView>
 
+      {/* Date Picker Modal/Component */}
+      {state.date.showPicker &&
+        (Platform.OS === 'ios' ? (
+          <Modal
+            visible={state.date.showPicker}
+            transparent
+            animationType="fade"
+            onRequestClose={() =>
+              dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false })
+            }
+          >
+            <View style={styles.modalOverlay}>
+              <View
+                style={[
+                  styles.datePickerModal,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.datePickerHeader}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false })
+                    }
+                  >
+                    <Text style={{ color: colors.error, fontSize: 16 }}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.dropdownTitle,
+                      { marginBottom: 0, color: colors.text },
+                    ]}
+                  >
+                    Select Date
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      state.date.tempDate &&
+                      saveDeliveryDate(state.date.tempDate)
+                    }
+                  >
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontSize: 16,
+                        fontWeight: '600',
+                      }}
+                    >
+                      Done
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={state.date.tempDate || new Date()}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleDateChange}
+                  textColor={colors.text}
+                  minimumDate={new Date()}
+                />
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={state.date.tempDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            minimumDate={new Date()}
+          />
+        ))}
+
       {/* Status Dropdown Modal */}
       <Modal
-        visible={isStatusDropdownOpen}
+        visible={state.status.isDropdownOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setIsStatusDropdownOpen(false)}
+        onRequestClose={() =>
+          dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false })
+        }
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setIsStatusDropdownOpen(false)}
+          onPress={() =>
+            dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: false })
+          }
         >
           <View
             style={[styles.dropdownModal, { backgroundColor: colors.surface }]}
@@ -573,7 +754,7 @@ export default function OrderDetailsScreen() {
                     { borderBottomColor: colors.border },
                   ]}
                   onPress={() => handleChangeStatus(status)}
-                  disabled={isUpdatingStatus || isActive}
+                  disabled={state.status.isUpdating || isActive}
                 >
                   <View
                     style={[
@@ -873,5 +1054,36 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'Inter_400Regular',
     fontStyle: 'italic',
+  },
+  editableDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 4,
+  },
+  datePickerModal: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+    position: 'absolute',
+    bottom: 0,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
 });
