@@ -75,6 +75,9 @@ export default function OrderDetailsScreen() {
       await queryClient.invalidateQueries({
         queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
       });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-all-orders'],
+      });
 
       setShowStatusToast(true);
     } catch (err) {
@@ -120,6 +123,9 @@ export default function OrderDetailsScreen() {
 
       await queryClient.invalidateQueries({
         queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-all-orders'],
       });
 
       if (Platform.OS === 'ios') {
