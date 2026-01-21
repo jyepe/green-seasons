@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -23,14 +23,22 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { getEmployeeTruckLoadSummary } from '@/lib/supabase';
 import { generateLoadingSheetHtml, pluralize } from '@/utils/invoice';
+import {
+  initialTruckLoadState,
+  truckLoadReducer,
+} from '@/reducers/truckLoadReducer';
 
 export default function TruckLoadScreen() {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const { data: userInfo } = useUserInfo();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
-  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
+
+  // 🧭 Reducer Scout: Replaced 3 separate states (expandedItems, isDownloadingPdf, isPreviewingPdf)
+  // with a single reducer to coordinate PDF actions and UI state.
+  const [state, dispatch] = useReducer(truckLoadReducer, initialTruckLoadState);
+  const { expandedItems, pdfStatus } = state;
+  const isPreviewingPdf = pdfStatus === 'previewing';
+  const isDownloadingPdf = pdfStatus === 'downloading';
 
   const truckLoadQuery = useQuery({
     queryKey: ['employee-truck-load-summary'],
@@ -55,15 +63,7 @@ export default function TruckLoadScreen() {
   const items = truckLoadQuery.data ?? [];
 
   const toggleItem = (itemId: string) => {
-    setExpandedItems(prev => {
-      const next = new Set(prev);
-      if (next.has(itemId)) {
-        next.delete(itemId);
-      } else {
-        next.add(itemId);
-      }
-      return next;
-    });
+    dispatch({ type: 'TOGGLE_ITEM', payload: itemId });
   };
 
   // Generic PDF action handler
@@ -77,10 +77,14 @@ export default function TruckLoadScreen() {
     }
 
     const isPreview = actionType === 'preview';
-    const setLoading = isPreview ? setIsPreviewingPdf : setIsDownloadingPdf;
 
     try {
-      setLoading(true);
+      dispatch(
+        isPreview
+          ? { type: 'START_PDF_PREVIEW' }
+          : { type: 'START_PDF_DOWNLOAD' }
+      );
+
       const deliveryDate = new Date();
       const fullName =
         `${userInfo?.first_name || ''} ${userInfo?.last_name || ''}`.trim();
@@ -130,7 +134,7 @@ export default function TruckLoadScreen() {
         `Failed to ${isPreview ? 'preview' : 'download'} loading sheet. Please try again.`
       );
     } finally {
-      setLoading(false);
+      dispatch({ type: 'FINISH_PDF_ACTION' });
     }
   };
 
