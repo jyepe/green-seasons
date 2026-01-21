@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -40,6 +41,14 @@ export default function AdminPricesScreen() {
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
+
+  const { refetch } = truckLoadQuery;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const finalizeMutation = useMutation({
     mutationFn: async () => {
