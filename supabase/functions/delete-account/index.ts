@@ -8,12 +8,20 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", {
+      status: 405,
+      headers: { "Allow": "POST" },
+    });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!; // set as a secret
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+    console.error("delete-account function: Missing required environment variables.");
+    return new Response("Internal Server Error: Missing configuration.", { status: 500 });
+  }
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
