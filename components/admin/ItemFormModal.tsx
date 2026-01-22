@@ -1,9 +1,13 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { Item, CreateItemParams, UpdateItemParams } from '@/lib/supabase';
-import { ThemedModal, ModalFooter } from '@/components/ThemedView';
+import {
+  ThemedModal,
+  ModalFooter,
+  ThemedInput,
+} from '@/components/ThemedView';
 
 type ItemFormData = {
   name: string;
@@ -196,126 +200,66 @@ export function ItemFormModal({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>Name *</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.background,
-                borderColor: errors.name ? colors.error : colors.border,
-                color: colors.text,
-              },
-            ]}
-            value={formData.name}
-            onChangeText={value => handleInputChange('name', value)}
-            placeholder="Enter item name"
-            placeholderTextColor={colors.textSecondary + '80'}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-          {errors.name && (
-            <Text style={[styles.errorText, { color: colors.error }]}>
-              {errors.name}
-            </Text>
-          )}
-        </View>
+        <ThemedInput
+          label="Name *"
+          value={formData.name}
+          onChangeText={value => handleInputChange('name', value)}
+          placeholder="Enter item name"
+          autoCapitalize="words"
+          autoCorrect={false}
+          error={errors.name}
+          style={{ backgroundColor: colors.background }}
+          containerStyle={styles.formGroup}
+        />
 
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            Description
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              styles.textArea,
-              {
-                backgroundColor: colors.background,
-                borderColor: colors.border,
-                color: colors.text,
-              },
-            ]}
-            value={formData.description}
-            onChangeText={value => handleInputChange('description', value)}
-            placeholder="Enter item description (optional)"
-            placeholderTextColor={colors.textSecondary + '80'}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            autoCapitalize="sentences"
-          />
-        </View>
+        <ThemedInput
+          label="Description"
+          value={formData.description}
+          onChangeText={value => handleInputChange('description', value)}
+          placeholder="Enter item description (optional)"
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+          autoCapitalize="sentences"
+          style={[styles.textArea, { backgroundColor: colors.background }]}
+          containerStyle={styles.formGroup}
+        />
 
         <View style={styles.row}>
-          <View style={[styles.formGroup, styles.halfWidth]}>
-            <Text style={[styles.label, { color: colors.text }]}>Price *</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: errors.price ? colors.error : colors.border,
-                  color: colors.text,
-                },
-              ]}
-              value={formData.price}
-              onChangeText={value => handleInputChange('price', value)}
-              placeholder="0.00"
-              placeholderTextColor={colors.textSecondary + '80'}
-              keyboardType="decimal-pad"
-            />
-            {errors.price && (
-              <Text style={[styles.errorText, { color: colors.error }]}>
-                {errors.price}
-              </Text>
-            )}
-          </View>
+          <ThemedInput
+            label="Price *"
+            value={formData.price}
+            onChangeText={value => handleInputChange('price', value)}
+            placeholder="0.00"
+            keyboardType="decimal-pad"
+            error={errors.price}
+            style={{ backgroundColor: colors.background }}
+            containerStyle={[styles.formGroup, styles.halfWidth]}
+          />
 
-          <View style={[styles.formGroup, styles.halfWidth]}>
-            <Text style={[styles.label, { color: colors.text }]}>Unit *</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: errors.unit ? colors.error : colors.border,
-                  color: colors.text,
-                },
-              ]}
-              value={formData.unit}
-              onChangeText={value => handleInputChange('unit', value)}
-              placeholder="lb, kg, each"
-              placeholderTextColor={colors.textSecondary + '80'}
-              autoCapitalize="none"
-            />
-            {errors.unit && (
-              <Text style={[styles.errorText, { color: colors.error }]}>
-                {errors.unit}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>Image URL</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.background,
-                borderColor: colors.border,
-                color: colors.text,
-              },
-            ]}
-            value={formData.image_url}
-            onChangeText={value => handleInputChange('image_url', value)}
-            placeholder="https://example.com/image.jpg"
-            placeholderTextColor={colors.textSecondary + '80'}
+          <ThemedInput
+            label="Unit *"
+            value={formData.unit}
+            onChangeText={value => handleInputChange('unit', value)}
+            placeholder="lb, kg, each"
             autoCapitalize="none"
-            keyboardType="url"
-            autoCorrect={false}
+            error={errors.unit}
+            style={{ backgroundColor: colors.background }}
+            containerStyle={[styles.formGroup, styles.halfWidth]}
           />
         </View>
+
+        <ThemedInput
+          label="Image URL"
+          value={formData.image_url}
+          onChangeText={value => handleInputChange('image_url', value)}
+          placeholder="https://example.com/image.jpg"
+          autoCapitalize="none"
+          keyboardType="url"
+          autoCorrect={false}
+          style={{ backgroundColor: colors.background }}
+          containerStyle={styles.formGroup}
+        />
       </ScrollView>
 
       <View style={styles.footerWrapper}>
@@ -338,29 +282,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   formGroup: {
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    marginBottom: 0,
   },
   textArea: {
     minHeight: 100,
     paddingTop: 12,
-  },
-  errorText: {
-    fontSize: 12,
-    marginTop: 4,
-    fontFamily: 'Inter_400Regular',
   },
   row: {
     flexDirection: 'row',

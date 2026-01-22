@@ -29,3 +29,7 @@
 ## 2025-05-24 - [Consolidating Analytics Lists]
 **Learning:** `OrdersByDayList`, `RevenueByDayList`, and `RevenueByRestaurantList` shared identical loading, empty, and footer UI but differed in row rendering.
 **Action:** Extracted `AnalyticsDataList` (generic shell) to `components/admin/AnalyticsScreenLayout.tsx` to handle the boilerplate while accepting a `renderItem` prop for specific row content.
+
+## 2025-05-24 - [Consolidating Form Inputs]
+**Learning:** Found multiple forms (EditProfile, ItemFormModal, Checkout) manually constructing "Label + Input + Error" blocks with similar styles.
+**Action:** Extracted `ThemedInput` into `components/ThemedView.tsx` to standardize input UI and reduce boilerplate.

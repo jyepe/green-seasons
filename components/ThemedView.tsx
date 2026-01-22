@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -9,6 +10,8 @@ import {
   View,
   type ViewProps,
   type DimensionValue,
+  TextInput,
+  type TextInputProps,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -291,6 +294,49 @@ export function ThemedDropdown({
   );
 }
 
+/**
+ * Shared input component with label, error text, and consistent styling.
+ * Consolidates repeated "Label + Input + Error" pattern.
+ */
+export const ThemedInput = React.forwardRef<
+  TextInput,
+  TextInputProps & {
+    label?: string;
+    error?: string;
+    containerStyle?: ViewProps['style'];
+  }
+>(({ style, label, error, containerStyle, ...props }, ref) => {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <View style={[styles.inputContainer, containerStyle]}>
+      {label && (
+        <Text style={[styles.inputLabel, { color: colors.text }]}>{label}</Text>
+      )}
+      <TextInput
+        ref={ref}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: error ? colors.error : colors.border,
+            color: colors.text,
+          },
+          style,
+        ]}
+        placeholderTextColor={colors.textSecondary + '80'}
+        {...props}
+      />
+      {error && (
+        <Text style={[styles.inputError, { color: colors.error }]}>
+          {error}
+        </Text>
+      )}
+    </View>
+  );
+});
+
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
@@ -410,6 +456,29 @@ const styles = StyleSheet.create({
   },
   emptyDropdownText: {
     fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+  },
+  // Input Styles
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    minHeight: 48,
+  },
+  inputError: {
+    fontSize: 12,
+    marginTop: 4,
     fontFamily: 'Inter_400Regular',
   },
 });

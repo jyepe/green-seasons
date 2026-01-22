@@ -12,10 +12,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { ThemedInput } from '@/components/ThemedView';
 import { initialState, profileReducer } from '@/reducers/editProfileReducer';
 
 // -----------------------------------------------------------------------------
@@ -138,99 +138,53 @@ export function EditProfileForm() {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
-              value={email}
-              onChangeText={text =>
-                dispatch({ type: 'SET_EMAIL', payload: text })
-              }
-              placeholder="Email"
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              accessibilityLabel="Email"
-            />
-          </View>
+          <ThemedInput
+            label="Email"
+            value={email}
+            onChangeText={text =>
+              dispatch({ type: 'SET_EMAIL', payload: text })
+            }
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel="Email"
+            containerStyle={styles.inputContainer}
+          />
 
-          <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              First Name
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
-              value={firstName}
-              onChangeText={text =>
-                dispatch({ type: 'SET_FIRST_NAME', payload: text })
-              }
-              placeholder="First Name"
-              placeholderTextColor={colors.textSecondary}
-              accessibilityLabel="First Name"
-            />
-          </View>
+          <ThemedInput
+            label="First Name"
+            value={firstName}
+            onChangeText={text =>
+              dispatch({ type: 'SET_FIRST_NAME', payload: text })
+            }
+            placeholder="First Name"
+            accessibilityLabel="First Name"
+            containerStyle={styles.inputContainer}
+          />
 
-          <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              Last Name
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
-              value={lastName}
-              onChangeText={text =>
-                dispatch({ type: 'SET_LAST_NAME', payload: text })
-              }
-              placeholder="Last Name"
-              placeholderTextColor={colors.textSecondary}
-              accessibilityLabel="Last Name"
-            />
-          </View>
+          <ThemedInput
+            label="Last Name"
+            value={lastName}
+            onChangeText={text =>
+              dispatch({ type: 'SET_LAST_NAME', payload: text })
+            }
+            placeholder="Last Name"
+            accessibilityLabel="Last Name"
+            containerStyle={styles.inputContainer}
+          />
 
-          <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              Phone Number
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
-              value={phone}
-              onChangeText={text =>
-                dispatch({ type: 'SET_PHONE', payload: text })
-              }
-              placeholder="Phone Number"
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="phone-pad"
-              accessibilityLabel="Phone Number"
-            />
-          </View>
+          <ThemedInput
+            label="Phone Number"
+            value={phone}
+            onChangeText={text =>
+              dispatch({ type: 'SET_PHONE', payload: text })
+            }
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
+            accessibilityLabel="Phone Number"
+            containerStyle={styles.inputContainer}
+          />
 
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: colors.primary }]}
@@ -269,22 +223,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
-  formGroup: {
+  inputContainer: {
     marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
   },
   saveButton: {
     height: 50,

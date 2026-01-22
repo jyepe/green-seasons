@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -30,6 +29,7 @@ import {
   getUserInfoById,
   type Restaurant,
 } from '@/lib/supabase';
+import { ThemedInput } from '@/components/ThemedView';
 import { useQuery } from '@tanstack/react-query';
 import {
   checkoutReducer,
@@ -471,26 +471,23 @@ export default function CheckoutScreen() {
                   Email
                 </Text>
                 {isUserAdmin ? (
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: colors.inputBackground,
-                        color: colors.text,
-                        borderColor: colors.border,
-                        borderWidth: 1,
-                      },
-                    ]}
+                  <ThemedInput
                     value={state.email}
                     onChangeText={text =>
                       dispatch({ type: 'SET_EMAIL', payload: text })
                     }
                     placeholder="Enter email address"
-                    placeholderTextColor={colors.textSecondary}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
                     accessibilityLabel="Email address"
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: colors.inputBackground,
+                      },
+                    ]}
+                    containerStyle={{ marginBottom: 0 }}
                   />
                 ) : (
                   <View
@@ -587,33 +584,26 @@ export default function CheckoutScreen() {
                 </View>
               </View>
 
-              <View style={styles.fullColumn}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Special Instructions (Optional)
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.textArea,
-                    {
-                      backgroundColor: colors.inputBackground,
-                      color: colors.text,
-                    },
-                  ]}
-                  value={state.specialInstructions}
-                  onChangeText={text =>
-                    dispatch({
-                      type: 'SET_SPECIAL_INSTRUCTIONS',
-                      payload: text,
-                    })
-                  }
-                  placeholder="Loading dock instructions, specific requirements, etc."
-                  placeholderTextColor={colors.tabIconDefault}
-                  multiline
-                  numberOfLines={4}
-                  accessibilityLabel="Special Instructions"
-                />
-              </View>
+              <ThemedInput
+                label="Special Instructions (Optional)"
+                value={state.specialInstructions}
+                onChangeText={text =>
+                  dispatch({
+                    type: 'SET_SPECIAL_INSTRUCTIONS',
+                    payload: text,
+                  })
+                }
+                placeholder="Loading dock instructions, specific requirements, etc."
+                multiline
+                numberOfLines={4}
+                accessibilityLabel="Special Instructions"
+                style={[
+                  styles.input,
+                  styles.textArea,
+                  { backgroundColor: colors.inputBackground },
+                ]}
+                containerStyle={styles.fullColumn}
+              />
             </View>
 
             {/* Payment Method Section */}
