@@ -6,7 +6,7 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { Toast } from '@/components/ui/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer } from 'react';
 import {
   Alert,
   ScrollView,
@@ -17,13 +17,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingView } from '@/components/ThemedView';
+import {
+  favoritesReducer,
+  initialFavoritesState,
+} from '@/reducers/favoritesReducer';
 
 export default function FavoritesScreen() {
   const router = useRouter();
-  const [pendingItemId, setPendingItemId] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('Item added to cart!');
-  const [stepperItems, setStepperItems] = useState<Record<string, number>>({});
+
+  // Use reducer to manage interrelated state (cart sync, stepper, toast, pending items)
+  // This replaces multiple useState calls and consolidates update logic
+  const [state, dispatch] = useReducer(favoritesReducer, initialFavoritesState);
+  const { pendingItemId, showToast, toastMessage, stepperItems } = state;
+
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const { data: favoriteItems, isLoading, error } = useFavoriteItems();
@@ -37,13 +43,7 @@ export default function FavoritesScreen() {
   // Sync stepper items with cart when cart updates
   useEffect(() => {
     if (cartItems) {
-      setStepperItems(() => {
-        const updated: Record<string, number> = {};
-        cartItems.forEach(cartItem => {
-          updated[cartItem.item_id] = cartItem.quantity;
-        });
-        return updated;
-      });
+      dispatch({ type: 'SYNC_CART_ITEMS', payload: cartItems });
     }
   }, [cartItems]);
 
@@ -83,18 +83,17 @@ export default function FavoritesScreen() {
   );
 
   const handleAddToCart = async (itemId: string) => {
-    setPendingItemId(itemId);
+    dispatch({ type: 'SET_PENDING_ITEM', payload: itemId });
     try {
       await addToCartMutation.mutateAsync({
         itemId,
         quantityDelta: 1,
       });
-      setToastMessage('Item added to cart!');
-      setShowToast(true);
+      dispatch({ type: 'SHOW_TOAST', payload: 'Item added to cart!' });
     } catch (err) {
       handleCartError(err, 'Failed to add item to cart. Please try again.');
     } finally {
-      setPendingItemId(null);
+      dispatch({ type: 'SET_PENDING_ITEM', payload: null });
     }
   };
 
@@ -102,9 +101,12 @@ export default function FavoritesScreen() {
     const currentQuantity = getStepperQuantity(itemId);
     const newQuantity = Math.max(0, currentQuantity + delta);
 
-    setStepperItems(prev => ({ ...prev, [itemId]: newQuantity }));
+    // Optimistically update
+    dispatch({
+      type: 'UPDATE_QUANTITY_OPTIMISTIC',
+      payload: { itemId, quantity: newQuantity },
+    });
 
-    setPendingItemId(itemId);
     try {
       const cartQuantity = getCartQuantity(itemId);
       const quantityDelta = newQuantity - cartQuantity;
@@ -113,30 +115,21 @@ export default function FavoritesScreen() {
         itemId,
         quantityDelta,
       });
-
-      if (newQuantity <= 0) {
-        setStepperItems(prev => {
-          const { [itemId]: _, ...rest } = prev;
-          return rest;
-        });
-      }
     } catch (err) {
       handleCartError(err, 'Failed to update cart. Please try again.');
       const cartQty = getCartQuantity(itemId);
-      setStepperItems(prev => {
-        if (cartQty > 0) {
-          return { ...prev, [itemId]: cartQty };
-        }
-        const { [itemId]: _, ...rest } = prev;
-        return rest;
+      // Revert to original cart quantity
+      dispatch({
+        type: 'UPDATE_QUANTITY_REVERT',
+        payload: { itemId, quantity: cartQty },
       });
     } finally {
-      setPendingItemId(null);
+      dispatch({ type: 'SET_PENDING_ITEM', payload: null });
     }
   };
 
   const handleToastHide = useCallback(() => {
-    setShowToast(false);
+    dispatch({ type: 'HIDE_TOAST' });
   }, []);
 
   const handleToggleFavorite = useCallback(
@@ -147,8 +140,10 @@ export default function FavoritesScreen() {
           onSuccess: () => {
             // Show toast notification when removing from favorites
             if (currentlyFavorite) {
-              setToastMessage('Removed from favorites');
-              setShowToast(true);
+              dispatch({
+                type: 'REMOVE_FROM_FAVORITES_SUCCESS',
+                payload: 'Removed from favorites',
+              });
             }
           },
           onError: error => {
