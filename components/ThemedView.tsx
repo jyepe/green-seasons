@@ -216,8 +216,10 @@ export function ThemedDropdown({
           },
         ]}
         onPress={onToggle}
-        accessibilityLabel={`Open ${label} selector`}
-        accessibilityRole="button"
+        accessibilityLabel={value ? `${label}, ${value}` : `Select ${label}`}
+        accessibilityHint={`Double tap to change ${label}`}
+        accessibilityRole="combobox"
+        accessibilityState={{ expanded: isOpen }}
       >
         <View style={styles.selectorLabelContainer}>
           <Text style={[styles.selectorLabel, { color: colors.textSecondary }]}>
