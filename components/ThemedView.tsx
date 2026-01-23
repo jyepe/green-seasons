@@ -44,9 +44,10 @@ export function ThemedView({
  */
 export function LoadingView({
   message = 'Loading...',
+  size = 'large',
   style,
   ...props
-}: ViewProps & { message?: string }) {
+}: ViewProps & { message?: string; size?: 'small' | 'large' }) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
@@ -57,10 +58,12 @@ export function LoadingView({
       accessibilityLiveRegion="polite"
       {...props}
     >
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-        {message}
-      </Text>
+      <ActivityIndicator size={size} color={colors.primary} />
+      {message ? (
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          {message}
+        </Text>
+      ) : null}
     </View>
   );
 }
