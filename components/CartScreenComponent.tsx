@@ -6,7 +6,7 @@ import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useAdmin } from '@/hooks/useAdmin';
 import * as Haptics from 'expo-haptics';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useReducer } from 'react';
 import { Alert, StyleSheet, AccessibilityInfo } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -22,6 +22,7 @@ import { CartHeader } from '@/components/CartHeader';
 import { CartList } from '@/components/CartList';
 import { CartFooter } from '@/components/CartFooter';
 import { EditQuantityModal, EditingItem } from '@/components/EditQuantityModal';
+import { cartReducer, initialCartState } from '@/reducers/cartReducer';
 
 export default function CartScreenComponent() {
   const router = useRouter();
@@ -35,10 +36,8 @@ export default function CartScreenComponent() {
   const clearCartMutation = useClearCart();
   const addToCartMutation = useAddToCart();
 
-  const [isClearing, setIsClearing] = useState(false);
-  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
-  const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
-  const [editQuantity, setEditQuantity] = useState('');
+  const [state, dispatch] = useReducer(cartReducer, initialCartState);
+  const { isClearing, updatingItemId, editingItem, editQuantity } = state;
 
   const totalScale = useSharedValue(1);
   const totalOpacity = useSharedValue(1);
@@ -83,7 +82,7 @@ export default function CartScreenComponent() {
           text: 'Clear',
           style: 'destructive',
           onPress: async () => {
-            setIsClearing(true);
+            dispatch({ type: 'START_CLEARING' });
             try {
               await clearCartMutation.mutateAsync();
               AccessibilityInfo.announceForAccessibility('Cart cleared');
@@ -94,7 +93,7 @@ export default function CartScreenComponent() {
                   : 'Failed to clear cart. Please try again.';
               Alert.alert('Error', errorMessage);
             } finally {
-              setIsClearing(false);
+              dispatch({ type: 'FINISH_CLEARING' });
             }
           },
         },
@@ -108,7 +107,7 @@ export default function CartScreenComponent() {
   ) => {
     if (updatingItemId) return;
 
-    setUpdatingItemId(itemId);
+    dispatch({ type: 'START_UPDATING_ITEM', payload: itemId });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     try {
@@ -120,7 +119,7 @@ export default function CartScreenComponent() {
           : 'Unable to update quantity. Please try again.';
       Alert.alert('Error', errorMessage);
     } finally {
-      setUpdatingItemId(null);
+      dispatch({ type: 'FINISH_UPDATING_ITEM' });
     }
   };
 
@@ -140,8 +139,7 @@ export default function CartScreenComponent() {
       quantity: item.quantity,
       item_price: item.item_price,
     };
-    setEditingItem(editing);
-    setEditQuantity(editing.quantity.toString());
+    dispatch({ type: 'START_EDITING_ITEM', payload: editing });
   };
 
   const handleSaveEdit = () => {
@@ -159,9 +157,11 @@ export default function CartScreenComponent() {
     const delta = newQuantity - editingItem.quantity;
     if (delta !== 0) {
       handleUpdateCartItem(editingItem.item_id, delta);
-      AccessibilityInfo.announceForAccessibility(`Quantity updated to ${newQuantity}`);
+      AccessibilityInfo.announceForAccessibility(
+        `Quantity updated to ${newQuantity}`
+      );
     }
-    setEditingItem(null);
+    dispatch({ type: 'CLOSE_EDIT_MODAL' });
   };
 
   const handleCheckout = () => {
@@ -204,9 +204,11 @@ export default function CartScreenComponent() {
           editingItem={editingItem}
           editQuantity={editQuantity}
           updatingItemId={updatingItemId}
-          onClose={() => setEditingItem(null)}
+          onClose={() => dispatch({ type: 'CLOSE_EDIT_MODAL' })}
           onSave={handleSaveEdit}
-          setEditQuantity={setEditQuantity}
+          setEditQuantity={q =>
+            dispatch({ type: 'SET_EDIT_QUANTITY', payload: q })
+          }
         />
       </SafeAreaView>
     </GestureHandlerRootView>
