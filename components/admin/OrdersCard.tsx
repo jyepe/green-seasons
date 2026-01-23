@@ -1,12 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+
+import { AnalyticsDataList } from './AnalyticsScreenLayout';
 
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
@@ -46,27 +42,14 @@ export function OrdersCard({ orders, isLoading, onViewAll }: OrdersCardProps) {
     return colors.orderStatus[status] ?? colors.textSecondary;
   };
 
-  if (isLoading && orders.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.primary} />
-      </View>
-    );
-  }
-
-  if (orders.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-          No orders found
-        </Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      {orders.map((order, index) => {
+    <AnalyticsDataList
+      data={orders}
+      isLoading={isLoading}
+      onViewAll={onViewAll}
+      emptyMessage="No orders found"
+      viewAllText="View All Orders"
+      renderItem={(order, index) => {
         const statusConfig = STATUS_CONFIG[order.status];
         const statusColor = getStatusColor(order.status);
         const buyerName =
@@ -160,40 +143,12 @@ export function OrdersCard({ orders, isLoading, onViewAll }: OrdersCardProps) {
             </View>
           </View>
         );
-      })}
-
-      {onViewAll && (
-        <TouchableOpacity
-          style={[styles.viewAllButton, { borderColor: colors.primary }]}
-          onPress={onViewAll}
-          accessibilityLabel="View all orders"
-          accessibilityRole="button"
-        >
-          <Text style={[styles.viewAllText, { color: colors.primary }]}>
-            View All Orders
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {},
-  loadingContainer: {
-    height: 150,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    height: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-  },
   orderRow: {
     paddingVertical: 12,
   },
@@ -253,27 +208,5 @@ const styles = StyleSheet.create({
   disclaimerText: {
     fontSize: 10,
     fontFamily: 'Inter_400Regular',
-  },
-  loadMoreButton: {
-    marginTop: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  loadMoreText: {
-    fontSize: 14,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  viewAllButton: {
-    marginTop: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  viewAllText: {
-    fontSize: 14,
-    fontFamily: 'Inter_600SemiBold',
   },
 });
