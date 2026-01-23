@@ -37,7 +37,10 @@ export function CartHeader({
     >
       <View style={styles.headerContent}>
         <View style={styles.headerTextContainer}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
+          <Text
+            style={[styles.headerTitle, { color: colors.text }]}
+            accessibilityRole="header"
+          >
             Cart{restaurantName ? ` • ${restaurantName}` : ''}
           </Text>
           {itemCount > 0 && (
@@ -53,6 +56,10 @@ export function CartHeader({
             style={styles.clearButton}
             onPress={onClearCart}
             disabled={isClearing}
+            accessibilityRole="button"
+            accessibilityLabel="Clear cart"
+            accessibilityState={{ disabled: isClearing, busy: isClearing }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             {isClearing ? (
               <ActivityIndicator size="small" color={colors.error} />
