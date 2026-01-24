@@ -1,21 +1,14 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { Item, CreateItemParams, UpdateItemParams } from '@/lib/supabase';
+import { ThemedModal, ModalFooter, ThemedInput } from '@/components/ThemedView';
 import {
-  ThemedModal,
-  ModalFooter,
-  ThemedInput,
-} from '@/components/ThemedView';
-
-type ItemFormData = {
-  name: string;
-  description: string;
-  price: string;
-  unit: string;
-  image_url: string;
-};
+  ItemFormData,
+  itemFormReducer,
+  initialItemFormState,
+} from '@/reducers/itemFormReducer';
 
 type ItemFormModalProps = {
   visible: boolean;
@@ -35,39 +28,13 @@ export function ItemFormModal({
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
-  const [formData, setFormData] = React.useState<ItemFormData>({
-    name: '',
-    description: '',
-    price: '',
-    unit: '',
-    image_url: '',
-  });
-
-  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [state, dispatch] = useReducer(itemFormReducer, initialItemFormState);
+  const { data: formData, errors } = state;
 
   // Initialize form data when modal opens or item changes
   React.useEffect(() => {
     if (visible) {
-      if (item) {
-        // Edit mode: populate with existing item data
-        setFormData({
-          name: item.name,
-          description: item.description || '',
-          price: item.price.toString(),
-          unit: item.unit,
-          image_url: item.image_url || '',
-        });
-      } else {
-        // Create mode: reset form
-        setFormData({
-          name: '',
-          description: '',
-          price: '',
-          unit: '',
-          image_url: '',
-        });
-      }
-      setErrors({});
+      dispatch({ type: 'INITIALIZE', item });
     }
   }, [visible, item]);
 
@@ -132,17 +99,12 @@ export function ItemFormModal({
       isValid = false;
     }
 
-    setErrors(newErrors);
+    dispatch({ type: 'SET_ERRORS', errors: newErrors });
     return isValid;
   };
 
   const handleInputChange = (field: keyof ItemFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    dispatch({ type: 'SET_FIELD', field, value });
   };
 
   const handleSave = () => {
