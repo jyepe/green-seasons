@@ -11,8 +11,12 @@ import {
   View,
   FlexStyle,
   ScrollView,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatCurrency } from '@/utils/currency';
+import { LoadingView } from './ThemedView';
 
 // --- Shared Types & Helpers ---
 
@@ -206,6 +210,96 @@ export function OrderListEmptyState({
   );
 }
 
+export interface OrderListLayoutProps<T> {
+  title: string;
+  activeFilter: FilterStatus;
+  onFilterChange: (status: FilterStatus) => void;
+  isLoading: boolean;
+  data: T[];
+  renderItem: (info: { item: T; index: number }) => React.ReactElement | null;
+  keyExtractor: (item: T) => string;
+  onEndReached?: () => void;
+  isFetchingNextPage?: boolean;
+  emptyMessage?: string;
+}
+
+/**
+ * OrderListLayout consolidates the standard "Header + Filter + Loading + List/Empty"
+ * pattern used in order history and admin order list screens.
+ */
+export function OrderListLayout<T>({
+  title,
+  activeFilter,
+  onFilterChange,
+  isLoading,
+  data,
+  renderItem,
+  keyExtractor,
+  onEndReached,
+  isFetchingNextPage = false,
+  emptyMessage,
+}: OrderListLayoutProps<T>) {
+  const router = useRouter();
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          {title}
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* Filter Tabs */}
+      <OrderFilterTabs
+        activeFilter={activeFilter}
+        onFilterChange={onFilterChange}
+      />
+
+      {/* Orders List */}
+      {isLoading && data.length === 0 ? (
+        <LoadingView message="Loading orders..." />
+      ) : data.length === 0 ? (
+        <OrderListEmptyState
+          activeFilter={activeFilter}
+          onClearFilter={() => onFilterChange('all')}
+          emptyMessageAll={emptyMessage}
+        />
+      ) : (
+        <FlatList
+          data={data}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : null
+          }
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
 // --- Base Component ---
 
 export interface BaseOrderListItemProps {
@@ -384,6 +478,32 @@ export function OrderListItem({ order }: OrderListItemProps) {
 }
 
 export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  listContent: {
+    padding: 20,
+  },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
   orderItem: {
     flexDirection: 'row',
     marginBottom: 16,
