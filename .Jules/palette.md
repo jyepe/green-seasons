@@ -34,3 +34,8 @@
 
 **Learning:** Destructive actions (like "Clear Cart") often use icons or small text buttons that are hard to hit and lack clear screen reader warnings. Adding `hitSlop` prevents user frustration from missed taps, and explicit `accessibilityLabel` (e.g., "Clear cart" instead of just "Clear") ensures the action's scope is understood. Also, using `accessibilityState={{ busy: boolean }}` is critical for async destructive actions.
 **Action:** Always enhance destructive buttons with `hitSlop`, clear descriptive labels, and busy states.
+
+## 2024-05-24 - Inline Form Validation
+
+**Learning:** Using `Alert.alert` for form validation is intrusive and disconnects the error from the context (the specific input field). Users have to dismiss the alert and then remember which field was wrong. Inline validation using a local `errors` state and passing it to the input component provides immediate, contextual feedback that is much friendlier.
+**Action:** Replace blocking Alerts with inline validation states. Ensure errors are cleared `onChangeText` so the user knows they are fixing the issue immediately.

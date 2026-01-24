@@ -3,7 +3,7 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 import { useUpdateUserInfo, useUserInfo } from '@/hooks/useUserInfo';
 import type { UpdateUserInfoParams } from '@/lib/supabase';
 import { Stack, useRouter } from 'expo-router';
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,6 +31,11 @@ export function EditProfileForm() {
 
   const [state, dispatch] = useReducer(profileReducer, initialState);
   const { email, firstName, lastName, phone, isInitialized } = state;
+  const [errors, setErrors] = useState<{
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+  }>({});
 
   useEffect(() => {
     if (userInfo && !isInitialized) {
@@ -52,17 +57,20 @@ export function EditProfileForm() {
     const trimmedLastName = lastName.trim();
     const trimmedPhone = phone.trim();
 
-    if (!trimmedEmail || !trimmedFirstName || !trimmedLastName) {
-      Alert.alert('Error', 'Email, first name, and last name are required.');
-      return;
-    }
+    // Reset errors
+    const newErrors: typeof errors = {};
+    if (!trimmedEmail) newErrors.email = 'Email is required';
+    if (!trimmedFirstName) newErrors.firstName = 'First name is required';
+    if (!trimmedLastName) newErrors.lastName = 'Last name is required';
 
     // Email format validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      Alert.alert('Error', 'Please enter a valid email address.');
-      return;
+    if (trimmedEmail && !emailRegex.test(trimmedEmail)) {
+      newErrors.email = 'Please enter a valid email address';
     }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     // Only send fields that have actually changed
     const updatedFields: Partial<UpdateUserInfoParams> = {};
@@ -141,37 +149,45 @@ export function EditProfileForm() {
           <ThemedInput
             label="Email"
             value={email}
-            onChangeText={text =>
-              dispatch({ type: 'SET_EMAIL', payload: text })
-            }
+            onChangeText={text => {
+              dispatch({ type: 'SET_EMAIL', payload: text });
+              if (errors.email) setErrors({ ...errors, email: undefined });
+            }}
             placeholder="Email"
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             accessibilityLabel="Email"
             containerStyle={styles.inputContainer}
+            error={errors.email}
           />
 
           <ThemedInput
             label="First Name"
             value={firstName}
-            onChangeText={text =>
-              dispatch({ type: 'SET_FIRST_NAME', payload: text })
-            }
+            onChangeText={text => {
+              dispatch({ type: 'SET_FIRST_NAME', payload: text });
+              if (errors.firstName)
+                setErrors({ ...errors, firstName: undefined });
+            }}
             placeholder="First Name"
             accessibilityLabel="First Name"
             containerStyle={styles.inputContainer}
+            error={errors.firstName}
           />
 
           <ThemedInput
             label="Last Name"
             value={lastName}
-            onChangeText={text =>
-              dispatch({ type: 'SET_LAST_NAME', payload: text })
-            }
+            onChangeText={text => {
+              dispatch({ type: 'SET_LAST_NAME', payload: text });
+              if (errors.lastName)
+                setErrors({ ...errors, lastName: undefined });
+            }}
             placeholder="Last Name"
             accessibilityLabel="Last Name"
             containerStyle={styles.inputContainer}
+            error={errors.lastName}
           />
 
           <ThemedInput
@@ -190,7 +206,11 @@ export function EditProfileForm() {
             style={[styles.saveButton, { backgroundColor: colors.primary }]}
             onPress={handleSave}
             disabled={updateUserInfoMutation.isPending}
-            accessibilityLabel="Save Changes"
+            accessibilityLabel={
+              updateUserInfoMutation.isPending
+                ? 'Saving changes'
+                : 'Save Changes'
+            }
             accessibilityRole="button"
             accessibilityState={{
               busy: updateUserInfoMutation.isPending,
