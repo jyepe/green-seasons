@@ -102,7 +102,10 @@ export function ThemedModal({
           ]}
         >
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+            <Text
+              style={[styles.modalTitle, { color: colors.text }]}
+              accessibilityRole="header"
+            >
               {title}
             </Text>
             <TouchableOpacity
@@ -331,6 +334,7 @@ export const ThemedInput = React.forwardRef<
           style,
         ]}
         placeholderTextColor={colors.textSecondary + '80'}
+        accessibilityLabel={label}
         {...props}
       />
       {error && (
@@ -341,6 +345,8 @@ export const ThemedInput = React.forwardRef<
     </View>
   );
 });
+
+ThemedInput.displayName = 'ThemedInput';
 
 const styles = StyleSheet.create({
   loadingContainer: {
