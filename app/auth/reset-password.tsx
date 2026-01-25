@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, updateUserPassword } from '@/lib/supabase';
@@ -9,12 +9,17 @@ import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import PasswordRequirements from '@/components/auth/PasswordRequirements';
+import {
+  initialResetPasswordState,
+  resetPasswordReducer,
+} from '@/reducers/resetPasswordReducer';
 
 export default function ResetPasswordScreen() {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [state, dispatch] = useReducer(
+    resetPasswordReducer,
+    initialResetPasswordState
+  );
+  const { password, confirmPassword, isLoading, isAuthenticated } = state;
   const router = useRouter();
 
   useEffect(() => {
@@ -24,9 +29,9 @@ export default function ResetPasswordScreen() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        setIsAuthenticated(true);
+        dispatch({ type: 'AUTH_SUCCESS' });
       } else {
-        setIsAuthenticated(false);
+        dispatch({ type: 'AUTH_FAILURE' });
         Alert.alert(
           'Error',
           'Invalid or expired reset link. Please request a new password reset.',
@@ -54,7 +59,7 @@ export default function ResetPasswordScreen() {
       return;
     }
 
-    setIsLoading(true);
+    dispatch({ type: 'SUBMIT_START' });
 
     try {
       await updateUserPassword(password);
@@ -72,7 +77,7 @@ export default function ResetPasswordScreen() {
           : 'Failed to reset password. Please try again.';
       Alert.alert('Error', errorMessage);
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SUBMIT_END' });
     }
   };
 
@@ -103,7 +108,9 @@ export default function ResetPasswordScreen() {
             label="New Password"
             placeholder="Enter your new password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={text =>
+              dispatch({ type: 'SET_PASSWORD', payload: text })
+            }
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
@@ -116,7 +123,9 @@ export default function ResetPasswordScreen() {
             label="Confirm Password"
             placeholder="Confirm your new password"
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={text =>
+              dispatch({ type: 'SET_CONFIRM_PASSWORD', payload: text })
+            }
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
