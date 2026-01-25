@@ -39,3 +39,8 @@
 
 **Learning:** Using `Alert.alert` for form validation is intrusive and disconnects the error from the context (the specific input field). Users have to dismiss the alert and then remember which field was wrong. Inline validation using a local `errors` state and passing it to the input component provides immediate, contextual feedback that is much friendlier.
 **Action:** Replace blocking Alerts with inline validation states. Ensure errors are cleared `onChangeText` so the user knows they are fixing the issue immediately.
+
+## 2024-05-25 - Reusable Input Accessibility Defaults
+
+**Learning:** Reusable input components often require developers to manually add `accessibilityLabel` props, leading to inconsistency or omission. Defaulting `accessibilityLabel` to the visual `label` prop within the reusable component ensures basic accessibility out-of-the-box while allowing overrides.
+**Action:** In shared input components (like `ThemedInput`), always set `accessibilityLabel={label}` by default before spreading other props.
