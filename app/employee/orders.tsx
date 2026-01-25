@@ -1,34 +1,20 @@
 import { EmployeeOrderListItem } from '@/components/employee';
 import {
-  FILTER_LABELS,
   FilterStatus,
   OrderFilterChip,
-  OrderListEmptyState,
+  OrderListLayout,
 } from '@/components/OrderListItem';
-import { LoadingView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { getEmployeeOrders } from '@/lib/supabase';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
 
 const ORDERS_PAGE_SIZE = 25;
 
 export default function EmployeeOrdersScreen() {
-  const router = useRouter();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const queryClient = useQueryClient();
@@ -89,142 +75,63 @@ export default function EmployeeOrdersScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          All Orders
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      {/* Status Filter Tabs */}
-      <View style={styles.filterContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContent}
-        >
-          {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
+    <OrderListLayout
+      title="All Orders"
+      activeFilter={activeFilter}
+      onFilterChange={setActiveFilter}
+      isLoading={ordersQuery.isLoading && allOrders.length === 0}
+      data={filteredOrders}
+      renderItem={({ item }) => <EmployeeOrderListItem order={item} />}
+      keyExtractor={item => item.id}
+      onEndReached={loadMore}
+      isFetchingNextPage={ordersQuery.isFetchingNextPage}
+      extraFilterContent={
+        <View style={styles.filterContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterContent}
+          >
             <OrderFilterChip
-              key={status}
-              label={FILTER_LABELS[status]}
-              isActive={activeFilter === status}
-              onPress={() => setActiveFilter(status)}
+              key="all-restaurants"
+              label="All Restaurants"
+              isActive={activeRestaurant === 'all'}
+              onPress={() => setActiveRestaurant('all')}
               colors={colors}
             />
-          ))}
-        </ScrollView>
-      </View>
 
-      {/* Restaurant Filter Chips */}
-      <View style={styles.filterContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContent}
-        >
-          <OrderFilterChip
-            key="all-restaurants"
-            label="All Restaurants"
-            isActive={activeRestaurant === 'all'}
-            onPress={() => setActiveRestaurant('all')}
-            colors={colors}
-          />
-
-          {restaurantOptions.map(name => (
-            <OrderFilterChip
-              key={name}
-              label={name}
-              isActive={activeRestaurant === name}
-              onPress={() => setActiveRestaurant(name)}
-              colors={colors}
-            />
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Orders List */}
-      {ordersQuery.isLoading && allOrders.length === 0 ? (
-        <LoadingView message="Loading orders..." />
-      ) : filteredOrders.length === 0 ? (
-        <OrderListEmptyState
-          activeFilter={activeFilter}
-          onClearFilter={() => {
-            setActiveFilter('all');
-            setActiveRestaurant('all');
-          }}
-          message={
-            activeFilter === 'all' && activeRestaurant === 'all'
-              ? 'No orders assigned to you yet.'
-              : 'No orders found matching the selected filters.'
-          }
-          showClearButton={activeFilter !== 'all' || activeRestaurant !== 'all'}
-        />
-      ) : (
-        <FlatList
-          data={filteredOrders}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => <EmployeeOrderListItem order={item} />}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            ordersQuery.isFetchingNextPage ? (
-              <View style={styles.footerLoader}>
-                <ActivityIndicator size="small" color={colors.primary} />
-              </View>
-            ) : null
-          }
-        />
-      )}
-    </SafeAreaView>
+            {restaurantOptions.map(name => (
+              <OrderFilterChip
+                key={name}
+                label={name}
+                isActive={activeRestaurant === name}
+                onPress={() => setActiveRestaurant(name)}
+                colors={colors}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      }
+      onClearFilter={() => {
+        setActiveFilter('all');
+        setActiveRestaurant('all');
+      }}
+      emptyStateMessage={
+        activeFilter === 'all' && activeRestaurant === 'all'
+          ? 'No orders assigned to you yet.'
+          : 'No orders found matching the selected filters.'
+      }
+      showClearButton={activeFilter !== 'all' || activeRestaurant !== 'all'}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
   filterContainer: {
     paddingVertical: 12,
   },
   filterContent: {
     paddingHorizontal: 20,
     gap: 8,
-  },
-  listContent: {
-    padding: 20,
-  },
-  footerLoader: {
-    paddingVertical: 20,
-    alignItems: 'center',
   },
 });
