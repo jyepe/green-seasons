@@ -221,6 +221,14 @@ export interface OrderListLayoutProps<T> {
   onEndReached?: () => void;
   isFetchingNextPage?: boolean;
   emptyMessage?: string;
+  /** Optional extra content to render after the standard filters (e.g. secondary filters) */
+  extraFilterContent?: React.ReactNode;
+  /** Optional override for the clear filter action */
+  onClearFilter?: () => void;
+  /** Optional override for the empty state message */
+  emptyStateMessage?: string;
+  /** Optional control for showing the clear button in empty state */
+  showClearButton?: boolean;
 }
 
 /**
@@ -238,6 +246,10 @@ export function OrderListLayout<T>({
   onEndReached,
   isFetchingNextPage = false,
   emptyMessage,
+  extraFilterContent,
+  onClearFilter,
+  emptyStateMessage,
+  showClearButton,
 }: OrderListLayoutProps<T>) {
   const router = useRouter();
   const colorScheme = useAppColorScheme();
@@ -268,6 +280,7 @@ export function OrderListLayout<T>({
         activeFilter={activeFilter}
         onFilterChange={onFilterChange}
       />
+      {extraFilterContent}
 
       {/* Orders List */}
       {isLoading && data.length === 0 ? (
@@ -275,8 +288,10 @@ export function OrderListLayout<T>({
       ) : data.length === 0 ? (
         <OrderListEmptyState
           activeFilter={activeFilter}
-          onClearFilter={() => onFilterChange('all')}
+          onClearFilter={onClearFilter || (() => onFilterChange('all'))}
           emptyMessageAll={emptyMessage}
+          message={emptyStateMessage}
+          showClearButton={showClearButton}
         />
       ) : (
         <FlatList
