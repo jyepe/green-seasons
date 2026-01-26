@@ -1,5 +1,5 @@
 import { ItemFormModal } from '@/components/admin/ItemFormModal';
-import { LoadingView } from '@/components/ThemedView';
+import { LoadingView, ThemedSearchBar } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import {
@@ -23,7 +23,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -172,37 +171,14 @@ export default function AdminItemsScreen() {
       </View>
 
       {/* Search Bar */}
-      <View
-        style={[styles.searchContainer, { backgroundColor: colors.surface }]}
-      >
-        <Ionicons
-          name="search"
-          size={20}
-          color={colors.textSecondary}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
-          placeholder="Search items..."
-          placeholderTextColor={colors.textSecondary + '80'}
-          value={searchQuery}
-          onChangeText={query =>
-            dispatch({ type: 'SET_SEARCH_QUERY', payload: query })
-          }
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity
-            onPress={() => dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })}
-            style={styles.clearButton}
-          >
-            <Ionicons
-              name="close-circle"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
+      <ThemedSearchBar
+        value={searchQuery}
+        onChangeText={query =>
+          dispatch({ type: 'SET_SEARCH_QUERY', payload: query })
+        }
+        placeholder="Search items..."
+        style={[styles.searchBar, { borderWidth: 0 }]}
+      />
 
       {/* Items List */}
       <ScrollView
@@ -451,27 +427,10 @@ const styles = StyleSheet.create({
   addButton: {
     padding: 4,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  searchBar: {
     marginHorizontal: 20,
     marginTop: 16,
     marginBottom: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 12,
-  },
-  searchIcon: {
-    marginRight: 4,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  clearButton: {
-    padding: 4,
   },
   itemsContainer: {
     flex: 1,

@@ -348,6 +348,69 @@ export const ThemedInput = React.forwardRef<
 
 ThemedInput.displayName = 'ThemedInput';
 
+/**
+ * Shared search bar component with icon, input, and clear button.
+ * Consolidates repeated search bar logic.
+ */
+export function ThemedSearchBar({
+  value,
+  onChangeText,
+  placeholder = 'Search...',
+  style,
+}: {
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  style?: ViewProps['style'];
+}) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <View
+      style={[
+        styles.searchBarContainer,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+        },
+        style,
+      ]}
+    >
+      <Ionicons
+        name="search"
+        size={20}
+        color={colors.textSecondary}
+        style={styles.searchBarIcon}
+      />
+      <TextInput
+        style={[styles.searchBarInput, { color: colors.text }]}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textSecondary + '80'}
+        value={value}
+        onChangeText={onChangeText}
+        accessibilityLabel={placeholder}
+        accessibilityRole="search"
+      />
+      {value.length > 0 && (
+        <TouchableOpacity
+          onPress={() => onChangeText('')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={styles.searchBarClearButton}
+          accessibilityLabel="Clear search"
+          accessibilityRole="button"
+        >
+          <Ionicons
+            name="close-circle"
+            size={20}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
@@ -491,5 +554,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontFamily: 'Inter_400Regular',
+  },
+  // SearchBar Styles
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 12,
+  },
+  searchBarIcon: {
+    // No specific style needed beyond color/size handled inline, but keeping for consistency if needed
+  },
+  searchBarInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  searchBarClearButton: {
+    padding: 4,
   },
 });
