@@ -126,7 +126,11 @@ const AuthInput = forwardRef<TextInput, AuthInputProps>(
         </View>
 
         {error ? (
-          <Text style={[styles.errorText, { color: colors.error }]}>
+          <Text
+            style={[styles.errorText, { color: colors.error }]}
+            accessibilityLiveRegion="polite"
+            accessibilityRole="alert"
+          >
             {error}
           </Text>
         ) : helperText ? (
