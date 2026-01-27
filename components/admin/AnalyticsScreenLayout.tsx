@@ -226,4 +226,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
   },
+  // Simple List Styles
+  simpleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  simpleLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  simpleValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
 });
+
+export type SimpleListItem = {
+  id: string;
+  label: string;
+  value: string | number;
+};
+
+type SimpleDataListProps = {
+  data: SimpleListItem[];
+  isLoading?: boolean;
+  emptyMessage?: string;
+  onViewAll?: () => void;
+  viewAllText?: string;
+};
+
+/**
+ * A specialized version of AnalyticsDataList for simple label-value pairs.
+ * Used for "Orders by Day", "Revenue by Day", etc.
+ */
+export function SimpleDataList({
+  data,
+  isLoading,
+  emptyMessage,
+  onViewAll,
+  viewAllText,
+}: SimpleDataListProps) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <AnalyticsDataList
+      data={data}
+      isLoading={isLoading}
+      emptyMessage={emptyMessage}
+      onViewAll={onViewAll}
+      viewAllText={viewAllText}
+      renderItem={(item, index) => (
+        <View
+          key={item.id}
+          style={[
+            styles.simpleRow,
+            index < data.length - 1 && {
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
+          <Text style={[styles.simpleLabel, { color: colors.text }]}>
+            {item.label}
+          </Text>
+          <Text style={[styles.simpleValue, { color: colors.text }]}>
+            {item.value}
+          </Text>
+        </View>
+      )}
+    />
+  );
+}
