@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
@@ -16,14 +16,45 @@ import AuthButton from '@/components/auth/AuthButton';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    general?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setAdminStatus = useSetAdminStatus();
   const setEmployeeStatus = useSetEmployeeStatus();
 
+  const handleChange = (
+    setter: (val: string) => void,
+    field: keyof typeof errors,
+    val: string
+  ) => {
+    setter(val);
+    if (errors[field] || errors.general) {
+      setErrors((prev) => ({ ...prev, [field]: undefined, general: undefined }));
+    }
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    // Reset errors
+    setErrors({});
+
+    let hasError = false;
+    const newErrors: typeof errors = {};
+
+    if (!email) {
+      newErrors.email = 'Email is required';
+      hasError = true;
+    }
+    if (!password) {
+      newErrors.password = 'Password is required';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
@@ -82,7 +113,7 @@ export default function LoginScreen() {
         error instanceof Error
           ? error.message
           : 'Failed to sign in. Please check your credentials and try again.';
-      Alert.alert('Error', errorMessage);
+      setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -111,11 +142,12 @@ export default function LoginScreen() {
             label="Email"
             placeholder="Enter your email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(t) => handleChange(setEmail, 'email', t)}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             icon="mail"
+            error={errors.email}
             containerStyle={styles.inputContainer}
           />
 
@@ -123,11 +155,12 @@ export default function LoginScreen() {
             label="Password"
             placeholder="Enter your password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(t) => handleChange(setPassword, 'password', t)}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             icon="lock-closed"
+            error={errors.password}
             containerStyle={styles.inputContainer}
           />
 
@@ -139,6 +172,18 @@ export default function LoginScreen() {
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
+
+          {errors.general && (
+            <View style={styles.errorContainer}>
+              <Text
+                style={styles.generalErrorText}
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
+              >
+                {errors.general}
+              </Text>
+            </View>
+          )}
 
           <AuthButton
             title="Sign In"
@@ -178,6 +223,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
     color: '#4CAF50',
+  },
+  errorContainer: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#FFEBEE',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+  },
+  generalErrorText: {
+    color: '#D32F2F',
+    fontSize: 14,
+    textAlign: 'center',
+    fontFamily: 'Inter_500Medium',
   },
   loginButton: {
     marginBottom: 20,
