@@ -93,7 +93,7 @@ export function AnalyticsScreenLayout({
   );
 }
 
-type AnalyticsDataListProps<T> = {
+export type AnalyticsDataListProps<T> = {
   data: T[];
   isLoading?: boolean;
   emptyMessage?: string;
@@ -154,6 +154,52 @@ export function AnalyticsDataList<T>({
         </TouchableOpacity>
       )}
     </View>
+  );
+}
+
+type SimpleDataListProps<T> = Omit<AnalyticsDataListProps<T>, 'renderItem'> & {
+  mapItem: (item: T) => { id: string; label: string; value: string };
+};
+
+/**
+ * Consolidates the rendering logic for simple "Label + Value" lists in admin analytics screens.
+ * Wraps AnalyticsDataList to enforce consistent styling.
+ */
+export function SimpleDataList<T>({
+  data,
+  mapItem,
+  ...props
+}: SimpleDataListProps<T>) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <AnalyticsDataList
+      data={data}
+      renderItem={(item, index) => {
+        const { id, label, value } = mapItem(item);
+        return (
+          <View
+            key={id}
+            style={[
+              styles.simpleRow,
+              index < data.length - 1 && {
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.simpleLabel, { color: colors.text }]}>
+              {label}
+            </Text>
+            <Text style={[styles.simpleValue, { color: colors.text }]}>
+              {value}
+            </Text>
+          </View>
+        );
+      }}
+      {...props}
+    />
   );
 }
 
@@ -224,6 +270,22 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  simpleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  simpleLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  simpleValue: {
+    fontSize: 15,
+    fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
 });
