@@ -13,20 +13,23 @@ import AuthButton from '@/components/auth/AuthButton';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
 
   const handleResetPassword = async () => {
+    setEmailError('');
+
     if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+      setEmailError('Please enter your email address');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      setEmailError('Please enter a valid email address');
       return;
     }
 
@@ -70,7 +73,11 @@ export default function ForgotPasswordScreen() {
               label="Email"
               placeholder="Enter your email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (emailError) setEmailError('');
+              }}
+              error={emailError}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
