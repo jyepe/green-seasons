@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useReducer } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -25,14 +25,20 @@ import {
   adminFinalizePricingForDay,
   getAdminTruckLoadSummary,
 } from '@/lib/supabase';
-
-type EditedPrices = Record<string, string>;
+import {
+  adminPricesReducer,
+  initialAdminPricesState,
+} from '@/reducers/adminPricesReducer';
 
 export default function AdminPricesScreen() {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const queryClient = useQueryClient();
-  const [editedPrices, setEditedPrices] = useState<EditedPrices>({});
+  const [state, dispatch] = useReducer(
+    adminPricesReducer,
+    initialAdminPricesState
+  );
+  const { editedPrices } = state;
 
   const truckLoadQuery = useQuery({
     queryKey: ['admin-truck-load-summary'],
@@ -66,7 +72,7 @@ export default function AdminPricesScreen() {
     onSuccess: () => {
       Alert.alert('Success', 'Prices have been finalized.');
       queryClient.invalidateQueries({ queryKey: ['admin-truck-load-summary'] });
-      setEditedPrices({});
+      dispatch({ type: 'RESET_PRICES' });
     },
     onError: error => {
       Alert.alert(
@@ -83,24 +89,7 @@ export default function AdminPricesScreen() {
   const items = truckLoadQuery.data ?? [];
 
   const handlePriceChange = (itemId: string, value: string) => {
-    // Allow only valid decimal input with max 2 decimal places
-    let sanitized = value.replace(/[^0-9.]/g, '');
-
-    // Ensure only one decimal point
-    const parts = sanitized.split('.');
-    if (parts.length > 2) {
-      sanitized = parts[0] + '.' + parts.slice(1).join('');
-    }
-
-    // Limit to 2 decimal places
-    if (parts.length === 2 && parts[1].length > 2) {
-      sanitized = parts[0] + '.' + parts[1].slice(0, 2);
-    }
-
-    setEditedPrices(prev => ({
-      ...prev,
-      [itemId]: sanitized,
-    }));
+    dispatch({ type: 'UPDATE_PRICE', itemId, value });
   };
 
   const getDisplayPrice = (itemId: string): string => {
