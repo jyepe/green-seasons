@@ -1,0 +1,1 @@
+## 2024-05-23 - [Consolidating Analytics Lists] **Learning:** Admin analytics screens frequently use a "Label + Value" list pattern (e.g. Date/Order Count, Date/Revenue) that is often copy-pasted with minor styling tweaks. **Action:** Use `SimpleDataList` in `AnalyticsScreenLayout` which abstracts the row rendering and border logic, only requiring a `mapItem` prop.

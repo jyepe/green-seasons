@@ -102,6 +102,50 @@ type AnalyticsDataListProps<T> = {
   renderItem: (item: T, index: number) => React.ReactNode;
 };
 
+type SimpleDataListProps<T> = Omit<AnalyticsDataListProps<T>, 'renderItem'> & {
+  mapItem: (item: T) => { id: string | number; label: string; value: string };
+};
+
+/**
+ * Consolidates the rendering logic for simple "Label + Value" lists
+ * used in admin analytics screens.
+ */
+export function SimpleDataList<T>({
+  mapItem,
+  ...props
+}: SimpleDataListProps<T>) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <AnalyticsDataList
+      {...props}
+      renderItem={(item, index) => {
+        const { id, label, value } = mapItem(item);
+        return (
+          <View
+            key={id}
+            style={[
+              styles.simpleRow,
+              index < props.data.length - 1 && {
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.simpleLabel, { color: colors.text }]}>
+              {label}
+            </Text>
+            <Text style={[styles.simpleValue, { color: colors.text }]}>
+              {value}
+            </Text>
+          </View>
+        );
+      }}
+    />
+  );
+}
+
 /**
  * Reusable list component for analytics data
  * Handles loading state, empty state, and "View All" button
@@ -224,6 +268,22 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  simpleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  simpleLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  simpleValue: {
+    fontSize: 15,
+    fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
 });

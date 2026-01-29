@@ -1,6 +1,7 @@
 export {
   AnalyticsScreenLayout,
   AnalyticsDataList,
+  SimpleDataList,
 } from './AnalyticsScreenLayout';
 export { ExpandableCard } from './ExpandableCard';
 export { KPICard } from './KPICard';
