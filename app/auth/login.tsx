@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
@@ -12,18 +12,28 @@ import AuthContainer, {
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
+import { Toast } from '@/components/ui/Toast';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState({
+    visible: false,
+    message: '',
+    type: 'success' as 'success' | 'error',
+  });
   const router = useRouter();
   const setAdminStatus = useSetAdminStatus();
   const setEmployeeStatus = useSetEmployeeStatus();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setToast({
+        visible: true,
+        message: 'Please fill in all fields',
+        type: 'error',
+      });
       return;
     }
 
@@ -82,7 +92,11 @@ export default function LoginScreen() {
         error instanceof Error
           ? error.message
           : 'Failed to sign in. Please check your credentials and try again.';
-      Alert.alert('Error', errorMessage);
+      setToast({
+        visible: true,
+        message: errorMessage,
+        type: 'error',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -97,69 +111,81 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthContainer>
-      <AuthHeader
-        firstWord="Green"
-        secondWord="Seasons"
-        subtitle="Fresh produce for your restaurant"
-      />
+    <View style={styles.container}>
+      <AuthContainer>
+        <AuthHeader
+          firstWord="Green"
+          secondWord="Seasons"
+          subtitle="Fresh produce for your restaurant"
+        />
 
-      {/* Form */}
-      <AuthCard>
-        <View style={styles.form}>
-          <AuthInput
-            label="Email"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            icon="mail"
-            containerStyle={styles.inputContainer}
-          />
+        {/* Form */}
+        <AuthCard>
+          <View style={styles.form}>
+            <AuthInput
+              label="Email"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              icon="mail"
+              containerStyle={styles.inputContainer}
+            />
 
-          <AuthInput
-            label="Password"
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            icon="lock-closed"
-            containerStyle={styles.inputContainer}
-          />
+            <AuthInput
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              icon="lock-closed"
+              containerStyle={styles.inputContainer}
+            />
 
-          <View style={styles.forgotPasswordContainer}>
-            <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={handleForgotPasswordPress}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
+            <View style={styles.forgotPasswordContainer}>
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={handleForgotPasswordPress}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+
+            <AuthButton
+              title="Sign In"
+              onPress={handleLogin}
+              isLoading={isLoading}
+              style={styles.loginButton}
+            />
           </View>
+        </AuthCard>
 
-          <AuthButton
-            title="Sign In"
-            onPress={handleLogin}
-            isLoading={isLoading}
-            style={styles.loginButton}
-          />
-        </View>
-      </AuthCard>
+        {/* Footer */}
+        <AuthFooter
+          text="Don't have an account? "
+          linkText="Sign Up"
+          onLinkPress={handleSignupPress}
+        />
+      </AuthContainer>
 
-      {/* Footer */}
-      <AuthFooter
-        text="Don't have an account? "
-        linkText="Sign Up"
-        onLinkPress={handleSignupPress}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={() => setToast(prev => ({ ...prev, visible: false }))}
       />
-    </AuthContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   form: {
     marginBottom: 0,
   },

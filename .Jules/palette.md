@@ -12,7 +12,7 @@
 
 ## 2024-05-22 - List Item Quantity Controls
 
-**Learning:** Quantity stepper buttons in list items often lack context when using generic "plus" and "minus" icons. Adding the item name to the `accessibilityLabel` (e.g., "Decrease quantity of Organic Bananas") is critical for screen reader users to know *what* they are adjusting without navigating away from the button. Also, small 32px buttons are difficult to tap; `hitSlop` is a high-impact, low-effort fix.
+**Learning:** Quantity stepper buttons in list items often lack context when using generic "plus" and "minus" icons. Adding the item name to the `accessibilityLabel` (e.g., "Decrease quantity of Organic Bananas") is critical for screen reader users to know _what_ they are adjusting without navigating away from the button. Also, small 32px buttons are difficult to tap; `hitSlop` is a high-impact, low-effort fix.
 **Action:** Ensure all repeating list controls include the unique item identifier in their accessibility labels and use `hitSlop` for sub-44px targets.
 
 ## 2024-05-22 - Container Accessibility vs Child Accessibility
@@ -44,3 +44,8 @@
 
 **Learning:** Reusable input components often require developers to manually add `accessibilityLabel` props, leading to inconsistency or omission. Defaulting `accessibilityLabel` to the visual `label` prop within the reusable component ensures basic accessibility out-of-the-box while allowing overrides.
 **Action:** In shared input components (like `ThemedInput`), always set `accessibilityLabel={label}` by default before spreading other props.
+
+## 2024-05-25 - Non-Blocking Error Feedback
+
+**Learning:** Native `Alert.alert` dialogs are disruptive and blocking. For general errors (like network failures or auth errors), Toast notifications provide better UX by informing the user without stealing focus or requiring dismissal.
+**Action:** Prefer Toasts over Alerts for non-critical application errors.
