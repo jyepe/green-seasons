@@ -93,7 +93,7 @@ export function AnalyticsScreenLayout({
   );
 }
 
-type AnalyticsDataListProps<T> = {
+export type AnalyticsDataListProps<T> = {
   data: T[];
   isLoading?: boolean;
   emptyMessage?: string;
@@ -154,6 +154,54 @@ export function AnalyticsDataList<T>({
         </TouchableOpacity>
       )}
     </View>
+  );
+}
+
+export type SimpleDataListProps<T> = Omit<
+  AnalyticsDataListProps<T>,
+  'renderItem'
+> & {
+  mapItem: (item: T) => { id: string | number; label: string; value: string };
+};
+
+/**
+ * A simplified version of AnalyticsDataList for standard Label-Value rows.
+ * Consolidates repeated styling for simple list items.
+ */
+export function SimpleDataList<T>({
+  mapItem,
+  ...props
+}: SimpleDataListProps<T>) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <AnalyticsDataList
+      {...props}
+      renderItem={(item, index) => {
+        const { id, label, value } = mapItem(item);
+        const isLast = index === props.data.length - 1;
+        return (
+          <View
+            key={id}
+            style={[
+              styles.simpleRow,
+              !isLast && {
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.simpleLabel, { color: colors.text }]}>
+              {label}
+            </Text>
+            <Text style={[styles.simpleValue, { color: colors.text }]}>
+              {value}
+            </Text>
+          </View>
+        );
+      }}
+    />
   );
 }
 
@@ -224,6 +272,23 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  // Simple List Styles
+  simpleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  simpleLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  simpleValue: {
+    fontSize: 15,
+    fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
 });
