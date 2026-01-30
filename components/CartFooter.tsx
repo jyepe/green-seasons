@@ -62,6 +62,7 @@ export function CartFooter({
             styles.disclaimerContainer,
             { borderColor: colors.textTertiary },
           ]}
+          importantForAccessibility="no-hide-descendants"
         >
           <Ionicons
             name="information-circle-outline"
@@ -78,6 +79,10 @@ export function CartFooter({
         <TouchableOpacity
           style={[styles.checkoutButton, { backgroundColor: colors.primary }]}
           onPress={onCheckout}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Proceed to checkout"
+          accessibilityHint="Reviews your order and payment details"
         >
           <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>

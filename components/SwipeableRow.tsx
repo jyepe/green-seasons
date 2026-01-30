@@ -60,7 +60,16 @@ export function SwipeableRow({
     <View>
       <GestureDetector gesture={panGesture}>
         <Animated.View style={animatedRowStyle}>
-          <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handlePress}
+            accessibilityActions={[{ name: 'delete', label: 'Delete item' }]}
+            onAccessibilityAction={e => {
+              if (e.nativeEvent.actionName === 'delete') {
+                onDeleteItem(item.item_id);
+              }
+            }}
+          >
             <View style={styles.cartItem}>
               <View
                 style={[
@@ -173,6 +182,8 @@ export function SwipeableRow({
             translateX.value = withSpring(0);
             onDeleteItem(item.item_id);
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Delete item"
         >
           <Ionicons name="trash" size={20} color="white" />
           <Text style={styles.deleteButtonText}>Delete</Text>
