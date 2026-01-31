@@ -157,6 +157,51 @@ export function AnalyticsDataList<T>({
   );
 }
 
+type SimpleDataListProps<T> = Omit<AnalyticsDataListProps<T>, 'renderItem'> & {
+  mapItem: (item: T) => { id: string | number; label: string; value: string };
+};
+
+/**
+ * Simplified wrapper for AnalyticsDataList that handles standard Label + Value rendering
+ */
+export function SimpleDataList<T>({
+  data,
+  mapItem,
+  ...props
+}: SimpleDataListProps<T>) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  return (
+    <AnalyticsDataList
+      data={data}
+      {...props}
+      renderItem={(item, index) => {
+        const { id, label, value } = mapItem(item);
+        return (
+          <View
+            key={id}
+            style={[
+              styles.simpleRow,
+              index < data.length - 1 && {
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.simpleLabel, { color: colors.text }]}>
+              {label}
+            </Text>
+            <Text style={[styles.simpleValue, { color: colors.text }]}>
+              {value}
+            </Text>
+          </View>
+        );
+      }}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -224,6 +269,23 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  // SimpleDataList Styles
+  simpleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  simpleLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  simpleValue: {
+    fontSize: 15,
+    fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
 });
