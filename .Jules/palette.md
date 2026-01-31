@@ -44,3 +44,8 @@
 
 **Learning:** Reusable input components often require developers to manually add `accessibilityLabel` props, leading to inconsistency or omission. Defaulting `accessibilityLabel` to the visual `label` prop within the reusable component ensures basic accessibility out-of-the-box while allowing overrides.
 **Action:** In shared input components (like `ThemedInput`), always set `accessibilityLabel={label}` by default before spreading other props.
+
+## 2024-05-25 - Collapsible Header State
+
+**Learning:** Collapsible headers (accordions) often lack state information for screen readers. Users might know it's a button, but not whether it's expanded or collapsed. Adding `accessibilityState={{ expanded: isOpen }}` is crucial. Also, headers are often small touch targets; `hitSlop` improves usability.
+**Action:** Always add `accessibilityState={{ expanded }}` and `accessibilityRole="button"` to collapsible triggers.

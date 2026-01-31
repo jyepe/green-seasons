@@ -20,6 +20,10 @@ export function Collapsible({
         style={styles.heading}
         onPress={() => setIsOpen(value => !value)}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ expanded: isOpen }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <IconSymbol
           name="chevron.right"
