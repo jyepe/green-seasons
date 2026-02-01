@@ -12,6 +12,8 @@ import {
   type DimensionValue,
   TextInput,
   type TextInputProps,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -348,6 +350,69 @@ export const ThemedInput = React.forwardRef<
 
 ThemedInput.displayName = 'ThemedInput';
 
+/**
+ * Shared empty state component with icon, title, subtitle, and optional action button.
+ * Consolidates repeated empty state patterns across screens.
+ */
+export function ThemedEmptyState({
+  title,
+  subtitle,
+  icon = 'cube-outline',
+  actionLabel,
+  onAction,
+  style,
+  buttonVariant = 'filled',
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  actionLabel?: string;
+  onAction?: () => void;
+  style?: StyleProp<ViewStyle>;
+  buttonVariant?: 'filled' | 'outlined';
+}) {
+  const colorScheme = useAppColorScheme();
+  const colors = Colors[colorScheme];
+
+  const buttonStyle =
+    buttonVariant === 'filled'
+      ? { backgroundColor: colors.primary }
+      : {
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.primary,
+        };
+
+  const textStyle =
+    buttonVariant === 'filled' ? { color: 'white' } : { color: colors.primary };
+
+  return (
+    <View style={[styles.emptyStateContainer, style]}>
+      <Ionicons name={icon} size={64} color={colors.textTertiary} />
+      <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
+        {title}
+      </Text>
+      {subtitle && (
+        <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+          {subtitle}
+        </Text>
+      )}
+      {actionLabel && onAction && (
+        <TouchableOpacity
+          style={[styles.emptyStateButton, buttonStyle]}
+          onPress={onAction}
+          accessibilityRole="button"
+          accessibilityLabel={actionLabel}
+        >
+          <Text style={[styles.emptyStateButtonText, textStyle]}>
+            {actionLabel}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
@@ -491,5 +556,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontFamily: 'Inter_400Regular',
+  },
+  // Empty State Styles
+  emptyStateContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  emptyStateButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  emptyStateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

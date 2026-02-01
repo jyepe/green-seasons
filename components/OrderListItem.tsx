@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatCurrency } from '@/utils/currency';
-import { LoadingView } from './ThemedView';
+import { LoadingView, ThemedEmptyState } from './ThemedView';
 
 // --- Shared Types & Helpers ---
 
@@ -163,9 +163,6 @@ export function OrderListEmptyState({
   message,
   showClearButton,
 }: OrderListEmptyStateProps) {
-  const colorScheme = useAppColorScheme();
-  const colors = Colors[colorScheme];
-
   // Logic to determine if we should show the clear button
   // If showClearButton is provided, use it. Otherwise fallback to checking activeFilter.
   const shouldShowClearButton =
@@ -180,33 +177,14 @@ export function OrderListEmptyState({
       : `No orders found with status "${FILTER_LABELS[activeFilter]}".`);
 
   return (
-    <View style={styles.emptyState}>
-      <Ionicons
-        name={activeFilter === 'all' ? 'cube-outline' : 'filter-circle-outline'}
-        size={64}
-        color={colors.textTertiary}
-      />
-      <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-        No Orders Found
-      </Text>
-      <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
-        {displayMessage}
-      </Text>
-      {shouldShowClearButton && (
-        <TouchableOpacity
-          style={[styles.clearFilterButton, { borderColor: colors.primary }]}
-          onPress={onClearFilter}
-          accessibilityRole="button"
-          accessibilityLabel="Clear filter"
-        >
-          <Text
-            style={[styles.clearFilterButtonText, { color: colors.primary }]}
-          >
-            Clear Filter
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
+    <ThemedEmptyState
+      title="No Orders Found"
+      subtitle={displayMessage}
+      icon={activeFilter === 'all' ? 'cube-outline' : 'filter-circle-outline'}
+      actionLabel={shouldShowClearButton ? 'Clear Filter' : undefined}
+      onAction={shouldShowClearButton ? onClearFilter : undefined}
+      buttonVariant="outlined"
+    />
   );
 }
 
@@ -601,36 +579,6 @@ export const styles = StyleSheet.create({
   filterText: {
     fontSize: 14,
     fontWeight: '500',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  clearFilterButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  clearFilterButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
 });

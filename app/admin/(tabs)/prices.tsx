@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { LoadingView } from '@/components/ThemedView';
+import { LoadingView, ThemedEmptyState } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import {
@@ -173,15 +173,11 @@ export default function AdminPricesScreen() {
       {truckLoadQuery.isLoading && items.length === 0 ? (
         <LoadingView message="Loading truck load..." />
       ) : items.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="cube-outline" size={64} color={colors.textTertiary} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            Nothing to deliver
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            There are no items scheduled for delivery today.
-          </Text>
-        </View>
+        <ThemedEmptyState
+          title="Nothing to deliver"
+          subtitle="There are no items scheduled for delivery today."
+          icon="cube-outline"
+        />
       ) : (
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
@@ -351,24 +347,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 32,
     gap: 12,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
   },
   itemCard: {
     borderRadius: 12,

@@ -1,5 +1,5 @@
 import { ItemFormModal } from '@/components/admin/ItemFormModal';
-import { LoadingView } from '@/components/ThemedView';
+import { LoadingView, ThemedEmptyState } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import {
@@ -213,34 +213,17 @@ export default function AdminItemsScreen() {
         {isLoading && !items ? (
           <LoadingView message="Loading items..." />
         ) : filteredItems.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons
-              name={searchQuery ? 'search-outline' : 'cube-outline'}
-              size={64}
-              color={colors.textTertiary}
-            />
-            <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-              {searchQuery ? 'No Items Found' : 'No Items'}
-            </Text>
-            <Text
-              style={[styles.emptyStateText, { color: colors.textSecondary }]}
-            >
-              {searchQuery
+          <ThemedEmptyState
+            title={searchQuery ? 'No Items Found' : 'No Items'}
+            subtitle={
+              searchQuery
                 ? `No items match "${searchQuery}".`
-                : 'Get started by adding your first item.'}
-            </Text>
-            {!searchQuery && (
-              <TouchableOpacity
-                style={[
-                  styles.addFirstButton,
-                  { backgroundColor: colors.primary },
-                ]}
-                onPress={handleAddItem}
-              >
-                <Text style={styles.addFirstButtonText}>Add Item</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+                : 'Get started by adding your first item.'
+            }
+            icon={searchQuery ? 'search-outline' : 'cube-outline'}
+            actionLabel={!searchQuery ? 'Add Item' : undefined}
+            onAction={!searchQuery ? handleAddItem : undefined}
+          />
         ) : (
           <View style={styles.listContent}>
             {paginatedItems.map(item => (
@@ -482,36 +465,6 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 20,
     gap: 12,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  addFirstButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  addFirstButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-    fontFamily: 'Inter_600SemiBold',
   },
   itemCard: {
     flexDirection: 'row',
