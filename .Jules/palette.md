@@ -44,3 +44,8 @@
 
 **Learning:** Reusable input components often require developers to manually add `accessibilityLabel` props, leading to inconsistency or omission. Defaulting `accessibilityLabel` to the visual `label` prop within the reusable component ensures basic accessibility out-of-the-box while allowing overrides.
 **Action:** In shared input components (like `ThemedInput`), always set `accessibilityLabel={label}` by default before spreading other props.
+
+## 2024-05-25 - Swipeable List Accessibility
+
+**Learning:** Swipe-to-delete patterns are notoriously inaccessible for users who cannot perform complex gestures. Adding `accessibilityActions` to the list item container provides a native, menu-driven way for screen reader users to access hidden actions (like Delete) without swiping.
+**Action:** Always implement `accessibilityActions` and `onAccessibilityAction` when using swipeable rows to ensure functional parity for assistive technology users.
