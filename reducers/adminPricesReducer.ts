@@ -16,6 +16,11 @@ export function adminPricesReducer(
       // Allow only valid decimal input with max 2 decimal places
       let sanitized = value.replace(/[^0-9.]/g, '');
 
+      // Prepend '0' if the input starts with a decimal point
+      if (sanitized.startsWith('.') && sanitized.length > 0) {
+        sanitized = '0' + sanitized;
+      }
+
       // Ensure only one decimal point
       const parts = sanitized.split('.');
       if (parts.length > 2) {
