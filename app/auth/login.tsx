@@ -16,14 +16,34 @@ import AuthButton from '@/components/auth/AuthButton';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setAdminStatus = useSetAdminStatus();
   const setEmployeeStatus = useSetEmployeeStatus();
 
+  const validateForm = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    let isValid = true;
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!validateForm()) {
       return;
     }
 
@@ -111,11 +131,17 @@ export default function LoginScreen() {
             label="Email"
             placeholder="Enter your email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={text => {
+              setEmail(text);
+              if (errors.email) {
+                setErrors(prev => ({ ...prev, email: undefined }));
+              }
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             icon="mail"
+            error={errors.email}
             containerStyle={styles.inputContainer}
           />
 
@@ -123,11 +149,17 @@ export default function LoginScreen() {
             label="Password"
             placeholder="Enter your password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={text => {
+              setPassword(text);
+              if (errors.password) {
+                setErrors(prev => ({ ...prev, password: undefined }));
+              }
+            }}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             icon="lock-closed"
+            error={errors.password}
             containerStyle={styles.inputContainer}
           />
 
