@@ -53,6 +53,7 @@ export type UserInfo = {
 
 export async function signUpUser(params: SignUpParams) {
   const { email, password, firstName, lastName, phone } = params;
+  const redirectTo = Linking.createURL("auth/callback");
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -62,7 +63,7 @@ export async function signUpUser(params: SignUpParams) {
         lastName,
         phone,
       },
-      emailRedirectTo: "https://greenseasonsdelivery.com/auth/callback",
+      emailRedirectTo: redirectTo,
     },
   });
 
