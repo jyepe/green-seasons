@@ -173,6 +173,12 @@ export default function TruckLoadScreen() {
                     opacity: isPreviewingPdf || isDownloadingPdf ? 0.6 : 1,
                   },
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel="Preview loading sheet"
+                accessibilityState={{
+                  disabled: isPreviewingPdf || isDownloadingPdf,
+                  busy: isPreviewingPdf,
+                }}
               >
                 {isPreviewingPdf ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -190,6 +196,12 @@ export default function TruckLoadScreen() {
                     opacity: isPreviewingPdf || isDownloadingPdf ? 0.6 : 1,
                   },
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel="Download loading sheet"
+                accessibilityState={{
+                  disabled: isPreviewingPdf || isDownloadingPdf,
+                  busy: isDownloadingPdf,
+                }}
               >
                 {isDownloadingPdf ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -282,6 +294,14 @@ export default function TruckLoadScreen() {
                   <TouchableOpacity
                     onPress={() => toggleItem(item.item_id)}
                     style={styles.expandButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      isExpanded
+                        ? `Collapse details for ${item.item_name}`
+                        : `Expand details for ${item.item_name}`
+                    }
+                    accessibilityState={{ expanded: isExpanded }}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Ionicons
                       name={isExpanded ? 'chevron-up' : 'chevron-down'}
