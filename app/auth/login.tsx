@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { signInUser, getCurrentUserInfo, isAdmin } from '@/lib/supabase';
+import { initialLoginState, loginReducer } from '@/reducers/loginReducer';
 import { useSetAdminStatus } from '@/hooks/useAdmin';
 import { useSetEmployeeStatus } from '@/hooks/useEmployee';
 import AuthContainer, {
@@ -14,12 +15,8 @@ import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, dispatch] = useReducer(loginReducer, initialLoginState);
+  const { email, password, errors, isLoading } = state;
   const router = useRouter();
   const setAdminStatus = useSetAdminStatus();
   const setEmployeeStatus = useSetEmployeeStatus();
@@ -38,7 +35,7 @@ export default function LoginScreen() {
       isValid = false;
     }
 
-    setErrors(newErrors);
+    dispatch({ type: 'SET_ERRORS', errors: newErrors });
     return isValid;
   };
 
@@ -48,7 +45,7 @@ export default function LoginScreen() {
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsLoading(true);
+    dispatch({ type: 'SUBMIT_START' });
 
     try {
       // Sign in user
@@ -104,7 +101,7 @@ export default function LoginScreen() {
           : 'Failed to sign in. Please check your credentials and try again.';
       Alert.alert('Error', errorMessage);
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SUBMIT_END' });
     }
   };
 
@@ -132,10 +129,7 @@ export default function LoginScreen() {
             placeholder="Enter your email"
             value={email}
             onChangeText={text => {
-              setEmail(text);
-              if (errors.email) {
-                setErrors(prev => ({ ...prev, email: undefined }));
-              }
+              dispatch({ type: 'SET_FIELD', field: 'email', value: text });
             }}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -150,10 +144,7 @@ export default function LoginScreen() {
             placeholder="Enter your password"
             value={password}
             onChangeText={text => {
-              setPassword(text);
-              if (errors.password) {
-                setErrors(prev => ({ ...prev, password: undefined }));
-              }
+              dispatch({ type: 'SET_FIELD', field: 'password', value: text });
             }}
             secureTextEntry
             autoCapitalize="none"
