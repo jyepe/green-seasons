@@ -62,12 +62,12 @@ export function CartFooter({
             styles.disclaimerContainer,
             { borderColor: colors.textTertiary },
           ]}
-          importantForAccessibility="no-hide-descendants"
         >
           <Ionicons
             name="information-circle-outline"
             size={14}
             color={colors.textSecondary}
+            importantForAccessibility="no-hide-descendants"
           />
           <Text
             style={[styles.disclaimerText, { color: colors.textSecondary }]}

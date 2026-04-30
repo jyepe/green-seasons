@@ -338,7 +338,11 @@ export const ThemedInput = React.forwardRef<
         {...props}
       />
       {error && (
-        <Text style={[styles.inputError, { color: colors.error }]}>
+        <Text
+          style={[styles.inputError, { color: colors.error }]}
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+        >
           {error}
         </Text>
       )}
