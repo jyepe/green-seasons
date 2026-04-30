@@ -20,6 +20,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
   }
 }
 
+const ssrSafeStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    if (typeof window === "undefined") return null;
+    return AsyncStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    return AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    return AsyncStorage.removeItem(key);
+  },
+};
+
 export const supabase: SupabaseClient = createClient(
   supabaseUrl ?? "",
   supabaseAnonKey ?? "",
@@ -27,7 +42,7 @@ export const supabase: SupabaseClient = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      storage: AsyncStorage,
+      storage: ssrSafeStorage,
       detectSessionInUrl: false,
     },
   },
