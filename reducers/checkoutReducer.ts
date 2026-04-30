@@ -55,14 +55,14 @@ export type CheckoutAction =
   | { type: 'CANCEL_IOS_DATE' }
   | {
       type: 'SELECT_ADMIN_RESTAURANT';
-      payload: Restaurant
+      payload: Restaurant;
     }
   | {
       type: 'SYNC_RESTAURANT_DATA';
       payload: {
         restaurant: Restaurant | null;
-        selectedRestaurant: Restaurant | null
-      }
+        selectedRestaurant: Restaurant | null;
+      };
     }
   | {
       type: 'SYNC_CONTACT_DATA';
@@ -70,7 +70,7 @@ export type CheckoutAction =
         isUserAdmin: boolean;
         userInfo: UserInfo | null;
         ownerInfo: UserInfo | null;
-      }
+      };
     };
 
 export function checkoutReducer(
@@ -127,7 +127,7 @@ export function checkoutReducer(
         [rest.city, rest.postal_code].filter(Boolean).join(', '),
         rest.country,
       ]
-        .filter((part) => part && part.trim().length > 0)
+        .filter(part => part && part.trim().length > 0)
         .join('\n');
 
       return {
@@ -149,7 +149,7 @@ export function checkoutReducer(
         return {
           ...state,
           restaurantName: '',
-          deliveryAddress: ''
+          deliveryAddress: '',
         };
       }
 
@@ -164,7 +164,7 @@ export function checkoutReducer(
           .join(', '),
         activeRestaurant.country,
       ]
-        .filter((part) => part && part.trim().length > 0)
+        .filter(part => part && part.trim().length > 0)
         .join('\n');
 
       return {

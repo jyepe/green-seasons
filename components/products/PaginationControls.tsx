@@ -23,10 +23,7 @@ export default function PaginationControls({
 
   return (
     <View
-      style={[
-        styles.paginationContainer,
-        { borderColor: colors.textTertiary },
-      ]}
+      style={[styles.paginationContainer, { borderColor: colors.textTertiary }]}
       accessible={true}
       accessibilityLabel={`Pagination, Page ${currentPage} of ${totalPages}`}
     >
@@ -48,9 +45,7 @@ export default function PaginationControls({
           color={!hasPrevious ? colors.textTertiary : colors.text}
         />
       </TouchableOpacity>
-      <Text
-        style={[styles.paginationLabel, { color: colors.textSecondary }]}
-      >
+      <Text style={[styles.paginationLabel, { color: colors.textSecondary }]}>
         Page {currentPage} of {totalPages}
       </Text>
       <TouchableOpacity
@@ -59,9 +54,7 @@ export default function PaginationControls({
           { backgroundColor: colors.surface },
           !hasNext && styles.paginationButtonDisabled,
         ]}
-        onPress={() =>
-          onPageChange(Math.min(currentPage + 1, totalPages))
-        }
+        onPress={() => onPageChange(Math.min(currentPage + 1, totalPages))}
         disabled={!hasNext}
         accessibilityRole="button"
         accessibilityLabel="Next Page"

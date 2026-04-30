@@ -8,14 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm start` / `npm run android` / `npm run ios` / `npm run web` | Expo dev server / platform launchers |
-| `npm run typecheck` | `tsc --noEmit` (strict mode) |
-| `npm run lint` / `npm run lint:fix` | ESLint (Expo flat config) |
-| `npm run prettier:check` / `npm run prettier:fix` | Formatting |
-| `npm run check-all` | Typecheck + lint + prettier — run before claiming work is done |
-| `npm run reset-project` | Wipes generated Expo state (`scripts/reset-project.js`) |
+| Command                                                         | Purpose                                                        |
+| --------------------------------------------------------------- | -------------------------------------------------------------- |
+| `npm start` / `npm run android` / `npm run ios` / `npm run web` | Expo dev server / platform launchers                           |
+| `npm run typecheck`                                             | `tsc --noEmit` (strict mode)                                   |
+| `npm run lint` / `npm run lint:fix`                             | ESLint (Expo flat config)                                      |
+| `npm run prettier:check` / `npm run prettier:fix`               | Formatting                                                     |
+| `npm run check-all`                                             | Typecheck + lint + prettier — run before claiming work is done |
+| `npm run reset-project`                                         | Wipes generated Expo state (`scripts/reset-project.js`)        |
 
 There is **no test runner configured**. Treat `npm run check-all` as the verification gate. If you add tests, add a script and standardize on `*.test.ts(x)`.
 

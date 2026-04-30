@@ -213,15 +213,14 @@ export default function UserProfile() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.deleteAccountButton,
-              { borderColor: colors.error },
-            ]}
+            style={[styles.deleteAccountButton, { borderColor: colors.error }]}
             onPress={handleDeleteAccount}
             accessibilityLabel="Delete Account"
             accessibilityRole="button"
           >
-            <Text style={[styles.deleteAccountButtonText, { color: colors.error }]}>
+            <Text
+              style={[styles.deleteAccountButtonText, { color: colors.error }]}
+            >
               Delete Account
             </Text>
           </TouchableOpacity>

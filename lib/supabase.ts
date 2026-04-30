@@ -1,10 +1,10 @@
-import "react-native-url-polyfill/auto";
-import "react-native-get-random-values";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { ENV } from "@/config/env";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Linking from "expo-linking";
-import { formatLocalDateString } from "@/lib/utils/dateUtils";
+import 'react-native-url-polyfill/auto';
+import 'react-native-get-random-values';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { ENV } from '@/config/env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
+import { formatLocalDateString } from '@/lib/utils/dateUtils';
 
 const supabaseUrl = ENV.SUPABASE_URL;
 const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;
@@ -15,29 +15,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
   if (__DEV__) {
     // eslint-disable-next-line no-console
     console.warn(
-      "Supabase env not set. Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in app.json under expo.extra",
+      'Supabase env not set. Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in app.json under expo.extra'
     );
   }
 }
 
 const ssrSafeStorage = {
   getItem: async (key: string): Promise<string | null> => {
-    if (typeof window === "undefined") return null;
+    if (typeof window === 'undefined') return null;
     return AsyncStorage.getItem(key);
   },
   setItem: async (key: string, value: string): Promise<void> => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     return AsyncStorage.setItem(key, value);
   },
   removeItem: async (key: string): Promise<void> => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     return AsyncStorage.removeItem(key);
   },
 };
 
 export const supabase: SupabaseClient = createClient(
-  supabaseUrl ?? "",
-  supabaseAnonKey ?? "",
+  supabaseUrl ?? '',
+  supabaseAnonKey ?? '',
   {
     auth: {
       autoRefreshToken: true,
@@ -45,7 +45,7 @@ export const supabase: SupabaseClient = createClient(
       storage: ssrSafeStorage,
       detectSessionInUrl: false,
     },
-  },
+  }
 );
 
 export type SignUpParams = {
@@ -68,7 +68,7 @@ export type UserInfo = {
 
 export async function signUpUser(params: SignUpParams) {
   const { email, password, firstName, lastName, phone } = params;
-  const redirectTo = Linking.createURL("auth/callback");
+  const redirectTo = Linking.createURL('auth/callback');
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -111,14 +111,14 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
     return null;
   }
 
-  const { data, error } = await supabase.from("me").select("*").single();
+  const { data, error } = await supabase.from('me').select('*').single();
 
   if (error) {
     throw error;
   }
 
   if (!data) {
-    throw new Error("User data not found");
+    throw new Error('User data not found');
   }
 
   return {
@@ -131,25 +131,25 @@ export async function getCurrentUserInfo(): Promise<UserInfo | null> {
  * Get user info by ID (admin only)
  */
 export async function getUserInfoById(
-  userId: string,
+  userId: string
 ): Promise<UserInfo | null> {
   const { data, error } = await supabase
-    .from("profiles")
-    .select("id, first_name, last_name, phone, role, owned_restaurant_id")
-    .eq("id", userId)
+    .from('profiles')
+    .select('id, first_name, last_name, phone, role, owned_restaurant_id')
+    .eq('id', userId)
     .single();
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching user info:", error);
+      console.error('Error fetching user info:', error);
     }
     return null;
   }
 
   return {
     ...data,
-    email: "N/A", // Email will default to N/A since it is the admin creating the order
+    email: 'N/A', // Email will default to N/A since it is the admin creating the order
   };
 }
 
@@ -159,7 +159,7 @@ export async function signOutUser() {
 }
 
 export async function deleteAccount() {
-  const { error } = await supabase.functions.invoke("delete-account");
+  const { error } = await supabase.functions.invoke('delete-account');
   if (error) throw error;
 }
 
@@ -169,7 +169,7 @@ export type ResetPasswordParams = {
 
 export async function resetPassword(params: ResetPasswordParams) {
   const { email } = params;
-  const redirectTo = Linking.createURL("auth/callback");
+  const redirectTo = Linking.createURL('auth/callback');
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
   });
@@ -188,7 +188,7 @@ export async function updateUserEmail(email: string) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Not authenticated");
+  if (!user) throw new Error('Not authenticated');
 
   if (email && email !== user.email) {
     const { error: authError } = await supabase.auth.updateUser({
@@ -212,7 +212,7 @@ export async function updateUserProfile(params: UpdateUserProfileParams) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Not authenticated");
+  if (!user) throw new Error('Not authenticated');
 
   const updates: {
     first_name?: string | null;
@@ -232,9 +232,9 @@ export async function updateUserProfile(params: UpdateUserProfileParams) {
 
   if (Object.keys(updates).length > 0) {
     const { data, error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update(updates)
-      .eq("id", user.id)
+      .eq('id', user.id)
       .select()
       .single();
 
@@ -244,9 +244,9 @@ export async function updateUserProfile(params: UpdateUserProfileParams) {
 
   // If no profile fields were provided, return current profile data
   const { data, error } = await supabase
-    .from("profiles")
+    .from('profiles')
     .select()
-    .eq("id", user.id)
+    .eq('id', user.id)
     .single();
 
   if (error) throw error;
@@ -265,7 +265,7 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Not authenticated");
+  if (!user) throw new Error('Not authenticated');
 
   if (params.email && params.email !== user.email) {
     await updateUserEmail(params.email);
@@ -279,14 +279,14 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
   if (params.first_name !== undefined) updates.first_name = params.first_name;
   if (params.last_name !== undefined) updates.last_name = params.last_name;
   if (params.phone !== undefined) {
-    updates.phone = params.phone === "" ? null : params.phone;
+    updates.phone = params.phone === '' ? null : params.phone;
   }
 
   if (Object.keys(updates).length > 0) {
     const { data, error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update(updates)
-      .eq("id", user.id)
+      .eq('id', user.id)
       .select()
       .single();
 
@@ -296,9 +296,9 @@ export async function updateUserInfo(params: UpdateUserInfoParams) {
 
   // If only email was updated, fetch and return the current profile data
   const { data, error } = await supabase
-    .from("profiles")
+    .from('profiles')
     .select()
-    .eq("id", user.id)
+    .eq('id', user.id)
     .single();
 
   if (error) throw error;
@@ -328,15 +328,15 @@ export type CreateRestaurantParams = {
 };
 
 export async function createRestaurant(
-  params: CreateRestaurantParams,
+  params: CreateRestaurantParams
 ): Promise<Restaurant> {
-  const { data, error } = await supabase.rpc("create_my_restaurant", {
+  const { data, error } = await supabase.rpc('create_my_restaurant', {
     p_name: params.name,
     p_address_line1: params.address_line1,
-    p_address_line2: params.address_line2 || "",
+    p_address_line2: params.address_line2 || '',
     p_city: params.city,
     p_postal_code: params.postal_code,
-    p_country: params.country || "US",
+    p_country: params.country || 'US',
   });
 
   if (error) throw error;
@@ -344,18 +344,18 @@ export async function createRestaurant(
 }
 
 export async function getRestaurantById(
-  restaurantId: string,
+  restaurantId: string
 ): Promise<Restaurant | null> {
   const { data, error } = await supabase
-    .from("restaurants")
-    .select("*")
-    .eq("id", restaurantId)
+    .from('restaurants')
+    .select('*')
+    .eq('id', restaurantId)
     .single();
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching restaurant:", error);
+      console.error('Error fetching restaurant:', error);
     }
     return null;
   }
@@ -368,14 +368,14 @@ export async function getRestaurantById(
  */
 export async function getAllRestaurants(): Promise<Restaurant[]> {
   const { data, error } = await supabase
-    .from("restaurants")
-    .select("*")
-    .order("name", { ascending: true });
+    .from('restaurants')
+    .select('*')
+    .order('name', { ascending: true });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching all restaurants:", error);
+      console.error('Error fetching all restaurants:', error);
     }
     throw error;
   }
@@ -391,31 +391,29 @@ export type EmployeeProfile = {
 
 export type EmployeesAndRestaurants = {
   employees: EmployeeProfile[];
-  restaurants: Pick<Restaurant, "id" | "name">[];
+  restaurants: Pick<Restaurant, 'id' | 'name'>[];
   /** Mapping of employee ID to array of restaurant names assigned to that employee */
   employeeRestaurantNames: Record<string, string[]>;
   /** Mapping of employee ID to array of restaurant IDs assigned to that employee */
   employeeRestaurantIds: Record<string, string[]>;
 };
 
-export async function getEmployeesAndRestaurants(): Promise<
-  EmployeesAndRestaurants
-> {
+export async function getEmployeesAndRestaurants(): Promise<EmployeesAndRestaurants> {
   const [employeesRes, restaurantsRes, relationsRes] = await Promise.all([
     supabase
-      .from("profiles")
-      .select("id, first_name, last_name")
-      .in("role", ["employee", "admin"]),
-    supabase.from("restaurants").select("id, name"),
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .in('role', ['employee', 'admin']),
+    supabase.from('restaurants').select('id, name'),
     supabase
-      .from("employee_restaurant_relation")
-      .select("employee_id, restaurant_id"),
+      .from('employee_restaurant_relation')
+      .select('employee_id, restaurant_id'),
   ]);
 
   if (employeesRes.error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching employees:", employeesRes.error);
+      console.error('Error fetching employees:', employeesRes.error);
     }
     throw employeesRes.error;
   }
@@ -423,7 +421,7 @@ export async function getEmployeesAndRestaurants(): Promise<
   if (restaurantsRes.error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching restaurants:", restaurantsRes.error);
+      console.error('Error fetching restaurants:', restaurantsRes.error);
     }
     throw restaurantsRes.error;
   }
@@ -431,7 +429,7 @@ export async function getEmployeesAndRestaurants(): Promise<
   if (relationsRes.error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching relations:", relationsRes.error);
+      console.error('Error fetching relations:', relationsRes.error);
     }
     throw relationsRes.error;
   }
@@ -476,22 +474,22 @@ export async function getEmployeesAndRestaurants(): Promise<
  */
 export async function assignRestaurantToEmployee(
   employeeId: string,
-  restaurantId: string,
+  restaurantId: string
 ): Promise<void> {
   const { error } = await supabase
-    .from("employee_restaurant_relation")
+    .from('employee_restaurant_relation')
     .insert({ employee_id: employeeId, restaurant_id: restaurantId });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error assigning restaurant to employee:", error);
+      console.error('Error assigning restaurant to employee:', error);
     }
     throw error;
   }
 }
 
-export type OrderStatus = "pending" | "in_transit" | "delivered";
+export type OrderStatus = 'pending' | 'in_transit' | 'delivered';
 
 export type Order = {
   id: string;
@@ -508,14 +506,14 @@ export type Order = {
 
 export async function getOrdersForUser(userId: string): Promise<Order[]> {
   const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching orders:", error);
+      console.error('Error fetching orders:', error);
     }
     throw error;
   }
@@ -535,14 +533,14 @@ export type Item = {
 
 export async function getItems(): Promise<Item[]> {
   const { data, error } = await supabase
-    .from("v_items_with_favorite")
-    .select("*")
-    .order("name", { ascending: true });
+    .from('v_items_with_favorite')
+    .select('*')
+    .order('name', { ascending: true });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching items:", error);
+      console.error('Error fetching items:', error);
     }
     throw error;
   }
@@ -552,15 +550,15 @@ export async function getItems(): Promise<Item[]> {
 
 export async function getFavoriteItems(): Promise<Item[]> {
   const { data, error } = await supabase
-    .from("v_items_with_favorite")
-    .select("*")
-    .eq("is_favorite", true)
-    .order("name", { ascending: true });
+    .from('v_items_with_favorite')
+    .select('*')
+    .eq('is_favorite', true)
+    .order('name', { ascending: true });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching favorite items:", error);
+      console.error('Error fetching favorite items:', error);
     }
     throw error;
   }
@@ -570,32 +568,32 @@ export async function getFavoriteItems(): Promise<Item[]> {
 
 export async function toggleFavorite(
   itemId: string,
-  currentlyFavorite: boolean,
+  currentlyFavorite: boolean
 ): Promise<boolean> {
   if (currentlyFavorite) {
     // Remove from favorites
-    const { error } = await supabase.rpc("fn_remove_favorite_item", {
+    const { error } = await supabase.rpc('fn_remove_favorite_item', {
       p_item_id: itemId,
     });
 
     if (error) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
-        console.error("Error removing favorite:", error);
+        console.error('Error removing favorite:', error);
       }
       throw error;
     }
     return false; // No longer a favorite
   } else {
     // Add to favorites
-    const { error } = await supabase.rpc("fn_add_favorite_item", {
+    const { error } = await supabase.rpc('fn_add_favorite_item', {
       p_item_id: itemId,
     });
 
     if (error) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
-        console.error("Error adding favorite:", error);
+        console.error('Error adding favorite:', error);
       }
       throw error;
     }
@@ -628,20 +626,20 @@ export type UpdateItemParams = {
  */
 export async function getAllItemsForAdmin(): Promise<Item[]> {
   const { data, error } = await supabase
-    .from("items")
-    .select("*")
-    .order("name", { ascending: true });
+    .from('items')
+    .select('*')
+    .order('name', { ascending: true });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching all items for admin:", error);
+      console.error('Error fetching all items for admin:', error);
     }
     throw error;
   }
 
   // Map to Item type (without is_favorite since it's not in base table)
-  return (data || []).map((item) => ({
+  return (data || []).map(item => ({
     id: item.id,
     name: item.name,
     description: item.description,
@@ -657,7 +655,7 @@ export async function getAllItemsForAdmin(): Promise<Item[]> {
  */
 export async function createItem(params: CreateItemParams): Promise<Item> {
   const { data, error } = await supabase
-    .from("items")
+    .from('items')
     .insert({
       name: params.name,
       description: params.description ?? null,
@@ -671,7 +669,7 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error creating item:", error);
+      console.error('Error creating item:', error);
     }
     throw error;
   }
@@ -692,7 +690,7 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
  */
 export async function updateItem(
   itemId: string,
-  params: UpdateItemParams,
+  params: UpdateItemParams
 ): Promise<Item> {
   const updates: {
     name?: string;
@@ -704,25 +702,25 @@ export async function updateItem(
 
   if (params.name !== undefined) updates.name = params.name;
   if (params.description !== undefined) {
-    updates.description = params.description === "" ? null : params.description;
+    updates.description = params.description === '' ? null : params.description;
   }
   if (params.price !== undefined) updates.price = params.price;
   if (params.unit !== undefined) updates.unit = params.unit;
   if (params.image_url !== undefined) {
-    updates.image_url = params.image_url === "" ? null : params.image_url;
+    updates.image_url = params.image_url === '' ? null : params.image_url;
   }
 
   const { data, error } = await supabase
-    .from("items")
+    .from('items')
     .update(updates)
-    .eq("id", itemId)
+    .eq('id', itemId)
     .select()
     .single();
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error updating item:", error);
+      console.error('Error updating item:', error);
     }
     throw error;
   }
@@ -742,12 +740,12 @@ export async function updateItem(
  * Delete an item (admin only)
  */
 export async function deleteItem(itemId: string): Promise<void> {
-  const { error } = await supabase.from("items").delete().eq("id", itemId);
+  const { error } = await supabase.from('items').delete().eq('id', itemId);
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error deleting item:", error);
+      console.error('Error deleting item:', error);
     }
     throw error;
   }
@@ -766,12 +764,12 @@ export type CartItem = {
 };
 
 export async function getCartWithItems(): Promise<CartItem[]> {
-  const { data, error } = await supabase.rpc("fn_get_cart_with_items");
+  const { data, error } = await supabase.rpc('fn_get_cart_with_items');
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching cart items:", error);
+      console.error('Error fetching cart items:', error);
     }
     throw error;
   }
@@ -784,15 +782,13 @@ export type AddToCartParams = {
   quantityDelta?: number;
 };
 
-export async function addToCart(params: AddToCartParams): Promise<
-  {
-    id: string;
-    cart_id: string;
-    item_id: string;
-    quantity: number;
-  } | null
-> {
-  const { data, error } = await supabase.rpc("fn_add_to_cart", {
+export async function addToCart(params: AddToCartParams): Promise<{
+  id: string;
+  cart_id: string;
+  item_id: string;
+  quantity: number;
+} | null> {
+  const { data, error } = await supabase.rpc('fn_add_to_cart', {
     p_item_id: params.itemId,
     p_quantity_delta: params.quantityDelta ?? 1,
   });
@@ -800,7 +796,7 @@ export async function addToCart(params: AddToCartParams): Promise<
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error adding to cart:", error);
+      console.error('Error adding to cart:', error);
     }
     throw error;
   }
@@ -809,12 +805,12 @@ export async function addToCart(params: AddToCartParams): Promise<
 }
 
 export async function clearCart(): Promise<void> {
-  const { error } = await supabase.rpc("fn_clear_cart");
+  const { error } = await supabase.rpc('fn_clear_cart');
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error clearing cart:", error);
+      console.error('Error clearing cart:', error);
     }
     throw error;
   }
@@ -822,7 +818,7 @@ export async function clearCart(): Promise<void> {
 
 export type CreateOrderFromCartResult = {
   id: string;
-  status: "pending" | "in_transit" | "delivered";
+  status: 'pending' | 'in_transit' | 'delivered';
   restaurant_id: string;
   created_by: string;
   created_at: string;
@@ -833,9 +829,9 @@ export type CreateOrderFromCartResult = {
 export async function createOrderFromCart(
   restaurantId: string,
   deliveryAt: Date,
-  paymentMethod: string,
+  paymentMethod: string
 ): Promise<CreateOrderFromCartResult> {
-  const { data, error } = await supabase.rpc("fn_create_order_from_cart", {
+  const { data, error } = await supabase.rpc('fn_create_order_from_cart', {
     p_restaurant_id: restaurantId,
     p_delivery_at: deliveryAt.toISOString(),
     p_payment_method: paymentMethod,
@@ -844,13 +840,13 @@ export async function createOrderFromCart(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error creating order from cart:", error);
+      console.error('Error creating order from cart:', error);
     }
     throw error;
   }
 
   if (!data || data.length === 0) {
-    throw new Error("Order creation returned no data");
+    throw new Error('Order creation returned no data');
   }
 
   return data[0];
@@ -878,16 +874,16 @@ export type OrderDetailItem = {
 };
 
 export async function getOrderDetails(
-  orderId: string,
+  orderId: string
 ): Promise<OrderDetailItem[]> {
-  const { data, error } = await supabase.rpc("fn_get_order_details", {
+  const { data, error } = await supabase.rpc('fn_get_order_details', {
     p_order_id: orderId,
   });
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching order details:", error);
+      console.error('Error fetching order details:', error);
     }
     throw error;
   }
@@ -900,17 +896,17 @@ export async function getOrderDetails(
  */
 export async function updateOrderStatus(
   orderId: string,
-  status: "pending" | "in_transit" | "delivered",
+  status: 'pending' | 'in_transit' | 'delivered'
 ): Promise<void> {
   const { error } = await supabase
-    .from("orders")
+    .from('orders')
     .update({ status })
-    .eq("id", orderId);
+    .eq('id', orderId);
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error updating order status:", error);
+      console.error('Error updating order status:', error);
     }
     throw error;
   }
@@ -921,17 +917,17 @@ export async function updateOrderStatus(
  */
 export async function updateOrderDeliveryDate(
   orderId: string,
-  deliveryDate: Date,
+  deliveryDate: Date
 ): Promise<void> {
   const { error } = await supabase
-    .from("orders")
+    .from('orders')
     .update({ delivery_at: deliveryDate.toISOString() })
-    .eq("id", orderId);
+    .eq('id', orderId);
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error updating order delivery date:", error);
+      console.error('Error updating order delivery date:', error);
     }
     throw error;
   }
@@ -946,12 +942,12 @@ export async function updateOrderDeliveryDate(
  * @throws Error if unable to determine admin status due to network or backend issues
  */
 export async function isAdmin(): Promise<boolean> {
-  const { data, error } = await supabase.rpc("fn_is_admin");
+  const { data, error } = await supabase.rpc('fn_is_admin');
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error checking admin status:", error);
+      console.error('Error checking admin status:', error);
     }
     // Throw error instead of silently returning false
     // This allows callers to distinguish between "not an admin" and "unable to check"
@@ -972,9 +968,9 @@ export type AdminMonthKPIs = {
  */
 export async function getAdminMonthKPIs(
   monthStart: Date,
-  monthEnd: Date,
+  monthEnd: Date
 ): Promise<AdminMonthKPIs> {
-  const { data, error } = await supabase.rpc("fn_admin_dashboard_month_kpis", {
+  const { data, error } = await supabase.rpc('fn_admin_dashboard_month_kpis', {
     p_month_start: monthStart.toISOString(),
     p_month_end: monthEnd.toISOString(),
   });
@@ -982,7 +978,7 @@ export async function getAdminMonthKPIs(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching admin month KPIs:", error);
+      console.error('Error fetching admin month KPIs:', error);
     }
     throw error;
   }
@@ -991,10 +987,11 @@ export async function getAdminMonthKPIs(
   const result = Array.isArray(data) ? data[0] : data;
   return {
     orders_count: result?.orders_count ?? 0,
-    total_revenue: parseFloat(result?.total_revenue ?? "0"),
-    final_total_revenue: result?.final_total_revenue != null
-      ? parseFloat(String(result.final_total_revenue))
-      : null,
+    total_revenue: parseFloat(result?.total_revenue ?? '0'),
+    final_total_revenue:
+      result?.final_total_revenue != null
+        ? parseFloat(String(result.final_total_revenue))
+        : null,
   };
 }
 
@@ -1013,9 +1010,9 @@ export type AdminTopItem = {
 export async function getAdminTopItems(
   monthStart: Date,
   monthEnd: Date,
-  limit: number = 5,
+  limit: number = 5
 ): Promise<AdminTopItem[]> {
-  const { data, error } = await supabase.rpc("fn_admin_dashboard_top_items", {
+  const { data, error } = await supabase.rpc('fn_admin_dashboard_top_items', {
     p_month_start: monthStart.toISOString(),
     p_month_end: monthEnd.toISOString(),
     p_limit: limit,
@@ -1024,17 +1021,17 @@ export async function getAdminTopItems(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching admin top items:", error);
+      console.error('Error fetching admin top items:', error);
     }
     throw error;
   }
 
   return (data || []).map((item: unknown) => {
-    if (!item || typeof item !== "object") {
+    if (!item || typeof item !== 'object') {
       return {
-        item_id: "",
-        item_name: "",
-        unit: "",
+        item_id: '',
+        item_name: '',
+        unit: '',
         quantity: 0,
         revenue: 0,
         final_revenue: null,
@@ -1044,14 +1041,15 @@ export async function getAdminTopItems(
     const record = item as Record<string, unknown>;
 
     return {
-      item_id: String(record.item_id ?? ""),
-      item_name: String(record.item_name ?? ""),
-      unit: String(record.unit ?? ""),
-      quantity: parseFloat(String(record.quantity ?? "0")),
-      revenue: parseFloat(String(record.revenue ?? "0")),
-      final_revenue: record.final_revenue != null
-        ? parseFloat(String(record.final_revenue))
-        : null,
+      item_id: String(record.item_id ?? ''),
+      item_name: String(record.item_name ?? ''),
+      unit: String(record.unit ?? ''),
+      quantity: parseFloat(String(record.quantity ?? '0')),
+      revenue: parseFloat(String(record.revenue ?? '0')),
+      final_revenue:
+        record.final_revenue != null
+          ? parseFloat(String(record.final_revenue))
+          : null,
     };
   });
 }
@@ -1085,9 +1083,9 @@ export async function getAdminOrders(
   limit: number = 50,
   cursor: { created_at: string; id: string } | null = null,
   restaurantId: string | null = null,
-  status: OrderStatus | null = null,
+  status: OrderStatus | null = null
 ): Promise<AdminOrdersResult> {
-  const { data, error } = await supabase.rpc("fn_admin_list_orders", {
+  const { data, error } = await supabase.rpc('fn_admin_list_orders', {
     p_from: from.toISOString(),
     p_to: to.toISOString(),
     p_limit: limit,
@@ -1100,7 +1098,7 @@ export async function getAdminOrders(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching admin orders:", error);
+      console.error('Error fetching admin orders:', error);
     }
     throw error;
   }
@@ -1115,18 +1113,19 @@ export async function getAdminOrders(
     created_by: order.created_by as string,
     buyer_first_name: order.buyer_first_name as string | null,
     buyer_last_name: order.buyer_last_name as string | null,
-    total_amount: parseFloat(String(order.total_amount ?? "0")),
-    final_total_amount: parseFloat(String(order.final_total_amount ?? "0")),
-    items_count: parseInt(String(order.items_count ?? "0"), 10),
+    total_amount: parseFloat(String(order.total_amount ?? '0')),
+    final_total_amount: parseFloat(String(order.final_total_amount ?? '0')),
+    items_count: parseInt(String(order.items_count ?? '0'), 10),
   }));
 
   // Extract cursor from last order for next page
-  const nextCursor = orders.length > 0 && orders.length === limit
-    ? {
-      created_at: orders[orders.length - 1].created_at,
-      id: orders[orders.length - 1].order_id,
-    }
-    : null;
+  const nextCursor =
+    orders.length > 0 && orders.length === limit
+      ? {
+          created_at: orders[orders.length - 1].created_at,
+          id: orders[orders.length - 1].order_id,
+        }
+      : null;
 
   return {
     orders,
@@ -1145,9 +1144,9 @@ export type AdminChartOrdersByDay = {
 export async function getAdminChartOrdersByDay(
   from: Date,
   to: Date,
-  limit: number = 5,
+  limit: number = 5
 ): Promise<AdminChartOrdersByDay[]> {
-  const { data, error } = await supabase.rpc("fn_admin_chart_orders_by_day", {
+  const { data, error } = await supabase.rpc('fn_admin_chart_orders_by_day', {
     p_from: from.toISOString(),
     p_to: to.toISOString(),
     p_limit: limit,
@@ -1156,14 +1155,14 @@ export async function getAdminChartOrdersByDay(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching orders by day chart:", error);
+      console.error('Error fetching orders by day chart:', error);
     }
     throw error;
   }
 
   return (data || []).map((row: Record<string, unknown>) => ({
     day: row.day as string,
-    orders_count: parseInt(String(row.orders_count ?? "0"), 10),
+    orders_count: parseInt(String(row.orders_count ?? '0'), 10),
   }));
 }
 
@@ -1179,9 +1178,9 @@ export type AdminChartRevenueByDay = {
 export async function getAdminChartRevenueByDay(
   from: Date,
   to: Date,
-  limit: number = 5,
+  limit: number = 5
 ): Promise<AdminChartRevenueByDay[]> {
-  const { data, error } = await supabase.rpc("fn_admin_chart_revenue_by_day", {
+  const { data, error } = await supabase.rpc('fn_admin_chart_revenue_by_day', {
     p_from: from.toISOString(),
     p_to: to.toISOString(),
     p_limit: limit,
@@ -1190,15 +1189,15 @@ export async function getAdminChartRevenueByDay(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching revenue by day chart:", error);
+      console.error('Error fetching revenue by day chart:', error);
     }
     throw error;
   }
 
   return (data || []).map((row: Record<string, unknown>) => ({
     day: row.day as string,
-    revenue: parseFloat(String(row.revenue ?? "0")),
-    final_revenue: parseFloat(String(row.final_revenue ?? "0")),
+    revenue: parseFloat(String(row.revenue ?? '0')),
+    final_revenue: parseFloat(String(row.final_revenue ?? '0')),
   }));
 }
 
@@ -1219,7 +1218,7 @@ export type AdminChartRevenueByRestaurant = {
  */
 export async function isEmployee(): Promise<boolean> {
   const userInfo = await getCurrentUserInfo();
-  return userInfo?.role === "employee";
+  return userInfo?.role === 'employee';
 }
 
 export type EmployeeOrder = {
@@ -1256,9 +1255,9 @@ export type EmployeeTruckLoadItem = {
  */
 export async function getEmployeeOrders(
   limit: number = 25,
-  cursor: { created_at: string; id: string } | null = null,
+  cursor: { created_at: string; id: string } | null = null
 ): Promise<EmployeeOrdersResult> {
-  const { data, error } = await supabase.rpc("fn_employee_list_orders", {
+  const { data, error } = await supabase.rpc('fn_employee_list_orders', {
     p_limit: limit,
     p_cursor_created_at: cursor?.created_at ?? null,
     p_cursor_id: cursor?.id ?? null,
@@ -1267,7 +1266,7 @@ export async function getEmployeeOrders(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching employee orders:", error);
+      console.error('Error fetching employee orders:', error);
     }
     throw error;
   }
@@ -1278,17 +1277,18 @@ export async function getEmployeeOrders(
     delivery_at: (order.delivery_at as string | null) ?? null,
     status: order.status as string,
     restaurant_id: order.restaurant_id as string,
-    restaurant_name: (order.restaurant_name as string) ?? "Unknown",
-    total: parseFloat(String(order.total_amount ?? "0")),
+    restaurant_name: (order.restaurant_name as string) ?? 'Unknown',
+    total: parseFloat(String(order.total_amount ?? '0')),
   }));
 
   // Extract cursor from last order for next page
-  const nextCursor = orders.length > 0 && orders.length === limit
-    ? {
-      created_at: orders[orders.length - 1].created_at,
-      id: orders[orders.length - 1].id,
-    }
-    : null;
+  const nextCursor =
+    orders.length > 0 && orders.length === limit
+      ? {
+          created_at: orders[orders.length - 1].created_at,
+          id: orders[orders.length - 1].id,
+        }
+      : null;
 
   return {
     orders,
@@ -1301,7 +1301,7 @@ export async function getEmployeeOrders(
  */
 export async function getEmployeeTruckLoadSummary(
   deliveryDate?: Date,
-  tz: string = "America/New_York",
+  tz: string = 'America/New_York'
 ): Promise<EmployeeTruckLoadItem[]> {
   const params: { p_delivery_date?: string; p_tz?: string } = {};
 
@@ -1312,14 +1312,14 @@ export async function getEmployeeTruckLoadSummary(
   params.p_tz = tz;
 
   const { data, error } = await supabase.rpc(
-    "fn_employee_truck_load_summary",
-    params,
+    'fn_employee_truck_load_summary',
+    params
   );
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching employee truck load summary:", error);
+      console.error('Error fetching employee truck load summary:', error);
     }
     throw error;
   }
@@ -1329,10 +1329,10 @@ export async function getEmployeeTruckLoadSummary(
     // Supabase may return JSONB as a string or already parsed object
     let restaurantsData:
       | {
-        restaurant_id: string;
-        restaurant_name: string;
-        quantity: number;
-      }[]
+          restaurant_id: string;
+          restaurant_name: string;
+          quantity: number;
+        }[]
       | null
       | undefined;
 
@@ -1340,7 +1340,7 @@ export async function getEmployeeTruckLoadSummary(
 
     if (rawRestaurants === null || rawRestaurants === undefined) {
       restaurantsData = null;
-    } else if (typeof rawRestaurants === "string") {
+    } else if (typeof rawRestaurants === 'string') {
       // If it's a string, try to parse it
       try {
         restaurantsData = JSON.parse(rawRestaurants) as {
@@ -1351,7 +1351,7 @@ export async function getEmployeeTruckLoadSummary(
       } catch (e) {
         if (__DEV__) {
           // eslint-disable-next-line no-console
-          console.error("Error parsing restaurants JSON:", e);
+          console.error('Error parsing restaurants JSON:', e);
         }
         restaurantsData = null;
       }
@@ -1367,20 +1367,20 @@ export async function getEmployeeTruckLoadSummary(
     }
 
     const restaurants: EmployeeTruckLoadRestaurant[] = Array.isArray(
-        restaurantsData,
-      )
-      ? restaurantsData.map((r) => ({
-        restaurant_id: String(r.restaurant_id ?? ""),
-        restaurant_name: String(r.restaurant_name ?? ""),
-        quantity: parseInt(String(r.quantity ?? "0"), 10),
-      }))
+      restaurantsData
+    )
+      ? restaurantsData.map(r => ({
+          restaurant_id: String(r.restaurant_id ?? ''),
+          restaurant_name: String(r.restaurant_name ?? ''),
+          quantity: parseInt(String(r.quantity ?? '0'), 10),
+        }))
       : [];
 
     return {
       item_id: row.item_id as string,
       item_name: row.item_name as string,
       item_image_url: (row.item_image_url as string | null) ?? null,
-      total_quantity: parseInt(String(row.total_quantity ?? "0"), 10),
+      total_quantity: parseInt(String(row.total_quantity ?? '0'), 10),
       restaurants,
     };
   });
@@ -1392,21 +1392,21 @@ export async function getEmployeeTruckLoadSummary(
 export async function getAdminChartRevenueByRestaurant(
   from: Date,
   to: Date,
-  limit: number,
+  limit: number
 ): Promise<AdminChartRevenueByRestaurant[]> {
   const { data, error } = await supabase.rpc(
-    "fn_admin_chart_revenue_by_restaurant",
+    'fn_admin_chart_revenue_by_restaurant',
     {
       p_from: from.toISOString(),
       p_to: to.toISOString(),
       p_limit: limit,
-    },
+    }
   );
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching revenue by restaurant chart:", error);
+      console.error('Error fetching revenue by restaurant chart:', error);
     }
     throw error;
   }
@@ -1414,9 +1414,9 @@ export async function getAdminChartRevenueByRestaurant(
   return (data || []).map((row: Record<string, unknown>) => ({
     restaurant_id: row.restaurant_id as string,
     restaurant_name: row.restaurant_name as string,
-    orders_count: parseInt(String(row.orders_count ?? "0"), 10),
-    revenue: parseFloat(String(row.revenue ?? "0")),
-    final_revenue: parseFloat(String(row.final_revenue ?? "0")),
+    orders_count: parseInt(String(row.orders_count ?? '0'), 10),
+    revenue: parseFloat(String(row.revenue ?? '0')),
+    final_revenue: parseFloat(String(row.final_revenue ?? '0')),
   }));
 }
 
@@ -1437,7 +1437,7 @@ export type AdminTruckLoadItem = {
  */
 export async function getAdminTruckLoadSummary(
   deliveryDate?: Date,
-  tz: string = "America/New_York",
+  tz: string = 'America/New_York'
 ): Promise<AdminTruckLoadItem[]> {
   const params: { p_delivery_date?: string; p_tz?: string } = {};
 
@@ -1448,14 +1448,14 @@ export async function getAdminTruckLoadSummary(
   params.p_tz = tz;
 
   const { data, error } = await supabase.rpc(
-    "fn_admin_truck_load_summary",
-    params,
+    'fn_admin_truck_load_summary',
+    params
   );
 
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching admin truck load summary:", error);
+      console.error('Error fetching admin truck load summary:', error);
     }
     throw error;
   }
@@ -1465,9 +1465,10 @@ export async function getAdminTruckLoadSummary(
     item_name: row.item_name as string,
     item_image_url: (row.item_image_url as string | null) ?? null,
     finalized: row.finalized === true,
-    finalized_amount: row.finalized_amount != null
-      ? parseFloat(String(row.finalized_amount))
-      : null,
+    finalized_amount:
+      row.finalized_amount != null
+        ? parseFloat(String(row.finalized_amount))
+        : null,
   }));
 }
 
@@ -1481,9 +1482,9 @@ export type AdminFinalizePricingItem = {
  */
 export async function adminFinalizePricingForDay(
   deliveryDay: Date,
-  prices: AdminFinalizePricingItem[],
+  prices: AdminFinalizePricingItem[]
 ): Promise<void> {
-  const { error } = await supabase.rpc("fn_admin_finalize_pricing_for_day", {
+  const { error } = await supabase.rpc('fn_admin_finalize_pricing_for_day', {
     p_delivery_day: formatLocalDateString(deliveryDay),
     p_prices: prices,
   });
@@ -1491,7 +1492,7 @@ export async function adminFinalizePricingForDay(
   if (error) {
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Error finalizing pricing for day:", error);
+      console.error('Error finalizing pricing for day:', error);
     }
     throw error;
   }

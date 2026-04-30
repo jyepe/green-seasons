@@ -12,10 +12,7 @@ import ProductsDisclaimer from './ProductsDisclaimer';
 import ProductsSearchBar from './ProductsSearchBar';
 import ProductsGrid from './ProductsGrid';
 import PaginationControls from './PaginationControls';
-import {
-  initialState,
-  productsScreenReducer,
-} from './ProductsScreenState';
+import { initialState, productsScreenReducer } from './ProductsScreenState';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,13 +20,8 @@ export default function ProductsScreenComponent() {
   // Use a reducer to manage complex state transitions and avoid synchronization issues
   // between search query, pagination, and optimistic cart updates.
   const [state, dispatch] = useReducer(productsScreenReducer, initialState);
-  const {
-    searchQuery,
-    currentPage,
-    pendingItemId,
-    showToast,
-    stepperItems,
-  } = state;
+  const { searchQuery, currentPage, pendingItemId, showToast, stepperItems } =
+    state;
 
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];

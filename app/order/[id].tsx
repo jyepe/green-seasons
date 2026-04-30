@@ -63,7 +63,7 @@ export default function OrderDetailsScreen() {
         queryKey: [...ORDER_DETAILS_QUERY_KEY, id],
       }),
       queryClient.invalidateQueries({
-        predicate: (query) => {
+        predicate: query => {
           const key = query.queryKey[0];
           return (
             typeof key === 'string' &&

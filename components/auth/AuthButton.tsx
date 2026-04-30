@@ -39,11 +39,11 @@ export default function AuthButton({
 
   const handlePress = () => {
     if (disabled || isLoading) return;
-    
+
     buttonScale.value = withSpring(0.95, {}, () => {
       buttonScale.value = withSpring(1);
     });
-    
+
     onPress();
   };
 
@@ -81,7 +81,10 @@ export default function AuthButton({
         activeOpacity={0.9}
         accessibilityRole="button"
         accessibilityLabel={isLoading ? 'Loading' : title}
-        accessibilityState={{ disabled: disabled || isLoading, busy: isLoading }}
+        accessibilityState={{
+          disabled: disabled || isLoading,
+          busy: isLoading,
+        }}
       >
         {isLoading ? (
           <ActivityIndicator color={getTextColor()} size="small" />

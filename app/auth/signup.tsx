@@ -1,13 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
 import React, { useReducer, useRef } from 'react';
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signUpUser } from '@/lib/supabase';
 import { useInvalidateUserInfo } from '@/hooks/useUserInfo';
 import { validatePassword } from '@/utils/validation';

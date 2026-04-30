@@ -38,7 +38,10 @@ export default function RestaurantOnboardingScreen() {
   const cityRef = useRef<TextInput>(null);
   const postalCodeRef = useRef<TextInput>(null);
 
-  const validateField = (field: keyof CreateRestaurantParams, value: string): string => {
+  const validateField = (
+    field: keyof CreateRestaurantParams,
+    value: string
+  ): string => {
     switch (field) {
       case 'name':
         if (!value.trim()) return 'Restaurant name is required';
@@ -89,7 +92,10 @@ export default function RestaurantOnboardingScreen() {
     return isValid;
   };
 
-  const handleInputChange = (field: keyof CreateRestaurantParams, value: string) => {
+  const handleInputChange = (
+    field: keyof CreateRestaurantParams,
+    value: string
+  ) => {
     dispatch({
       type: 'SET_FIELD',
       field: field,

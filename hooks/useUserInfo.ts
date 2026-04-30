@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   deleteAccount,
   getCurrentUserInfo,
@@ -8,9 +8,9 @@ import {
   updateUserProfile,
   type UpdateUserProfileParams,
   type UserInfo,
-} from "@/lib/supabase";
+} from '@/lib/supabase';
 
-export const USER_INFO_QUERY_KEY = ["userInfo"] as const;
+export const USER_INFO_QUERY_KEY = ['userInfo'] as const;
 
 export function useUserInfo() {
   return useQuery({
@@ -22,9 +22,9 @@ export function useUserInfo() {
       // Don't retry if user is not authenticated
       if (
         error &&
-        "message" in error &&
-        typeof error.message === "string" &&
-        error.message.includes("not authenticated")
+        'message' in error &&
+        typeof error.message === 'string' &&
+        error.message.includes('not authenticated')
       ) {
         return false;
       }
@@ -44,7 +44,8 @@ export function useUpdateUserInfo() {
         await updateUserEmail(email);
       }
 
-      const hasProfileUpdates = first_name !== undefined ||
+      const hasProfileUpdates =
+        first_name !== undefined ||
         last_name !== undefined ||
         phone !== undefined;
 
@@ -105,7 +106,7 @@ export function useSignOut() {
       });
       // Clear admin status cache
       queryClient.removeQueries({
-        queryKey: ["admin-status"],
+        queryKey: ['admin-status'],
       });
     } catch (error) {
       // Even if logout fails, clear the cache
@@ -114,7 +115,7 @@ export function useSignOut() {
       });
       // Clear admin status cache
       queryClient.removeQueries({
-        queryKey: ["admin-status"],
+        queryKey: ['admin-status'],
       });
       throw error;
     }
@@ -133,7 +134,7 @@ export function useDeleteAccount() {
       });
       // Clear admin status cache
       queryClient.removeQueries({
-        queryKey: ["admin-status"],
+        queryKey: ['admin-status'],
       });
     } catch (error) {
       // Even if logout fails, clear the cache
@@ -142,7 +143,7 @@ export function useDeleteAccount() {
       });
       // Clear admin status cache
       queryClient.removeQueries({
-        queryKey: ["admin-status"],
+        queryKey: ['admin-status'],
       });
       throw error;
     }
