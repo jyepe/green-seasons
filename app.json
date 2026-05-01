@@ -2,7 +2,7 @@
   "expo": {
     "name": "Green Seasons",
     "slug": "green-seasons",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
     "scheme": "com.greenseasons",
