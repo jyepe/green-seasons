@@ -1,10 +1,10 @@
 import 'react-native-url-polyfill/auto';
 import 'react-native-get-random-values';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { ENV } from '@/config/env';
+import { ENV } from '@/lib/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
-import { formatLocalDateString } from '@/lib/utils/dateUtils';
+import { formatLocalDateString } from '@/utils/dateUtils';
 
 const supabaseUrl = ENV.SUPABASE_URL;
 const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;

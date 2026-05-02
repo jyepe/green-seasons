@@ -71,7 +71,7 @@ Supabase env vars are required at startup:
 - `EXPO_PUBLIC_SUPABASE_URL`
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
 
-Loaded via `config/env.ts`. `.env.local` for dev. `app.json` has placeholders under `expo.extra` for EAS builds. `lib/supabase.ts` warns (not throws) in dev if missing, to avoid splash crashes in prod builds.
+Loaded via `lib/env.ts`. `.env.local` for dev. `app.json` has placeholders under `expo.extra` for EAS builds. `lib/supabase.ts` warns (not throws) in dev if missing, to avoid splash crashes in prod builds.
 
 ## Conventions worth knowing
 

@@ -1,4 +1,4 @@
-import { EditingItem } from '@/components/EditQuantityModal';
+import { EditingItem } from '@/components/cart/EditQuantityModal';
 
 export type CartState = {
   isClearing: boolean;

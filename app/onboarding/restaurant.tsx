@@ -12,7 +12,7 @@ import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import GradientText from '@/components/ui/GradientText';
-import { validateMiamiDadeAddress } from '@/lib/utils/validateMiamiDadeAddress';
+import { validateMiamiDadeAddress } from '@/utils/validateMiamiDadeAddress';
 import {
   initialState,
   restaurantOnboardingReducer,

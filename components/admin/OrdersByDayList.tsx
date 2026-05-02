@@ -3,7 +3,7 @@ import React from 'react';
 import { SimpleDataList, SimpleListItem } from './AnalyticsScreenLayout';
 
 import type { AdminChartOrdersByDay } from '@/lib/supabase';
-import { formatDate } from '@/lib/utils/dateUtils';
+import { formatDate } from '@/utils/dateUtils';
 
 type OrdersByDayListProps = {
   data: AdminChartOrdersByDay[];

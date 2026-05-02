@@ -18,10 +18,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { CartItem } from '@/lib/supabase';
-import { CartHeader } from '@/components/CartHeader';
-import { CartList } from '@/components/CartList';
-import { CartFooter } from '@/components/CartFooter';
-import { EditQuantityModal, EditingItem } from '@/components/EditQuantityModal';
+import { CartHeader } from '@/components/cart/CartHeader';
+import { CartList } from '@/components/cart/CartList';
+import { CartFooter } from '@/components/cart/CartFooter';
+import { EditQuantityModal, EditingItem } from '@/components/cart/EditQuantityModal';
 import { cartReducer, initialCartState } from '@/reducers/cartReducer';
 
 export default function CartScreenComponent() {

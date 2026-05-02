@@ -36,7 +36,7 @@ The app uses Expo Router's file-based routing:
 - **Supabase Client:** Initialized with `AsyncStorage` for auth persistence.
 - **Data Access:** All database interactions (queries, RPC calls) are encapsulated in `lib/supabase.ts`.
 - **Logic:** Significant business logic (e.g., creating orders from cart, dashboard KPIs) is handled via Postgres functions (RPCs) rather than client-side logic.
-- **Environment Variables:** Managed via `config/env.ts`.
+- **Environment Variables:** Managed via `lib/env.ts`.
 
 ### 3. State Management
 
