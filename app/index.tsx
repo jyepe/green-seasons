@@ -5,6 +5,7 @@ import { useSetEmployeeStatus } from '@/hooks/useEmployee';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { getCurrentUserInfo, isAdmin, supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -16,6 +17,11 @@ export default function IndexScreen() {
   const setEmployeeStatus = useSetEmployeeStatus();
 
   useEffect(() => {
+    const navigate = (route: Parameters<typeof router.replace>[0]) => {
+      SplashScreen.hideAsync().catch(() => {});
+      router.replace(route);
+    };
+
     const checkAuth = async () => {
       if (__DEV__) {
         // eslint-disable-next-line no-console
@@ -37,7 +43,7 @@ export default function IndexScreen() {
             // eslint-disable-next-line no-console
             console.log('Auth Check: No session, redirecting to login');
           }
-          router.replace(ROUTES.AUTH_LOGIN);
+          navigate(ROUTES.AUTH_LOGIN);
           return;
         }
 
@@ -57,7 +63,7 @@ export default function IndexScreen() {
             // eslint-disable-next-line no-console
             console.log('Auth Check: Profile missing (unexpected), to login');
           }
-          router.replace(ROUTES.AUTH_LOGIN);
+          navigate(ROUTES.AUTH_LOGIN);
           return;
         }
 
@@ -72,7 +78,7 @@ export default function IndexScreen() {
                 'Auth Check: User is Admin, redirecting to Admin Dashboard'
               );
             }
-            router.replace(ROUTES.ADMIN_DASHBOARD);
+            navigate(ROUTES.ADMIN_DASHBOARD);
             return;
           }
         } catch (error) {
@@ -92,7 +98,7 @@ export default function IndexScreen() {
               'Auth Check: User is Employee, redirecting to Employee Dashboard'
             );
           }
-          router.replace(ROUTES.EMPLOYEE_DASHBOARD);
+          navigate(ROUTES.EMPLOYEE_DASHBOARD);
           return;
         }
         setEmployeeStatus(false);
@@ -103,7 +109,7 @@ export default function IndexScreen() {
             // eslint-disable-next-line no-console
             console.log('Auth Check: No restaurant, redirecting to onboarding');
           }
-          router.replace(ROUTES.ONBOARDING_RESTAURANT);
+          navigate(ROUTES.ONBOARDING_RESTAURANT);
         } else {
           if (__DEV__) {
             // eslint-disable-next-line no-console
@@ -111,14 +117,14 @@ export default function IndexScreen() {
               'Auth Check: Restaurant owner, redirecting to main app'
             );
           }
-          router.replace(ROUTES.RESTAURANT_OWNER_DASHBOARD);
+          navigate(ROUTES.RESTAURANT_OWNER_DASHBOARD);
         }
       } catch (error) {
         if (__DEV__) {
           // eslint-disable-next-line no-console
           console.error('Auth check failed:', error);
         }
-        router.replace(ROUTES.AUTH_LOGIN);
+        navigate(ROUTES.AUTH_LOGIN);
       }
     };
 
