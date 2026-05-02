@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `AGENTS.md` (repo style/structure conventions) and `GEMINI.md` (deeper architectural context — TanStack Query usage, role checks, theming) cover material that is not repeated here. Read both when starting non-trivial work. `.Jules/` contains short journal entries from prior agent passes (a11y patterns, layout DRY heuristics, reducer refactor notes) — useful when touching the same areas again.
 
+`docs/` holds detailed reference docs for the Supabase layer:
+
+- `docs/supabase-schema.md` — all tables, columns, enums, views, triggers, cascade behavior
+- `docs/supabase-rpc.md` — every Postgres function/RPC with params and return shapes
+- `docs/supabase-rls.md` — all RLS policies by table
+- `docs/supabase-client.md` — TypeScript types and the full `lib/supabase.ts` API surface
+- `docs/hooks.md` — every custom hook: query keys, staleTime, what it calls, mutation invalidation patterns
+- `docs/components.md` — all components by folder with purpose and key props
+- `docs/routes.md` — every screen file, its role access, and all reducer state shapes
+
 ## Commands
 
 | Command                                                         | Purpose                                                        |
