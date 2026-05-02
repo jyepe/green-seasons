@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '400',
     fontFamily: 'Inter_400Regular',
   },
 });
