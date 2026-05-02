@@ -223,7 +223,7 @@ export default function RestaurantOnboardingScreen() {
         >
           Create Your Restaurant
         </GradientText>
-        <Text style={[styles.subtitle, { color: colors.text }]}>
+        <Text style={[styles.subtitle, { color: colors.background }]}>
           Set up your restaurant profile to start ordering fresh produce
         </Text>
       </View>
