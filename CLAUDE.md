@@ -73,6 +73,15 @@ Supabase env vars are required at startup:
 
 Loaded via `lib/env.ts`. `.env.local` for dev. `app.json` has placeholders under `expo.extra` for EAS builds. `lib/supabase.ts` warns (not throws) in dev if missing, to avoid splash crashes in prod builds.
 
+## Development workflow
+
+Never commit directly to `preview` or `master`. Before starting any fix or feature:
+
+1. Ensure you are on `preview` and it is up to date with `origin/preview`
+2. Create a new branch: `feature/<short-description>` or `fix/<short-description>`
+3. Make all changes on that branch
+4. When done, merge or open a PR back into `preview`
+
 ## Conventions worth knowing
 
 - **Path alias `@/*`** maps to repo root (`tsconfig.json`). Use it (`@/lib/supabase`, `@/hooks/useCart`, `@/constants/Colors`).
