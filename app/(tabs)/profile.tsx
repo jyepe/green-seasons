@@ -1,6 +1,6 @@
 import React from 'react';
-import UserProfile from '@/components/UserProfile';
+import RestaurantOwnerProfile from '@/components/RestaurantOwnerProfile';
 
 export default function ProfileScreen() {
-  return <UserProfile />;
+  return <RestaurantOwnerProfile />;
 }
