@@ -43,9 +43,7 @@ export function ProfileToggleRow({
           borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
         },
       ]}
-      accessibilityRole="switch"
-      accessibilityLabel={label}
-      accessibilityState={{ checked: value }}
+      accessible={false}
     >
       <View style={[styles.iconTile, { backgroundColor: resolvedIconBg }]}>
         <Ionicons name={icon} size={16} color={resolvedIconColor} />
@@ -67,6 +65,8 @@ export function ProfileToggleRow({
         trackColor={{ false: trackOff, true: colors.primary }}
         thumbColor="#FFFFFF"
         ios_backgroundColor={trackOff}
+        accessibilityLabel={label}
+        accessibilityHint={sublabel}
       />
     </View>
   );
