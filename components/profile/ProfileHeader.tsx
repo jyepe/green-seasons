@@ -61,7 +61,13 @@ export function ProfileHeader({
 
       {/* Centered minimal header */}
       <View style={[styles.center, { paddingTop: insets.top + 64 }]}>
-        <ProfileAvatar initials={initials} size={76} />
+        {isLoading ? (
+          <View
+            style={[styles.avatarSkeleton, { backgroundColor: colors.border }]}
+          />
+        ) : (
+          <ProfileAvatar initials={initials} size={76} />
+        )}
         <View style={styles.nameBlock}>
           {isLoading ? (
             <>
@@ -80,9 +86,17 @@ export function ProfileHeader({
             </>
           ) : (
             <>
-              <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
+              <Text
+                style={[styles.name, { color: colors.text }]}
+                numberOfLines={1}
+              >
+                {name}
+              </Text>
               {role ? (
-                <Text style={[styles.role, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.role, { color: colors.textSecondary }]}
+                  numberOfLines={1}
+                >
                   {role}
                 </Text>
               ) : null}
@@ -95,6 +109,7 @@ export function ProfileHeader({
                   />
                   <Text
                     style={[styles.restaurant, { color: colors.textSecondary }]}
+                    numberOfLines={1}
                   >
                     {restaurantName}
                   </Text>
@@ -170,6 +185,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '400',
     fontFamily: 'Inter_400Regular',
+  },
+  avatarSkeleton: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
   },
   skeletonName: {
     width: 160,
