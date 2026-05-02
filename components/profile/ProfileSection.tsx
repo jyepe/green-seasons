@@ -34,7 +34,10 @@ export function ProfileSection({ title, children }: Props) {
   return (
     <View style={styles.wrap}>
       {title ? (
-        <Text style={[styles.title, { color: colors.textSecondary }]}>
+        <Text
+          style={[styles.title, { color: colors.textSecondary }]}
+          accessibilityRole="header"
+        >
           {title}
         </Text>
       ) : null}
