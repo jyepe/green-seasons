@@ -72,7 +72,13 @@ export default function AuthCallback() {
           }
 
           if (isMounted) {
-            router.replace(isRecoveryFlow ? '/auth/reset-password' : '/');
+            if (isRecoveryFlow) {
+              router.replace('/auth/reset-password');
+            } else if (p.type === 'signup') {
+              router.replace('/onboarding/restaurant');
+            } else {
+              router.replace('/');
+            }
           }
           return;
         }
