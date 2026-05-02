@@ -9,19 +9,25 @@ export const Colors = {
     primary: '#2E7D32',
     primaryDark: '#256628',
     primaryDarker: '#1F5522',
+    primaryTint: '#4CAF50',
 
     // Accent mango
     accent: '#FFB300',
+    accentWarm: '#FF9800',
+    accentSoft: '#FFBE88',
+    mintSoft: '#7FD8B5',
 
     // Surface
     background: '#FAFBF7',
     surface: '#FFFFFF',
     inputBackground: '#F3F4F6',
+    authBackground: '#F9F9F9',
 
     // Neutrals
     text: '#111827',
     textSecondary: '#6B7280',
     textTertiary: '#9CA3AF',
+    textMuted: '#666666',
     border: '#E5E7EB',
 
     // Status colors
@@ -48,19 +54,25 @@ export const Colors = {
     primary: '#4CAF50',
     primaryDark: '#2E7D32',
     primaryDarker: '#256628',
+    primaryTint: '#4CAF50',
 
     // Accent mango
     accent: '#FFB300',
+    accentWarm: '#FF9800',
+    accentSoft: '#FFBE88',
+    mintSoft: '#7FD8B5',
 
     // Surface
     background: '#0B0F12',
     surface: '#1A1F24',
     inputBackground: '#2D3238',
+    authBackground: '#0B0F12',
 
     // Neutrals
     text: '#F9FAFB',
     textSecondary: '#D1D5DB',
     textTertiary: '#9CA3AF',
+    textMuted: '#9CA3AF',
     border: '#374151',
 
     // Status colors

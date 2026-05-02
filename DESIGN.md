@@ -19,43 +19,55 @@ Defined in `constants/Colors.ts`. Accessed via `useAppColorScheme()` → `Colors
 
 ### Light
 
-| Token             | Value     | Usage                              |
-| ----------------- | --------- | ---------------------------------- |
-| `primary`         | `#2E7D32` | Buttons, active states, highlights |
-| `primaryDark`     | `#256628` | Pressed button states              |
-| `primaryDarker`   | `#1F5522` | Deep pressed / dark accents        |
-| `accent`          | `#FFB300` | Mango — secondary CTA, badges      |
-| `background`      | `#FAFBF7` | Screen background                  |
-| `surface`         | `#FFFFFF` | Cards, modals, inputs              |
-| `inputBackground` | `#F3F4F6` | Input field fill                   |
-| `text`            | `#111827` | Primary text                       |
-| `textSecondary`   | `#6B7280` | Supporting / metadata text         |
-| `textTertiary`    | `#9CA3AF` | Placeholders, disabled             |
-| `border`          | `#E5E7EB` | Dividers, input borders            |
-| `success`         | `#16A34A` | Delivered, confirmed               |
-| `warning`         | `#F59E0B` | Pending, caution                   |
-| `error`           | `#DC2626` | Errors, destructive                |
-| `info`            | `#0EA5E9` | Informational                      |
+| Token             | Value     | Usage                                  |
+| ----------------- | --------- | -------------------------------------- |
+| `primary`         | `#2E7D32` | Buttons, active states, highlights     |
+| `primaryDark`     | `#256628` | Pressed button states                  |
+| `primaryDarker`   | `#1F5522` | Deep pressed / dark accents            |
+| `primaryTint`     | `#4CAF50` | Lightened green — auth title, wordmark |
+| `accent`          | `#FFB300` | Mango — secondary CTA, badges          |
+| `accentWarm`      | `#FF9800` | "Seasons" wordmark orange              |
+| `accentSoft`      | `#FFBE88` | Soft mango — auth bg radial            |
+| `mintSoft`        | `#7FD8B5` | Soft mint — auth bg radial             |
+| `background`      | `#FAFBF7` | Screen background                      |
+| `surface`         | `#FFFFFF` | Cards, modals, inputs                  |
+| `inputBackground` | `#F3F4F6` | Input field fill                       |
+| `authBackground`  | `#F9F9F9` | Auth screen base under radials         |
+| `text`            | `#111827` | Primary text                           |
+| `textSecondary`   | `#6B7280` | Supporting / metadata text             |
+| `textTertiary`    | `#9CA3AF` | Placeholders, disabled                 |
+| `textMuted`       | `#666666` | Auth subtitle / footer text            |
+| `border`          | `#E5E7EB` | Dividers, input borders                |
+| `success`         | `#16A34A` | Delivered, confirmed                   |
+| `warning`         | `#F59E0B` | Pending, caution                       |
+| `error`           | `#DC2626` | Errors, destructive                    |
+| `info`            | `#0EA5E9` | Informational                          |
 
 ### Dark
 
-| Token             | Value     | Notes vs light                   |
-| ----------------- | --------- | -------------------------------- |
-| `primary`         | `#4CAF50` | Lightened for dark bg contrast   |
-| `primaryDark`     | `#2E7D32` |                                  |
-| `primaryDarker`   | `#256628` |                                  |
-| `accent`          | `#FFB300` | Unchanged                        |
-| `background`      | `#0B0F12` | Near-black                       |
-| `surface`         | `#1A1F24` | Card surfaces                    |
-| `inputBackground` | `#2D3238` |                                  |
-| `text`            | `#F9FAFB` |                                  |
-| `textSecondary`   | `#D1D5DB` |                                  |
-| `textTertiary`    | `#9CA3AF` | Unchanged                        |
-| `border`          | `#374151` |                                  |
-| `success`         | `#22C55E` |                                  |
-| `warning`         | `#F59E0B` | Unchanged                        |
-| `error`           | `#EF4444` |                                  |
-| `info`            | `#3B82F6` |                                  |
+| Token             | Value     | Notes vs light                 |
+| ----------------- | --------- | ------------------------------ |
+| `primary`         | `#4CAF50` | Lightened for dark bg contrast |
+| `primaryDark`     | `#2E7D32` |                                |
+| `primaryDarker`   | `#256628` |                                |
+| `primaryTint`     | `#4CAF50` | Brand-consistent across themes |
+| `accent`          | `#FFB300` | Unchanged                      |
+| `accentWarm`      | `#FF9800` | Brand-consistent across themes |
+| `accentSoft`      | `#FFBE88` | Brand-consistent across themes |
+| `mintSoft`        | `#7FD8B5` | Brand-consistent across themes |
+| `background`      | `#0B0F12` | Near-black                     |
+| `surface`         | `#1A1F24` | Card surfaces                  |
+| `inputBackground` | `#2D3238` |                                |
+| `authBackground`  | `#0B0F12` | Matches dark base              |
+| `text`            | `#F9FAFB` |                                |
+| `textSecondary`   | `#D1D5DB` |                                |
+| `textTertiary`    | `#9CA3AF` | Unchanged                      |
+| `textMuted`       | `#9CA3AF` | Mapped to tertiary in dark     |
+| `border`          | `#374151` |                                |
+| `success`         | `#22C55E` |                                |
+| `warning`         | `#F59E0B` | Unchanged                      |
+| `error`           | `#EF4444` |                                |
+| `info`            | `#3B82F6` |                                |
 
 ### Order Status Colors
 
@@ -69,27 +81,46 @@ Defined in `constants/Colors.ts`. Accessed via `useAppColorScheme()` → `Colors
 
 ## Typography
 
-Fonts loaded in `app/_layout.tsx` via `expo-font`.
+Tokens defined in `constants/Typography.ts` (`FontFamily`, `FontSize`, `FontWeight`, `LineHeight`, `LetterSpacing`). Fonts loaded in `app/_layout.tsx` via `expo-font`.
 
-| Family             | Weight  | Use                          |
-| ------------------ | ------- | ---------------------------- |
-| `Inter_400Regular` | 400     | Body, default                |
-| `Inter_600SemiBold`| 600     | Labels, supporting headings  |
-| `Inter_700Bold`    | 700     | Headings, emphasis           |
+| Family              | Weight | Use                                                                      |
+| ------------------- | ------ | ------------------------------------------------------------------------ |
+| `Inter_400Regular`  | 400    | Body, default                                                            |
+| `Inter_500Medium`   | 500    | Medium emphasis (used in some screens — not yet loaded in `_layout.tsx`) |
+| `Inter_600SemiBold` | 600    | Labels, supporting headings                                              |
+| `Inter_700Bold`     | 700    | Headings, emphasis                                                       |
+| `SpaceMono`         | 400    | Monospace                                                                |
 
-### Type Scale
+### Type Scale (`FontSize`)
 
-| Role             | Size | Weight   | Line Height |
-| ---------------- | ---- | -------- | ----------- |
-| Title            | 32px | bold     | 32          |
-| Large heading    | 28px | bold     | —           |
-| Subtitle         | 20px | bold     | —           |
-| Section heading  | 20–24px | semibold | —         |
-| Default          | 16px | regular  | 24          |
-| DefaultSemiBold  | 16px | semibold | 24          |
-| Label            | 14px | semibold | —           |
-| Small / meta     | 12–14px | regular | —          |
-| Button           | 16px | semibold | —           |
+| Role    | Size | Use                           |
+| ------- | ---- | ----------------------------- |
+| `title` | 32px | Auth title, screen titles     |
+| `h1`    | 28px | Welcome / cart header         |
+| `h2`    | 24px | KPI value, totals             |
+| `h3`    | 20px | Section heading, subtitle     |
+| `body`  | 16px | Default body, button label    |
+| `label` | 14px | Labels, filter chips          |
+| `small` | 12px | Meta, KPI label, status badge |
+| `micro` | 10px | Disclaimers                   |
+
+### Line Heights (`LineHeight`, multiplier)
+
+| Token    | Value | Use              |
+| -------- | ----- | ---------------- |
+| `tight`  | 1.0   | Display headings |
+| `snug`   | 1.25  | Subheadings      |
+| `normal` | 1.5   | Body             |
+
+### Letter Spacing (`LetterSpacing`, absolute px)
+
+RN uses absolute px for `letterSpacing`. Values are pre-computed from the CSS `em` values against their target font size.
+
+| Token    | Value (px) | CSS source        | Use                       |
+| -------- | ---------- | ----------------- | ------------------------- |
+| `title`  | -0.32      | `-0.01em` × 32px  | `FontSize.title` headings |
+| `h1`     | -0.14      | `-0.005em` × 28px | `FontSize.h1` headings    |
+| `normal` | 0          | —                 | Default                   |
 
 ---
 
@@ -112,32 +143,40 @@ const colors = Colors[colorScheme];
 
 ## Spacing & Layout
 
-| Purpose                  | Value       |
-| ------------------------ | ----------- |
-| Screen horizontal pad    | 20px        |
-| Screen vertical pad      | 16–24px     |
-| Compact gap              | 8px         |
-| Standard gap             | 12px        |
-| Loose / section gap      | 16px        |
-| Section margin bottom    | 12–16px     |
+Tokens defined in `constants/Spacing.ts` (`Spacing`, `Radius`, `Shadow`).
 
-### Border Radius
+### Spacing scale (`Spacing`)
 
-| Context             | Radius |
-| ------------------- | ------ |
-| Inputs, small items | 8px    |
-| Cards               | 12px   |
-| Modals, large areas | 16px   |
+| Token | Value | Purpose               |
+| ----- | ----- | --------------------- |
+| `s1`  | 4px   |                       |
+| `s2`  | 8px   | Compact gap           |
+| `s3`  | 12px  | Standard gap          |
+| `s4`  | 16px  | Loose / section gap   |
+| `s5`  | 20px  | Screen horizontal pad |
+| `s6`  | 24px  | Large gap             |
+| `s8`  | 32px  | Hero gap              |
 
-### Shadows
+### Border Radius (`Radius`)
 
-```ts
-shadowColor: '#000'
-shadowOffset: { width: 0, height: 2 }
-shadowOpacity: 0.1          // 0.2 for elevated buttons
-shadowRadius: 4             // 8 for elevated buttons
-elevation: 2                // 4 for elevated buttons
-```
+| Token  | Value | Context             |
+| ------ | ----- | ------------------- |
+| `sm`   | 8px   | Inputs, small chips |
+| `md`   | 12px  | Cards, buttons      |
+| `lg`   | 16px  | Modals              |
+| `xl`   | 20px  | Auth card           |
+| `pill` | 999px | Pill-shaped chips   |
+
+### Shadows (`Shadow`)
+
+Each entry is a complete RN style object (`shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`, `elevation`).
+
+| Token    | Equivalent CSS                   | Use                            |
+| -------- | -------------------------------- | ------------------------------ |
+| `sm`     | `0 2px 4px rgba(0,0,0,0.10)`     | Cards, chips                   |
+| `md`     | `0 4px 8px rgba(0,0,0,0.10)`     | Auth card, elevated surfaces   |
+| `button` | `0 4px 8px rgba(46,125,50,0.20)` | Primary buttons (green-tinted) |
+| `toast`  | `0 2px 3.84px rgba(0,0,0,0.25)`  | Toast banner                   |
 
 ---
 
@@ -159,7 +198,12 @@ Mapped symbols: `house.fill`, `paperplane.fill`, `leaf.fill`, `cart.fill`, `truc
 Notification banner. Enters with spring, auto-dismisses.
 
 ```tsx
-<Toast message="Saved!" type="success" visible={show} onHide={() => setShow(false)} />
+<Toast
+  message="Saved!"
+  type="success"
+  visible={show}
+  onHide={() => setShow(false)}
+/>
 ```
 
 - Position: absolute top 60, horizontal 16px
@@ -192,15 +236,15 @@ Types: `'default'`, `'title'`, `'defaultSemiBold'`, `'subtitle'`, `'link'`
 
 ### `ThemedView` family
 
-| Component        | Purpose                                                     |
-| ---------------- | ----------------------------------------------------------- |
-| `ThemedView`     | Base container with theme background                        |
-| `LoadingView`    | Centered spinner + optional message                         |
-| `ThemedModal`    | Overlay modal — header with close button, scrollable body   |
-| `ModalFooter`    | Cancel + Save button pair with loading state                |
-| `ThemedDropdown` | Label → selector → scrollable list (max 260px)             |
-| `ThemedInput`    | Label + TextInput + error display                           |
-| `ThemedSearchBar`| Search icon + input + clear button                         |
+| Component         | Purpose                                                   |
+| ----------------- | --------------------------------------------------------- |
+| `ThemedView`      | Base container with theme background                      |
+| `LoadingView`     | Centered spinner + optional message                       |
+| `ThemedModal`     | Overlay modal — header with close button, scrollable body |
+| `ModalFooter`     | Cancel + Save button pair with loading state              |
+| `ThemedDropdown`  | Label → selector → scrollable list (max 260px)            |
+| `ThemedInput`     | Label + TextInput + error display                         |
+| `ThemedSearchBar` | Search icon + input + clear button                        |
 
 **ThemedInput specs:** min height 48px, border 1px, radius 8px, error = red border + message below.
 
@@ -228,21 +272,21 @@ Expandable section wrapper with chevron.
 
 ## Buttons
 
-| Property       | Value                                |
-| -------------- | ------------------------------------ |
-| Height         | 52px                                 |
-| Border radius  | 12px                                 |
-| Font           | 16px semibold                        |
-| Press feedback | Spring scale 0.95 → 1.0              |
-| Loading state  | Spinner replaces label               |
-| Shadow         | elevation 4, opacity 0.2             |
+| Property       | Value                    |
+| -------------- | ------------------------ |
+| Height         | 52px                     |
+| Border radius  | 12px                     |
+| Font           | 16px semibold            |
+| Press feedback | Spring scale 0.95 → 1.0  |
+| Loading state  | Spinner replaces label   |
+| Shadow         | elevation 4, opacity 0.2 |
 
-| Variant       | Style                                 |
-| ------------- | ------------------------------------- |
-| `primary`     | `primary` fill, white text            |
-| `secondary`   | `accent` (mango) fill, white text     |
-| `outline`     | Transparent fill, `border` border     |
-| `destructive` | `error` fill, white text              |
+| Variant       | Style                             |
+| ------------- | --------------------------------- |
+| `primary`     | `primary` fill, white text        |
+| `secondary`   | `accent` (mango) fill, white text |
+| `outline`     | Transparent fill, `border` border |
+| `destructive` | `error` fill, white text          |
 
 ---
 
@@ -290,12 +334,12 @@ SafeAreaView (background fill)
 
 ## Animation Patterns
 
-### Navigation transitions (app/_layout.tsx)
+### Navigation transitions (app/\_layout.tsx)
 
-| Screens                         | Animation          | Duration |
-| --------------------------------| ------------------ | -------- |
-| Auth / Admin / Employee / Tabs  | `fade`             | default  |
-| Default screens, order detail   | `slide_from_right` | 250ms    |
+| Screens                        | Animation          | Duration |
+| ------------------------------ | ------------------ | -------- |
+| Auth / Admin / Employee / Tabs | `fade`             | default  |
+| Default screens, order detail  | `slide_from_right` | 250ms    |
 
 ### Toast
 
@@ -341,17 +385,20 @@ SafeAreaView (background fill)
 
 ## Constants Quick Reference
 
-| Constant file          | Contents                                        |
-| ---------------------- | ----------------------------------------------- |
-| `constants/Colors.ts`  | All color tokens, light + dark                  |
-| `constants/Routes.ts`  | Route name constants + `USER_ROLES` enum        |
-| `constants/Company.ts` | Brand name, tagline, address                    |
+| Constant file             | Contents                                             |
+| ------------------------- | ---------------------------------------------------- |
+| `constants/Colors.ts`     | All color tokens, light + dark                       |
+| `constants/Typography.ts` | `FontFamily`, `FontSize`, `FontWeight`, `LineHeight` |
+| `constants/Spacing.ts`    | `Spacing` scale, `Radius`, `Shadow`                  |
+| `constants/Routes.ts`     | Route name constants + `USER_ROLES` enum             |
+| `constants/Company.ts`    | Brand name, tagline, address                         |
 
 ---
 
 ## Known Design Debt / Redesign Notes
 
-- Spacing values are not centralized — they appear as magic numbers in `StyleSheet.create` blocks across files. A future `constants/Spacing.ts` or `constants/Layout.ts` would help.
+- Spacing, radius, and shadow tokens are now centralized in `constants/Spacing.ts`, but most screens still use inline magic numbers — migrating them is incremental work.
+- `Inter_500Medium` is referenced by several screens but is not yet loaded in `app/_layout.tsx`; those weights silently fall back to the system font. Either load it or remove the references.
 - No shared button component exists — button styles are recreated per screen. Consolidating into a `Button` primitive would reduce drift.
 - Dark mode has not been validated on all admin screens.
 - The `ThemeToggle` component is only accessible from the profile screen; no design pattern exists for surfacing it elsewhere.
