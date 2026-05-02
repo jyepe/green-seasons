@@ -1,11 +1,10 @@
-name: EAS Android Preview Build (tag)
+name: EAS Production Build (tag)
 
 on:
   push:
     tags:
-      - 'preview-*'
-      - 'v*-preview*'
-      - 'v*-rc[0-9]*'
+      - 'prod-*'
+      - 'v*-prod*'
 
 jobs:
   build:
@@ -27,5 +26,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Trigger Preview build on EAS
-        run: eas build --profile preview --platform all --non-interactive --no-wait
+      - name: Trigger Production build on EAS
+        run: eas build --profile production --platform all --non-interactive --no-wait
