@@ -16,6 +16,7 @@ import {
   ProfileRow,
   ProfileSection,
   ProfileToggleRow,
+  ProfileTopBar,
 } from '@/components/profile';
 import { Toast } from '@/components/ui/Toast';
 import { Colors } from '@/constants/Colors';
@@ -172,14 +173,7 @@ export default function RestaurantOwnerProfile() {
       style={[styles.container, { backgroundColor: colors.background }]}
       accessibilityLabel="User Profile Screen"
     >
-      <ProfileHeader
-        name={fullName}
-        role={titleCaseRole(userInfo?.role)}
-        restaurantName={restaurant?.name}
-        initials={initials}
-        onSettingsPress={() => router.push('/profile/edit')}
-        isLoading={!userInfo}
-      />
+      <ProfileTopBar onSettingsPress={() => router.push('/profile/edit')} />
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={
@@ -190,6 +184,14 @@ export default function RestaurantOwnerProfile() {
           />
         }
       >
+        <ProfileHeader
+          name={fullName}
+          role={titleCaseRole(userInfo?.role)}
+          restaurantName={restaurant?.name}
+          initials={initials}
+          isLoading={!userInfo}
+        />
+
         {/* Account */}
         <ProfileSection title="Account">
           <ProfileRow
