@@ -201,8 +201,7 @@ export default function RestaurantOwnerProfile() {
           <ProfileRow
             icon="business-outline"
             iconColor={colors.accentWarm}
-            label="Business details"
-            sublabel="EIN, license, tax exempt"
+            label="Restaurant details"
             onPress={showComingSoon}
           />
         </ProfileSection>
@@ -290,7 +289,7 @@ export default function RestaurantOwnerProfile() {
             Green Seasons
           </Text>
           <Text style={[styles.footerVersion, { color: colors.textTertiary }]}>
-            v {appVersion} · Hialeah, FL
+            v {appVersion}
           </Text>
         </View>
       </ScrollView>
