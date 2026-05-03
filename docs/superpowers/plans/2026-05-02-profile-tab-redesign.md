@@ -17,6 +17,7 @@
 ## Task 1: Add `withAlpha` helper
 
 **Files:**
+
 - Create: `components/profile/utils.ts`
 
 - [ ] **Step 1: Create the helper file**
@@ -55,6 +56,7 @@ git commit -m "feat(profile): add withAlpha helper for icon-tile backgrounds"
 ## Task 2: Build `ProfileAvatar`
 
 **Files:**
+
 - Create: `components/profile/ProfileAvatar.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -138,6 +140,7 @@ git commit -m "feat(profile): add ProfileAvatar with gradient initials"
 ## Task 3: Build `ProfileSection`
 
 **Files:**
+
 - Create: `components/profile/ProfileSection.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -242,6 +245,7 @@ git commit -m "feat(profile): add ProfileSection container with auto last-row di
 ## Task 4: Build `ProfileRow`
 
 **Files:**
+
 - Create: `components/profile/ProfileRow.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -288,9 +292,7 @@ export function ProfileRow({
   const resolvedIconColor = iconColor ?? colors.primary;
   const resolvedIconBg = iconBg ?? withAlpha(resolvedIconColor, 0.1);
   const pressOverlay =
-    colorScheme === 'dark'
-      ? 'rgba(255,255,255,0.04)'
-      : 'rgba(17,24,39,0.03)';
+    colorScheme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(17,24,39,0.03)';
 
   const a11yLabel = [label, value, sublabel].filter(Boolean).join(', ');
 
@@ -314,10 +316,7 @@ export function ProfileRow({
       </View>
       <View style={styles.body}>
         <Text
-          style={[
-            styles.label,
-            { color: danger ? colors.error : colors.text },
-          ]}
+          style={[styles.label, { color: danger ? colors.error : colors.text }]}
         >
           {label}
         </Text>
@@ -402,6 +401,7 @@ git commit -m "feat(profile): add ProfileRow with icon tile, sublabel, value and
 ## Task 5: Build `ProfileToggleRow`
 
 **Files:**
+
 - Create: `components/profile/ProfileToggleRow.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -532,6 +532,7 @@ git commit -m "feat(profile): add ProfileToggleRow with native Switch"
 ## Task 6: Build `ProfileHeader`
 
 **Files:**
+
 - Create: `components/profile/ProfileHeader.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -571,12 +572,7 @@ export function ProfileHeader({
   return (
     <View>
       {/* Top bar: absolute so the centered avatar/name block sits *below* it */}
-      <View
-        style={[
-          styles.topBar,
-          { paddingTop: insets.top + 8 },
-        ]}
-      >
+      <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         <Text
           style={[styles.topBarTitle, { color: colors.text }]}
           accessibilityRole="header"
@@ -604,12 +600,7 @@ export function ProfileHeader({
       </View>
 
       {/* Centered minimal header */}
-      <View
-        style={[
-          styles.center,
-          { paddingTop: insets.top + 64 },
-        ]}
-      >
+      <View style={[styles.center, { paddingTop: insets.top + 64 }]}>
         <ProfileAvatar initials={initials} size={76} />
         <View style={styles.nameBlock}>
           {isLoading ? (
@@ -631,9 +622,7 @@ export function ProfileHeader({
             <>
               <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
               {role ? (
-                <Text
-                  style={[styles.role, { color: colors.textSecondary }]}
-                >
+                <Text style={[styles.role, { color: colors.textSecondary }]}>
                   {role}
                 </Text>
               ) : null}
@@ -645,10 +634,7 @@ export function ProfileHeader({
                     color={colors.textSecondary}
                   />
                   <Text
-                    style={[
-                      styles.restaurant,
-                      { color: colors.textSecondary },
-                    ]}
+                    style={[styles.restaurant, { color: colors.textSecondary }]}
                   >
                     {restaurantName}
                   </Text>
@@ -755,6 +741,7 @@ git commit -m "feat(profile): add ProfileHeader with top bar + centered minimal 
 ## Task 7: Add barrel export
 
 **Files:**
+
 - Create: `components/profile/index.ts`
 
 - [ ] **Step 1: Create the barrel**
@@ -785,6 +772,7 @@ git commit -m "feat(profile): add barrel export for profile components"
 ## Task 8: Rewrite `UserProfile.tsx` orchestrator
 
 **Files:**
+
 - Modify: `components/UserProfile.tsx` (full rewrite)
 
 - [ ] **Step 1: Replace the file with the new orchestrator**
@@ -815,11 +803,7 @@ import { useAppColorScheme, useTheme } from '@/hooks/useTheme';
 import { useFavoriteItems } from '@/hooks/useFavorite';
 import { useOrders } from '@/hooks/useOrders';
 import { useRestaurant } from '@/hooks/useRestaurant';
-import {
-  useDeleteAccount,
-  useSignOut,
-  useUserInfo,
-} from '@/hooks/useUserInfo';
+import { useDeleteAccount, useSignOut, useUserInfo } from '@/hooks/useUserInfo';
 
 const FAVORITES_PREVIEW_LIMIT = 2;
 
@@ -1083,14 +1067,10 @@ export default function UserProfile() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text
-            style={[styles.footerBrand, { color: colors.textSecondary }]}
-          >
+          <Text style={[styles.footerBrand, { color: colors.textSecondary }]}>
             Green Seasons
           </Text>
-          <Text
-            style={[styles.footerVersion, { color: colors.textTertiary }]}
-          >
+          <Text style={[styles.footerVersion, { color: colors.textTertiary }]}>
             v {appVersion} · Hialeah, FL
           </Text>
         </View>
@@ -1162,13 +1142,12 @@ Open the app on iOS Simulator (or Android emulator) and a real device if availab
 
 Open `.design-ref/project/Profile Tab.html` in a browser for reference (the template renders as static HTML). Compare each region:
 
-  - Top bar: "Profile" title left, gear button right, sits above the avatar.
-  - Header: 76px gradient avatar with initials, name (22px bold) below, role ("Restaurant Owner" or similar) below name, storefront icon + restaurant name on a single row.
-  - Five sections in this order: Account · Orders & Lists · Preferences · Support · (no-title) Sign out · (no-title) Delete account.
-  - Footer: "Green Seasons" / "v {version} · Hialeah, FL".
+- Top bar: "Profile" title left, gear button right, sits above the avatar.
+- Header: 76px gradient avatar with initials, name (22px bold) below, role ("Restaurant Owner" or similar) below name, storefront icon + restaurant name on a single row.
+- Five sections in this order: Account · Orders & Lists · Preferences · Support · (no-title) Sign out · (no-title) Delete account.
+- Footer: "Green Seasons" / "v {version} · Hialeah, FL".
 
 - [ ] **Step 3: Run through interactions**
-
   - Tap the gear → routes to `/profile/edit`.
   - Tap "Personal info" → routes to `/profile/edit`.
   - Tap "Business details" → toast "Coming soon" appears at top.
@@ -1182,7 +1161,6 @@ Open `.design-ref/project/Profile Tab.html` in a browser for reference (the temp
   - Pull down to refresh → spinner appears, queries refetch.
 
 - [ ] **Step 4: Test edge cases**
-
   - Sign in as a restaurant owner who has **no** linked restaurant. Confirm the storefront row is hidden.
   - Sign in as a user with **no favorites**. Confirm the favorites row shows "0 items" and sublabel "Tap to start saving items".
   - Toggle dark mode and re-verify everything (cards have a hairline border, no shadow; text is legible).
@@ -1206,6 +1184,7 @@ git push -u origin feature/profile-tab-redesign
 ```
 
 Open a PR back to `preview` with:
+
 - A short description summarizing the redesign.
 - Before/after screenshots (light + dark, iOS).
 - A note that no backend was changed and three rows ("Business details", "Help center", "Terms & privacy") surface a "Coming soon" toast pending future work.

@@ -20,15 +20,15 @@ The template's `EDITMODE-BEGIN` defaults represent the user's final landing stat
 
 ## Scope decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Styling | React Native `StyleSheet` only | Matches every other screen. Tailwind/NativeWind would require new metro/babel/postcss config and create a hybrid styling vocabulary for one screen. The design has zero requirements that benefit from utility classes. |
-| Backend gaps | Visual-only stubs | Business details, notification preferences, Help/Terms have no backend. Stubbed rows show realistic placeholder values; taps surface a "Coming soon" toast (or use local `useState` for toggles). |
-| Theme toggle | Row in Preferences | Existing inline `<ThemeToggle />` is replaced by a `ProfileToggleRow` labeled "Dark mode" alongside Delivery updates. |
-| Delete account | Danger row in its own bottom section | Required for app-store compliance; rendered as a single danger row in a no-title section beneath Sign out. |
-| Admin shortcuts | Dropped | The current admin conditional buttons (Create Restaurant, Employee Management, Item Management) are out of scope — admins reach those screens through the `/admin` stack. |
-| Settings gear | Navigates to `/profile/edit` | Pragmatic reuse of the existing edit route. |
-| Row scope | Mirror template defaults | Render only the rows toggled ON in `EDITMODE-BEGIN` (plus our additions: Dark mode, Delete account). |
+| Decision        | Choice                               | Rationale                                                                                                                                                                                                               |
+| --------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Styling         | React Native `StyleSheet` only       | Matches every other screen. Tailwind/NativeWind would require new metro/babel/postcss config and create a hybrid styling vocabulary for one screen. The design has zero requirements that benefit from utility classes. |
+| Backend gaps    | Visual-only stubs                    | Business details, notification preferences, Help/Terms have no backend. Stubbed rows show realistic placeholder values; taps surface a "Coming soon" toast (or use local `useState` for toggles).                       |
+| Theme toggle    | Row in Preferences                   | Existing inline `<ThemeToggle />` is replaced by a `ProfileToggleRow` labeled "Dark mode" alongside Delivery updates.                                                                                                   |
+| Delete account  | Danger row in its own bottom section | Required for app-store compliance; rendered as a single danger row in a no-title section beneath Sign out.                                                                                                              |
+| Admin shortcuts | Dropped                              | The current admin conditional buttons (Create Restaurant, Employee Management, Item Management) are out of scope — admins reach those screens through the `/admin` stack.                                               |
+| Settings gear   | Navigates to `/profile/edit`         | Pragmatic reuse of the existing edit route.                                                                                                                                                                             |
+| Row scope       | Mirror template defaults             | Render only the rows toggled ON in `EDITMODE-BEGIN` (plus our additions: Dark mode, Delete account).                                                                                                                    |
 
 ## File layout
 
@@ -48,51 +48,60 @@ Keep `.design-ref/` gitignored.
 ## Component contracts
 
 ### `ProfileAvatar`
+
 ```ts
 type Props = {
-  initials: string;       // 1–2 chars
-  size?: number;          // default 76
+  initials: string; // 1–2 chars
+  size?: number; // default 76
 };
 ```
+
 Circular gradient (135deg, `colors.primary` → primaryTint), white initials at 38% size, soft drop shadow tinted with `colors.primary`. Uses `expo-linear-gradient`.
 
 ### `ProfileHeader`
+
 ```ts
 type Props = {
   name: string;
-  role?: string;          // omitted when falsy
+  role?: string; // omitted when falsy
   restaurantName?: string;
 };
 ```
+
 Renders top bar (absolute-positioned title + 36×36 gear button → `/profile/edit`) and a centered avatar/name/role/restaurant block. `paddingTop: insets.top + 8` for the bar; `paddingTop: 72` for the centered block.
 
 ### `ProfileSection`
+
 ```ts
 type Props = {
-  title?: string;         // uppercase 11px semibold; omitted when falsy
+  title?: string; // uppercase 11px semibold; omitted when falsy
   children: React.ReactNode;
 };
 ```
+
 Wraps children in a rounded surface card with hairline borders between visible children. Filters falsy children before adding dividers; the last visible child has no bottom border. Light mode: shadow. Dark mode: 1px border in `colors.border`.
 
 ### `ProfileRow`
+
 ```ts
 type Props = {
   icon: keyof typeof Ionicons.glyphMap;
-  iconBg?: string;        // default: alpha-10 of iconColor
-  iconColor?: string;     // default: colors.primary
+  iconBg?: string; // default: alpha-10 of iconColor
+  iconColor?: string; // default: colors.primary
   label: string;
   sublabel?: string;
   value?: string;
-  trailing?: 'chevron' | 'none';   // default 'chevron'
+  trailing?: 'chevron' | 'none'; // default 'chevron'
   danger?: boolean;
   onPress?: () => void;
   accessibilityHint?: string;
 };
 ```
+
 `Pressable` with overlay press feedback. 32×32 icon tile, label 14px semibold (red when `danger`), sublabel 12px regular, value 13px medium right-aligned. Chevron 18px in `colors.text3`.
 
 ### `ProfileToggleRow`
+
 ```ts
 type Props = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -104,9 +113,11 @@ type Props = {
   onValueChange: (next: boolean) => void;
 };
 ```
+
 Same layout as `ProfileRow` but trailing element is React Native's `Switch` themed with `colors.primary`.
 
 ### `UserProfile` (orchestrator)
+
 - Wires `useUserInfo`, `useRestaurant(owned_restaurant_id)`, `useOrders(userInfo?.id)`, `useFavoriteItems`, `useTheme`, `useSignOut`, `useDeleteAccount`.
 - Local UI state: `notifDelivery` (default `true`).
 - Computes `initials` from name parts (first letter of first + last; fallback to email's first char).
@@ -116,15 +127,15 @@ Same layout as `ProfileRow` but trailing element is React Native's `Switch` them
 
 ## Section content (final)
 
-| Section | Rows |
-|---|---|
-| Account | Personal info (sublabel: email) → `/profile/edit` · Business details (sublabel: "EIN, license, tax exempt") → toast "Coming soon" |
-| Orders & Lists | Order history (value: `${count} total`) → `/orders` · My favorites (sublabel: first 2 item names + "+N", value: `${count} items`) → `/favorites` |
-| Preferences | Delivery updates (toggle, default ON, local state) · Dark mode (binary toggle: ON → `setThemeMode('dark')`, OFF → `setThemeMode('light')`; bound state = `isDark` from `useTheme`) |
-| Support | Help center → toast "Coming soon" · Terms & privacy → toast "Coming soon" |
-| (none) | Sign out (danger, no chevron) → existing `handleSignOut` |
-| (none) | Delete account (danger, no chevron) → existing `handleDeleteAccount` |
-| Footer | "Green Seasons" / `v {Constants.expoConfig?.version ?? '?'} · Hialeah, FL` (uses already-installed `expo-constants`) |
+| Section        | Rows                                                                                                                                                                               |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account        | Personal info (sublabel: email) → `/profile/edit` · Business details (sublabel: "EIN, license, tax exempt") → toast "Coming soon"                                                  |
+| Orders & Lists | Order history (value: `${count} total`) → `/orders` · My favorites (sublabel: first 2 item names + "+N", value: `${count} items`) → `/favorites`                                   |
+| Preferences    | Delivery updates (toggle, default ON, local state) · Dark mode (binary toggle: ON → `setThemeMode('dark')`, OFF → `setThemeMode('light')`; bound state = `isDark` from `useTheme`) |
+| Support        | Help center → toast "Coming soon" · Terms & privacy → toast "Coming soon"                                                                                                          |
+| (none)         | Sign out (danger, no chevron) → existing `handleSignOut`                                                                                                                           |
+| (none)         | Delete account (danger, no chevron) → existing `handleDeleteAccount`                                                                                                               |
+| Footer         | "Green Seasons" / `v {Constants.expoConfig?.version ?? '?'} · Hialeah, FL` (uses already-installed `expo-constants`)                                                               |
 
 Icon assignments mirror the template `profile.jsx` exactly. Favorites icon uses literal `#DC2626` to match the template's red regardless of theme.
 
@@ -138,14 +149,14 @@ Icon assignments mirror the template `profile.jsx` exactly. Favorites icon uses 
 
 ## Loading & error states
 
-| State | Behavior |
-|---|---|
-| `userInfo` loading | Render header skeleton: gray `View` placeholders sized as the name/role/restaurant lines (background = `colors.border`, no animation). Sections still render with empty values. |
-| `userInfo` null/error | Replace header with the existing "Loading profile..." fallback message. |
-| `restaurant` undefined (no `owned_restaurant_id`) | Hide the restaurant line in the header. |
-| `orders` loading | Order history value shows "—" until loaded. |
-| `favoriteItems` loading | Favorites value shows "—" and sublabel is omitted. |
-| `favoriteItems` empty | Value: "0 items"; sublabel: "Tap to start saving items". |
+| State                                             | Behavior                                                                                                                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `userInfo` loading                                | Render header skeleton: gray `View` placeholders sized as the name/role/restaurant lines (background = `colors.border`, no animation). Sections still render with empty values. |
+| `userInfo` null/error                             | Replace header with the existing "Loading profile..." fallback message.                                                                                                         |
+| `restaurant` undefined (no `owned_restaurant_id`) | Hide the restaurant line in the header.                                                                                                                                         |
+| `orders` loading                                  | Order history value shows "—" until loaded.                                                                                                                                     |
+| `favoriteItems` loading                           | Favorites value shows "—" and sublabel is omitted.                                                                                                                              |
+| `favoriteItems` empty                             | Value: "0 items"; sublabel: "Tap to start saving items".                                                                                                                        |
 
 ## Accessibility
 
