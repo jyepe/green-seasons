@@ -172,6 +172,14 @@ export default function RestaurantOwnerProfile() {
       style={[styles.container, { backgroundColor: colors.background }]}
       accessibilityLabel="User Profile Screen"
     >
+      <ProfileHeader
+        name={fullName}
+        role={titleCaseRole(userInfo?.role)}
+        restaurantName={restaurant?.name}
+        initials={initials}
+        onSettingsPress={() => router.push('/profile/edit')}
+        isLoading={!userInfo}
+      />
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={
@@ -182,15 +190,6 @@ export default function RestaurantOwnerProfile() {
           />
         }
       >
-        <ProfileHeader
-          name={fullName}
-          role={titleCaseRole(userInfo?.role)}
-          restaurantName={restaurant?.name}
-          initials={initials}
-          onSettingsPress={() => router.push('/profile/edit')}
-          isLoading={!userInfo}
-        />
-
         {/* Account */}
         <ProfileSection title="Account">
           <ProfileRow
