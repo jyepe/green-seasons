@@ -18,11 +18,10 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect, useMemo } from 'react';
-
-SplashScreen.preventAutoHideAsync();
-
 import { ThemeProvider, useAppColorScheme } from '@/hooks/useTheme';
 import { Colors } from '@/constants/Colors';
+
+SplashScreen.preventAutoHideAsync();
 
 // Create a client
 const queryClient = new QueryClient({
@@ -122,6 +121,7 @@ function AppContent() {
           },
         }}
       >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen

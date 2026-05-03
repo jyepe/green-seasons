@@ -18,25 +18,22 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useSystemColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load saved theme preference on mount
+  // Load saved theme preference on mount.
+  // Render is NOT gated on this resolving — AsyncStorage on Android+new-arch
+  // can hang indefinitely and would otherwise trap the app on the splash
+  // screen. Initial render uses the system color scheme; the saved
+  // preference swaps in once it loads.
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+    AsyncStorage.getItem(THEME_STORAGE_KEY)
+      .then(savedTheme => {
         if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
           setThemeModeState(savedTheme as ThemeMode);
         }
-      } catch {
-        // Silently fail and use default 'system' theme.
-        // This is intentional - theme preferences are non-critical,
-        // and failing to load should not block the app from rendering.
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-    loadTheme();
+      })
+      .catch(() => {
+        // Theme preferences are non-critical; fall back to 'system'.
+      });
   }, []);
 
   const setThemeMode = async (mode: ThemeMode) => {
@@ -54,13 +51,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     themeMode === 'system' ? (systemColorScheme ?? 'light') : themeMode;
 
   const isDark = effectiveTheme === 'dark';
-
-  // Return null during initial theme load to prevent a flash of the wrong theme.
-  // The app layout waits for fonts to load anyway, so this minimal delay
-  // is seamlessly integrated into the overall loading experience.
-  if (!isLoaded) {
-    return null;
-  }
 
   return (
     <ThemeContext.Provider
