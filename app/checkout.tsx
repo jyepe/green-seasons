@@ -1,4 +1,5 @@
-import React, { useEffect, useReducer } from 'react';
+// app/checkout.tsx
+import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,47 +13,60 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
 import DateTimePicker, {
   DateTimePickerAndroid,
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-import { Ionicons } from '@expo/vector-icons';
 
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { useUserInfo } from '@/hooks/useUserInfo';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useCart } from '@/hooks/useCart';
 import { useCreateOrder } from '@/hooks/useOrders';
+import { getAllRestaurants, type Restaurant } from '@/lib/supabase';
+import { Toast } from '@/components/ui/Toast';
 import {
-  getAllRestaurants,
-  getUserInfoById,
-  type Restaurant,
-} from '@/lib/supabase';
-import { ThemedInput } from '@/components/ThemedView';
-import { useQuery } from '@tanstack/react-query';
+  CheckoutFooter,
+  CheckoutStepper,
+  CheckoutTopBar,
+  StepConfirmed,
+  StepDelivery,
+  StepPayment,
+  StepReview,
+  generateDeliverySlots,
+  type DeliverySlot,
+  type StepperStep,
+} from '@/components/checkout';
 import {
   checkoutReducer,
   initialCheckoutState,
   type PaymentMethod,
 } from '../reducers/checkoutReducer';
 
-type PaymentOption = {
-  value: PaymentMethod;
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-};
+const STEPS: StepperStep[] = [
+  { id: 'delivery', label: 'Delivery' },
+  { id: 'payment', label: 'Payment' },
+  { id: 'review', label: 'Review' },
+];
 
-function formatDate(date: Date) {
-  return date.toLocaleDateString(undefined, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
+const ARRIVES_FORMAT = new Intl.DateTimeFormat(undefined, {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+});
 
-export default function CheckoutScreen() {
+const SAVED_CARDS = [
+  { id: 'c1', brand: 'Visa', last4: '4242', exp: '08/27' },
+  { id: 'c2', brand: 'Mastercard', last4: '8841', exp: '02/26' },
+] as const;
+
+function CheckoutScreenInner() {
   const router = useRouter();
+  const navigation = useNavigation();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
@@ -62,8 +76,8 @@ export default function CheckoutScreen() {
   const { data: restaurant, isLoading: isRestaurantLoading } =
     useRestaurant(restaurantId);
   const createOrderMutation = useCreateOrder();
+  const { data: cartItems = [] } = useCart();
 
-  // Get all restaurants for admin dropdown
   const { data: allRestaurants = [] } = useQuery({
     queryKey: ['all-restaurants'],
     queryFn: getAllRestaurants,
@@ -79,57 +93,39 @@ export default function CheckoutScreen() {
     })
   );
 
-  // Update selectedRestaurantId when restaurantId (from props/user) becomes available
+  const slots = useMemo(() => generateDeliverySlots(new Date()), []);
+
+  // Prime the default slot once when slots are generated.
+  useEffect(() => {
+    if (!state.selectedSlotId && !state.deliveryDate && slots.length > 0) {
+      dispatch({
+        type: 'SET_SLOT',
+        payload: { slotId: slots[0].id, slotDate: slots[0].date },
+      });
+    }
+  }, [slots, state.selectedSlotId, state.deliveryDate]);
+
+  // Mirror restaurantId into reducer when it loads (owner path).
   useEffect(() => {
     if (restaurantId && !state.selectedRestaurantId) {
       dispatch({ type: 'SET_SELECTED_RESTAURANT_ID', payload: restaurantId });
     }
   }, [restaurantId, state.selectedRestaurantId]);
 
-  // Load restaurant data when selected restaurant changes
   const { data: selectedRestaurant } = useRestaurant(
     state.selectedRestaurantId || undefined
   );
+  const activeRestaurant = selectedRestaurant ?? restaurant ?? null;
 
-  // Get owner info when admin selects a restaurant
-  const { data: ownerInfo } = useQuery({
-    queryKey: ['owner-info', selectedRestaurant?.owner_id],
-    queryFn: () =>
-      selectedRestaurant?.owner_id
-        ? getUserInfoById(selectedRestaurant.owner_id)
-        : null,
-    enabled:
-      isUserAdmin === true &&
-      !!selectedRestaurant?.owner_id &&
-      !!state.selectedRestaurantId,
-  });
-
-  // Sync state with restaurant data
-  useEffect(() => {
-    dispatch({
-      type: 'SYNC_RESTAURANT_DATA',
-      payload: {
-        restaurant: restaurant || null,
-        selectedRestaurant: selectedRestaurant || null,
-      },
-    });
-  }, [restaurant, selectedRestaurant]);
-
-  // Sync contact info based on user/admin status and available data
-  useEffect(() => {
-    dispatch({
-      type: 'SYNC_CONTACT_DATA',
-      payload: {
-        isUserAdmin: !!isUserAdmin,
-        userInfo: userInfo || null,
-        ownerInfo: ownerInfo || null,
-      },
-    });
-  }, [isUserAdmin, ownerInfo, userInfo]);
-
-  // Handle restaurant selection for admin
-  const handleRestaurantSelect = (rest: Restaurant) => {
+  const handleSelectRestaurant = (rest: Restaurant) => {
     dispatch({ type: 'SELECT_ADMIN_RESTAURANT', payload: rest });
+  };
+
+  const handleSelectSlot = (slot: DeliverySlot) => {
+    dispatch({
+      type: 'SET_SLOT',
+      payload: { slotId: slot.id, slotDate: slot.date },
+    });
   };
 
   const handleAndroidDateChange = (
@@ -141,7 +137,7 @@ export default function CheckoutScreen() {
     }
   };
 
-  const handleShowDatePicker = () => {
+  const handlePickOtherDate = () => {
     const baseDate = state.deliveryDate ?? new Date();
     if (Platform.OS === 'android') {
       DateTimePickerAndroid.open({
@@ -156,39 +152,83 @@ export default function CheckoutScreen() {
     }
   };
 
-  const handleIosDateChange = (
-    _event: DateTimePickerEvent,
-    selectedDate?: Date
-  ) => {
-    if (selectedDate) {
-      dispatch({ type: 'SET_IOS_TEMP_DATE', payload: selectedDate });
+  const customDate =
+    !state.selectedSlotId && state.deliveryDate ? state.deliveryDate : null;
+
+  const subtotal = useMemo(
+    () => cartItems.reduce((acc, line) => acc + line.line_subtotal, 0),
+    [cartItems]
+  );
+  const totals = {
+    subtotal,
+    delivery: 0,
+    tax: 0,
+    discount: 0,
+    total: subtotal,
+  };
+
+  const selectedSlot = useMemo(() => {
+    if (state.selectedSlotId) {
+      return slots.find(s => s.id === state.selectedSlotId) ?? null;
     }
+    return null;
+  }, [slots, state.selectedSlotId]);
+
+  const slotSummary = selectedSlot
+    ? { day: selectedSlot.day, window: selectedSlot.window }
+    : customDate
+      ? { day: ARRIVES_FORMAT.format(customDate), window: 'Anytime' }
+      : { day: 'Pending', window: 'Pending' };
+
+  const addressLine = activeRestaurant
+    ? [
+        activeRestaurant.address_line1,
+        activeRestaurant.address_line2,
+        [activeRestaurant.city, activeRestaurant.postal_code]
+          .filter(Boolean)
+          .join(', '),
+        activeRestaurant.country,
+      ]
+        .filter(part => part && part.trim().length > 0)
+        .join(', ')
+    : '';
+
+  const addressSummary = {
+    label: activeRestaurant?.name ?? 'Select a restaurant',
+    line: addressLine,
+    iconName: 'storefront-outline' as const,
   };
 
-  const handleIosConfirm = () => {
-    dispatch({ type: 'CONFIRM_IOS_DATE' });
-  };
+  const savedCard =
+    state.paymentMethod === 'card'
+      ? (SAVED_CARDS.find(c => c.id === state.selectedCardId) ?? null)
+      : null;
 
-  const handleIosCancel = () => {
-    dispatch({ type: 'CANCEL_IOS_DATE' });
-  };
+  const ctaLabel = (() => {
+    if (state.step === 0) return 'Continue to payment';
+    if (state.step === 1) return 'Continue to review';
+    if (state.step === 2) return `Place order · $${totals.total.toFixed(2)}`;
+    return '';
+  })();
 
-  const paymentOptions: PaymentOption[] = [
-    {
-      value: 'cash',
-      icon: 'cash',
-      label: 'Cash on Delivery',
-    },
-  ];
+  const ctaDisabled = (() => {
+    if (state.step === 0) {
+      return (
+        !state.selectedRestaurantId ||
+        (!state.selectedSlotId && !state.deliveryDate)
+      );
+    }
+    if (state.step === 1) return false;
+    if (state.step === 2) return !state.agreed;
+    return true;
+  })();
 
-  const isLoadingDetails =
-    isUserInfoLoading || (!!restaurantId && isRestaurantLoading);
+  const [placing, setPlacing] = useState(false);
 
   const handlePlaceOrder = async () => {
     const activeRestaurantId = isUserAdmin
       ? state.selectedRestaurantId
       : restaurantId;
-
     if (!activeRestaurantId) {
       Alert.alert(
         'Error',
@@ -196,84 +236,141 @@ export default function CheckoutScreen() {
       );
       return;
     }
-
     if (!state.deliveryDate) {
       Alert.alert(
         'Delivery Date Required',
-        'Please select a preferred delivery date before placing your order.'
+        'Please select a delivery date before placing your order.'
       );
       return;
     }
 
+    if (state.paymentMethod !== 'cash') {
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: 'Coming soon — placed as cash on delivery',
+      });
+    }
+
+    setPlacing(true);
     try {
       const order = await createOrderMutation.mutateAsync({
         restaurantId: activeRestaurantId,
         deliveryAt: state.deliveryDate,
-        paymentMethod: state.paymentMethod,
+        paymentMethod: 'cash',
       });
-      Alert.alert(
-        'Order Placed Successfully!',
-        `Your order has been placed. Order ID: ${order.id.substring(0, 8)}...\nTotal: $${order.total_amount.toFixed(2)}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              router.replace(
-                isUserAdmin ? '/admin/(tabs)/cart' : '/(tabs)/cart'
-              );
-            },
-          },
-        ]
-      );
+      dispatch({
+        type: 'ORDER_PLACED',
+        payload: { orderId: order.id, total: order.total_amount },
+      });
     } catch (error) {
-      const errorMessage =
+      const message =
         error instanceof Error
           ? error.message
           : 'Failed to place order. Please try again.';
-      Alert.alert('Error', errorMessage);
+      Alert.alert('Error', message);
+    } finally {
+      setPlacing(false);
     }
   };
 
-  const deliveryDateLabel = state.deliveryDate
-    ? formatDate(state.deliveryDate)
-    : 'Select delivery date';
+  const handleFooterPress = () => {
+    if (state.step === 2) {
+      void handlePlaceOrder();
+      return;
+    }
+    dispatch({ type: 'NEXT_STEP' });
+  };
+
+  const handleBack = () => {
+    if (state.step === 0) {
+      router.back();
+      return;
+    }
+    if (state.step === 3) {
+      router.replace(isUserAdmin ? '/admin/(tabs)' : '/(tabs)');
+      return;
+    }
+    dispatch({ type: 'PREV_STEP' });
+  };
+
+  const handleTrackOrder = () => {
+    if (state.placedOrderId) {
+      router.replace({
+        pathname: '/order/[id]',
+        params: { id: state.placedOrderId },
+      });
+    }
+  };
+
+  const handleKeepShopping = () => {
+    router.replace(isUserAdmin ? '/admin/(tabs)' : '/(tabs)');
+  };
+
+  // On the Confirmed step, override hardware back / iOS-gesture back so the user
+  // can't pop back to the cart with a placed-order screen still mounted behind.
+  useEffect(() => {
+    if (state.step !== 3) return undefined;
+    const unsubscribe = navigation.addListener(
+      'beforeRemove',
+      (event: { preventDefault: () => void }) => {
+        event.preventDefault();
+        router.replace(isUserAdmin ? '/admin/(tabs)' : '/(tabs)');
+      }
+    );
+    return unsubscribe;
+  }, [state.step, navigation, router, isUserAdmin]);
+
+  const isLoadingDetails =
+    isUserInfoLoading || (!!restaurantId && isRestaurantLoading);
+
+  const showStepper = state.step !== 3;
+  const stepFooter = state.step === 3 ? null : state.step;
+
+  const arrivesLabel = state.deliveryDate
+    ? ARRIVES_FORMAT.format(state.deliveryDate)
+    : '';
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Checkout',
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
-          headerShadowVisible: false,
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
         edges={['bottom']}
       >
+        <CheckoutTopBar colors={colors} step={state.step} onBack={handleBack} />
+        {showStepper && (
+          <CheckoutStepper
+            colors={colors}
+            step={state.step as 0 | 1 | 2}
+            steps={STEPS}
+          />
+        )}
         {isLoadingDetails ? (
           <View
-            style={styles.loadingContainer}
-            accessible={true}
+            style={styles.loading}
+            accessible
             accessibilityLabel="Loading checkout details"
             accessibilityLiveRegion="polite"
           >
             <ActivityIndicator size="small" color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading checkout details...
+              Loading checkout details…
             </Text>
           </View>
         ) : (
           <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
+            style={styles.scroll}
+            contentContainerStyle={[
+              styles.scrollContent,
+              state.step !== 3 && styles.scrollContentWithFooter,
+            ]}
             showsVerticalScrollIndicator={false}
             onScrollBeginDrag={() =>
+              state.dropdownVisible &&
               dispatch({ type: 'SET_DROPDOWN_VISIBLE', payload: false })
             }
           >
-            {!restaurant && (
+            {!activeRestaurant && state.step !== 3 && (
               <View
                 style={[
                   styles.notice,
@@ -283,10 +380,7 @@ export default function CheckoutScreen() {
                   },
                 ]}
               >
-                <Text
-                  style={[styles.noticeTitle, { color: colors.text }]}
-                  accessibilityRole="header"
-                >
+                <Text style={[styles.noticeTitle, { color: colors.text }]}>
                   Restaurant details missing
                 </Text>
                 <Text
@@ -298,412 +392,108 @@ export default function CheckoutScreen() {
               </View>
             )}
 
-            {/* Restaurant Information Section */}
-            <View
-              style={[
-                styles.section,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <Text
-                style={[styles.sectionTitle, { color: colors.text }]}
-                accessibilityRole="header"
-              >
-                Restaurant Information
-              </Text>
-
-              <View style={styles.fullColumn}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Restaurant Name
-                </Text>
-                {isUserAdmin ? (
-                  <View>
-                    <TouchableOpacity
-                      style={[
-                        styles.input,
-                        {
-                          backgroundColor: colors.inputBackground,
-                          borderColor: colors.border,
-                          borderWidth: 1,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        },
-                      ]}
-                      onPress={() => dispatch({ type: 'TOGGLE_DROPDOWN' })}
-                      accessibilityRole="combobox"
-                      accessibilityLabel={
-                        state.restaurantName
-                          ? `Restaurant, ${state.restaurantName}`
-                          : 'Select a restaurant'
-                      }
-                      accessibilityHint="Double tap to change restaurant"
-                      accessibilityState={{ expanded: state.dropdownVisible }}
-                    >
-                      <Text
-                        style={{
-                          color: state.restaurantName
-                            ? colors.text
-                            : colors.textSecondary,
-                          fontSize: 16,
-                          flex: 1,
-                        }}
-                      >
-                        {state.restaurantName || 'Select a restaurant'}
-                      </Text>
-                      <Ionicons
-                        name={
-                          state.dropdownVisible ? 'chevron-up' : 'chevron-down'
-                        }
-                        size={20}
-                        color={colors.textSecondary}
-                      />
-                    </TouchableOpacity>
-                    {state.dropdownVisible && (
-                      <View
-                        style={[
-                          styles.dropdown,
-                          {
-                            backgroundColor: colors.surface,
-                            borderColor: colors.border,
-                          },
-                        ]}
-                      >
-                        <ScrollView
-                          style={styles.dropdownScroll}
-                          nestedScrollEnabled
-                        >
-                          {allRestaurants.map(rest => (
-                            <TouchableOpacity
-                              key={rest.id}
-                              style={[
-                                styles.dropdownItem,
-                                state.selectedRestaurantId === rest.id && {
-                                  backgroundColor: colors.primary + '20',
-                                },
-                              ]}
-                              onPress={() => handleRestaurantSelect(rest)}
-                              accessibilityRole="button"
-                              accessibilityLabel={rest.name}
-                              accessibilityState={{
-                                selected:
-                                  state.selectedRestaurantId === rest.id,
-                              }}
-                            >
-                              <Text
-                                style={[
-                                  styles.dropdownItemText,
-                                  { color: colors.text },
-                                  state.selectedRestaurantId === rest.id && {
-                                    color: colors.primary,
-                                    fontWeight: '600',
-                                  },
-                                ]}
-                              >
-                                {rest.name}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </View>
-                    )}
-                  </View>
-                ) : (
-                  <View
-                    style={[
-                      styles.input,
-                      styles.readOnlyInput,
-                      {
-                        backgroundColor: colors.inputBackground,
-                        justifyContent: 'center',
-                      },
-                    ]}
-                  >
-                    <Text style={{ color: colors.text, fontSize: 16 }}>
-                      {state.restaurantName}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.fullColumn}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Contact Person
-                </Text>
-                <View
-                  style={[
-                    styles.input,
-                    styles.readOnlyInput,
-                    {
-                      backgroundColor: colors.inputBackground,
-                      justifyContent: 'center',
-                    },
-                  ]}
-                >
-                  <Text style={{ color: colors.text, fontSize: 16 }}>
-                    {state.contactPerson}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.fullColumn}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Phone Number
-                </Text>
-                <View
-                  style={[
-                    styles.input,
-                    styles.readOnlyInput,
-                    {
-                      backgroundColor: colors.inputBackground,
-                      justifyContent: 'center',
-                    },
-                  ]}
-                >
-                  <Text style={{ color: colors.text, fontSize: 16 }}>
-                    {state.phoneNumber}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.fullColumn}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Email
-                </Text>
-                {isUserAdmin ? (
-                  <ThemedInput
-                    value={state.email}
-                    onChangeText={text =>
-                      dispatch({ type: 'SET_EMAIL', payload: text })
-                    }
-                    placeholder="Enter email address"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    accessibilityLabel="Email address"
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: colors.inputBackground,
-                      },
-                    ]}
-                    containerStyle={{ marginBottom: 0 }}
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.input,
-                      styles.readOnlyInput,
-                      {
-                        backgroundColor: colors.inputBackground,
-                        justifyContent: 'center',
-                      },
-                    ]}
-                  >
-                    <Text style={{ color: colors.text, fontSize: 16 }}>
-                      {state.email}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Delivery Information Section */}
-            <View
-              style={[
-                styles.section,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <Text
-                style={[styles.sectionTitle, { color: colors.text }]}
-                accessibilityRole="header"
-              >
-                Delivery Information
-              </Text>
-
-              <View style={styles.fullColumn}>
-                <Text style={[styles.label, { color: colors.text }]}>
-                  Delivery Address
-                </Text>
-                <View
-                  style={[
-                    styles.input,
-                    styles.textArea,
-                    styles.readOnlyInput,
-                    {
-                      backgroundColor: colors.inputBackground,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{ color: colors.text, fontSize: 16, lineHeight: 22 }}
-                  >
-                    {state.deliveryAddress}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.row}>
-                <View style={styles.halfColumn}>
-                  <Text style={[styles.label, { color: colors.text }]}>
-                    Preferred Delivery Date
-                  </Text>
-                  <TouchableOpacity
-                    style={[
-                      styles.input,
-                      styles.dateInput,
-                      {
-                        backgroundColor: colors.inputBackground,
-                      },
-                    ]}
-                    activeOpacity={0.7}
-                    onPress={handleShowDatePicker}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Preferred Delivery Date, ${deliveryDateLabel}`}
-                    accessibilityHint="Opens date picker"
-                  >
-                    <Text
-                      style={[
-                        styles.dateValue,
-                        {
-                          color: state.deliveryDate
-                            ? colors.text
-                            : colors.textSecondary,
-                        },
-                      ]}
-                    >
-                      {deliveryDateLabel}
-                    </Text>
-                    <Ionicons
-                      name="calendar"
-                      size={20}
-                      color={colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <ThemedInput
-                label="Special Instructions (Optional)"
-                value={state.specialInstructions}
-                onChangeText={text =>
+            {state.step === 0 && (
+              <StepDelivery
+                colors={colors}
+                isAdmin={!!isUserAdmin}
+                restaurant={activeRestaurant}
+                allRestaurants={allRestaurants}
+                selectedRestaurantId={state.selectedRestaurantId}
+                dropdownVisible={state.dropdownVisible}
+                onToggleDropdown={() => dispatch({ type: 'TOGGLE_DROPDOWN' })}
+                onSelectRestaurant={handleSelectRestaurant}
+                slots={slots}
+                selectedSlotId={state.selectedSlotId}
+                onSelectSlot={handleSelectSlot}
+                onPickOtherDate={handlePickOtherDate}
+                customDate={customDate}
+                onSelectCustomDate={handlePickOtherDate}
+                notes={state.specialInstructions}
+                onChangeNotes={text =>
                   dispatch({
                     type: 'SET_SPECIAL_INSTRUCTIONS',
                     payload: text,
                   })
                 }
-                placeholder="Loading dock instructions, specific requirements, etc."
-                multiline
-                numberOfLines={4}
-                accessibilityLabel="Special Instructions"
-                style={[
-                  styles.input,
-                  styles.textArea,
-                  { backgroundColor: colors.inputBackground },
-                ]}
-                containerStyle={styles.fullColumn}
               />
-            </View>
+            )}
 
-            {/* Payment Method Section */}
-            <View
-              style={[
-                styles.section,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <Text
-                style={[styles.sectionTitle, { color: colors.text }]}
-                accessibilityRole="header"
-              >
-                Payment Method
-              </Text>
+            {state.step === 1 && (
+              <StepPayment
+                colors={colors}
+                paymentMethod={state.paymentMethod}
+                onSelectMethod={method =>
+                  dispatch({
+                    type: 'SET_PAYMENT_METHOD',
+                    payload: method as PaymentMethod,
+                  })
+                }
+                selectedCardId={state.selectedCardId}
+                onSelectCard={cardId =>
+                  dispatch({ type: 'SET_SELECTED_CARD', payload: cardId })
+                }
+                email={userInfo?.email ?? ''}
+                onShowToast={message =>
+                  dispatch({ type: 'SHOW_TOAST', payload: message })
+                }
+              />
+            )}
 
-              {paymentOptions.map(option => {
-                const selected = state.paymentMethod === option.value;
+            {state.step === 2 && (
+              <StepReview
+                colors={colors}
+                items={cartItems}
+                address={addressSummary}
+                slot={slotSummary}
+                paymentMethod={state.paymentMethod}
+                savedCard={savedCard}
+                totals={totals}
+                agreed={state.agreed}
+                onToggleAgree={() => dispatch({ type: 'TOGGLE_AGREEMENT' })}
+              />
+            )}
 
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={styles.paymentOption}
-                    onPress={() =>
-                      dispatch({
-                        type: 'SET_PAYMENT_METHOD',
-                        payload: option.value,
-                      })
-                    }
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: selected }}
-                    accessibilityLabel={option.label}
-                  >
-                    <View
-                      style={[
-                        styles.radio,
-                        { borderColor: colors.border },
-                        selected && {
-                          backgroundColor: colors.primary,
-                          borderColor: colors.primary,
-                        },
-                      ]}
-                    >
-                      {selected && <View style={styles.radioInner} />}
-                    </View>
-                    <View style={styles.paymentIcon}>
-                      <Ionicons
-                        name={option.icon}
-                        size={20}
-                        color={colors.text}
-                      />
-                    </View>
-                    <Text style={[styles.paymentText, { color: colors.text }]}>
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            {state.step === 3 && state.placedOrderId && (
+              <StepConfirmed
+                colors={colors}
+                orderId={state.placedOrderId}
+                arrivesLabel={arrivesLabel}
+                windowLabel={slotSummary.window}
+                address={addressSummary}
+                total={state.placedTotal ?? totals.total}
+                email={userInfo?.email ?? ''}
+                onTrack={handleTrackOrder}
+                onKeepShopping={handleKeepShopping}
+              />
+            )}
           </ScrollView>
         )}
 
-        {/* Footer with Place Order Button */}
-        <View
-          style={[
-            styles.footer,
-            { backgroundColor: colors.surface, borderTopColor: colors.border },
-          ]}
-        >
-          <TouchableOpacity
-            style={[
-              styles.placeOrderButton,
-              {
-                backgroundColor: colors.primary,
-                opacity: createOrderMutation.isPending ? 0.6 : 1,
-              },
-            ]}
-            onPress={handlePlaceOrder}
-            disabled={createOrderMutation.isPending}
-            accessibilityRole="button"
-            accessibilityLabel="Place Order"
-            accessibilityState={{
-              disabled: createOrderMutation.isPending,
-              busy: createOrderMutation.isPending,
-            }}
-          >
-            {createOrderMutation.isPending ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.placeOrderButtonText}>Place Order</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        {stepFooter !== null && !isLoadingDetails && (
+          <CheckoutFooter
+            colors={colors}
+            step={stepFooter as 0 | 1 | 2}
+            total={totals.total}
+            ctaLabel={ctaLabel}
+            ctaDisabled={ctaDisabled}
+            placing={placing}
+            onPress={handleFooterPress}
+          />
+        )}
+
+        <Toast
+          message={state.toastMessage ?? ''}
+          type="success"
+          visible={!!state.toastMessage}
+          onHide={() => dispatch({ type: 'DISMISS_TOAST' })}
+        />
 
         {Platform.OS === 'ios' && (
           <Modal
             transparent
             animationType="slide"
             visible={state.iosPickerVisible}
-            onRequestClose={handleIosCancel}
+            onRequestClose={() => dispatch({ type: 'CANCEL_IOS_DATE' })}
           >
             <View style={styles.modalBackdrop}>
               <View
@@ -714,7 +504,7 @@ export default function CheckoutScreen() {
               >
                 <View style={styles.modalHeader}>
                   <TouchableOpacity
-                    onPress={handleIosCancel}
+                    onPress={() => dispatch({ type: 'CANCEL_IOS_DATE' })}
                     accessibilityRole="button"
                     accessibilityLabel="Cancel date selection"
                   >
@@ -734,7 +524,7 @@ export default function CheckoutScreen() {
                     Select delivery date
                   </Text>
                   <TouchableOpacity
-                    onPress={handleIosConfirm}
+                    onPress={() => dispatch({ type: 'CONFIRM_IOS_DATE' })}
                     accessibilityRole="button"
                     accessibilityLabel="Confirm date selection"
                   >
@@ -749,7 +539,9 @@ export default function CheckoutScreen() {
                   value={state.iosTempDate}
                   mode="date"
                   display="inline"
-                  onChange={handleIosDateChange}
+                  onChange={(_e, d) => {
+                    if (d) dispatch({ type: 'SET_IOS_TEMP_DATE', payload: d });
+                  }}
                   themeVariant={colorScheme === 'dark' ? 'dark' : 'light'}
                   textColor={colors.text}
                   style={styles.iosPicker}
@@ -764,18 +556,15 @@ export default function CheckoutScreen() {
   );
 }
 
+export default function CheckoutScreen() {
+  return <CheckoutScreenInner />;
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-    paddingTop: 8,
-  },
-  loadingContainer: {
+  loading: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -785,117 +574,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 32,
+  },
+  scrollContentWithFooter: {
+    paddingBottom: 200,
+  },
   notice: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 20,
-    borderRadius: 16,
+    marginHorizontal: 20,
+    marginTop: 8,
+    padding: 16,
+    borderRadius: 14,
     borderWidth: 1,
   },
   noticeTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   noticeBody: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  section: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  halfColumn: {
-    flex: 1,
-  },
-  fullColumn: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  input: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    fontSize: 16,
-    minHeight: 50,
-  },
-  readOnlyInput: {
-    opacity: 0.85,
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-    paddingTop: 14,
-    lineHeight: 22,
-  },
-  dateInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dateValue: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  paymentOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  radio: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'white',
-  },
-  paymentIcon: {
-    marginRight: 12,
-  },
-  paymentText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-  },
-  placeOrderButton: {
-    paddingVertical: 18,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  placeOrderButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    lineHeight: 18,
   },
   modalBackdrop: {
     flex: 1,
@@ -925,31 +627,5 @@ const styles = StyleSheet.create({
   },
   iosPicker: {
     width: '100%',
-  },
-  dropdown: {
-    marginTop: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    maxHeight: 200,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  dropdownScroll: {
-    maxHeight: 200,
-  },
-  dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-  },
-  dropdownItemText: {
-    fontSize: 16,
   },
 });
