@@ -185,7 +185,7 @@ export function CartLineCard({
                 pressed && { opacity: 0.5 },
               ]}
             >
-              <Text style={[styles.removeText, { color: colors.textTertiary }]}>
+              <Text style={[styles.removeText, { color: colors.error }]}>
                 Remove
               </Text>
             </Pressable>

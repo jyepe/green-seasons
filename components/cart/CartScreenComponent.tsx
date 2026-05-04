@@ -1,5 +1,5 @@
 // components/cart/CartScreenComponent.tsx
-import React, { useEffect, useMemo, useReducer, useRef } from 'react';
+import React, { useMemo, useReducer } from 'react';
 import {
   AccessibilityInfo,
   Alert,
@@ -9,12 +9,6 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -60,10 +54,6 @@ export default function CartScreenComponent() {
   const [state, dispatch] = useReducer(cartReducer, initialCartState);
   const { isClearing, updatingItemId, editingItem, editQuantity } = state;
 
-  const totalScale = useSharedValue(1);
-  const totalOpacity = useSharedValue(1);
-  const prevTotalRef = useRef(0);
-
   const itemImageMap = useMemo(() => {
     if (!items) return new Map<string, string | null>();
     const map = new Map<string, string | null>();
@@ -78,23 +68,6 @@ export default function CartScreenComponent() {
     cartItems?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   const total =
     cartItems?.reduce((sum, item) => sum + item.line_subtotal, 0) ?? 0;
-
-  useEffect(() => {
-    if (prevTotalRef.current !== total && prevTotalRef.current > 0) {
-      totalScale.value = withSpring(1.1, { damping: 10 }, () => {
-        totalScale.value = withSpring(1, { damping: 10 });
-      });
-      totalOpacity.value = withTiming(0.5, { duration: 100 }, () => {
-        totalOpacity.value = withTiming(1, { duration: 200 });
-      });
-    }
-    prevTotalRef.current = total;
-  }, [total, totalScale, totalOpacity]);
-
-  const animatedTotalStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: totalScale.value }],
-    opacity: totalOpacity.value,
-  }));
 
   const handleClearCart = () => {
     Alert.alert(
@@ -148,12 +121,20 @@ export default function CartScreenComponent() {
   };
 
   const handleDeleteItem = (itemId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const item = cartItems?.find(i => i.item_id === itemId);
-    if (item) {
-      handleUpdateCartItem(itemId, -item.quantity);
-      AccessibilityInfo.announceForAccessibility('Item removed from cart');
-    }
+    if (!item) return;
+    Alert.alert('Remove Item', `Remove "${item.item_name}" from your cart?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          handleUpdateCartItem(itemId, -item.quantity);
+          AccessibilityInfo.announceForAccessibility('Item removed from cart');
+        },
+      },
+    ]);
   };
 
   const handleItemPress = (item: CartItem) => {
@@ -256,11 +237,7 @@ export default function CartScreenComponent() {
           </View>
           <CartDisclaimer />
         </ScrollView>
-        <CartSummaryFooter
-          total={total}
-          animatedTotalStyle={animatedTotalStyle}
-          onCheckout={handleCheckout}
-        />
+        <CartSummaryFooter total={total} onCheckout={handleCheckout} />
       </>
     );
   };

@@ -1,14 +1,6 @@
 // components/cart/CartSummaryFooter.tsx
 import React from 'react';
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextStyle,
-  View,
-} from 'react-native';
-import Animated, { type AnimatedStyle } from 'react-native-reanimated';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -18,15 +10,10 @@ import { useAppColorScheme } from '@/hooks/useTheme';
 
 type Props = {
   total: number;
-  animatedTotalStyle: AnimatedStyle<TextStyle>;
   onCheckout: () => void;
 };
 
-export function CartSummaryFooter({
-  total,
-  animatedTotalStyle,
-  onCheckout,
-}: Props) {
+export function CartSummaryFooter({ total, onCheckout }: Props) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const tabBarHeight = useBottomTabBarHeight();
@@ -60,15 +47,9 @@ export function CartSummaryFooter({
           <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>
             Estimated total
           </Text>
-          <Animated.Text
-            style={[
-              styles.totalValue,
-              { color: colors.text },
-              animatedTotalStyle,
-            ]}
-          >
+          <Text style={[styles.totalValue, { color: colors.text }]}>
             ${total.toFixed(2)}
-          </Animated.Text>
+          </Text>
         </View>
 
         <Pressable
