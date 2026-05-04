@@ -15,10 +15,7 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,7 +47,6 @@ export default function CartScreenComponent() {
   const router = useRouter();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
-  const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
   useCartRefetchOnFocus();
@@ -223,21 +219,20 @@ export default function CartScreenComponent() {
       return <CartEmptyState onBrowse={handleBrowse} />;
     }
 
-    const scrollPaddingBottom =
-      CART_FOOTER_HEIGHT + insets.bottom + tabBarHeight + 16;
+    const scrollPaddingBottom = CART_FOOTER_HEIGHT + tabBarHeight + 16;
 
     return (
       <>
+        <CartHeader
+          productCount={productCount}
+          unitCount={unitCount}
+          restaurantName={isUserAdmin ? undefined : restaurant?.name}
+        />
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}
           showsVerticalScrollIndicator={false}
         >
-          <CartHeader
-            productCount={productCount}
-            unitCount={unitCount}
-            restaurantName={isUserAdmin ? undefined : restaurant?.name}
-          />
           <CartSectionTitle
             title="This order"
             actionLabel="Clear all"

@@ -5,7 +5,6 @@ import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 
@@ -25,12 +24,11 @@ export function CartSummaryFooter({
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const tabBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.wrapper, { bottom: insets.bottom + tabBarHeight }]}
+      style={[styles.wrapper, { bottom: tabBarHeight }]}
     >
       <View
         style={[
