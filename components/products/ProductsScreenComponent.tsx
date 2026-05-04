@@ -1,17 +1,20 @@
-import { Colors } from '@/constants/Colors';
-import { useAppColorScheme } from '@/hooks/useTheme';
-import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
-import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
-import { useToggleFavorite } from '@/hooks/useFavorite';
+import { CartBar } from '@/components/ui/CartBar';
 import { Toast } from '@/components/ui/Toast';
+import { Colors } from '@/constants/Colors';
+import { ROUTES } from '@/constants/Routes';
+import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
+import { useToggleFavorite } from '@/hooks/useFavorite';
+import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
+import { useAppColorScheme } from '@/hooks/useTheme';
+import { router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useReducer } from 'react';
-import { Alert, StyleSheet, AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ProductsScreenHeader from './ProductsScreenHeader';
-import ProductsDisclaimer from './ProductsDisclaimer';
-import ProductsSearchBar from './ProductsSearchBar';
-import ProductsGrid from './ProductsGrid';
 import PaginationControls from './PaginationControls';
+import ProductsGrid from './ProductsGrid';
+import { SORT_LABELS } from './ProductsSortMenu';
+import ProductsScreenHeader from './ProductsScreenHeader';
+import ProductsSearchBar from './ProductsSearchBar';
 import { initialState, productsScreenReducer } from './ProductsScreenState';
 
 const ITEMS_PER_PAGE = 10;
@@ -20,8 +23,14 @@ export default function ProductsScreenComponent() {
   // Use a reducer to manage complex state transitions and avoid synchronization issues
   // between search query, pagination, and optimistic cart updates.
   const [state, dispatch] = useReducer(productsScreenReducer, initialState);
-  const { searchQuery, currentPage, pendingItemId, showToast, stepperItems } =
-    state;
+  const {
+    searchQuery,
+    sortBy,
+    currentPage,
+    pendingItemId,
+    showToast,
+    stepperItems,
+  } = state;
 
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
@@ -38,28 +47,46 @@ export default function ProductsScreenComponent() {
 
   const { filteredProducts, paginatedProducts, totalPages, safePage } =
     useMemo(() => {
-      const filtered =
-        items?.filter(item => {
-          const matchesSearch = item.name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-          return matchesSearch;
-        }) || [];
+      const q = searchQuery.trim().toLowerCase();
+      let arr = (items ?? []).filter(
+        i => !q || i.name.toLowerCase().includes(q)
+      );
 
-      const total = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+      if (sortBy === 'price-asc') {
+        arr = [...arr].sort((a, b) => a.price - b.price);
+      } else if (sortBy === 'price-desc') {
+        arr = [...arr].sort((a, b) => b.price - a.price);
+      }
+      // 'name' relies on server default ordering; no client sort needed.
+
+      const total = Math.max(1, Math.ceil(arr.length / ITEMS_PER_PAGE));
       const safe = Math.min(Math.max(currentPage, 1), total);
-      const paginated = filtered.slice(
+      const page = arr.slice(
         (safe - 1) * ITEMS_PER_PAGE,
         safe * ITEMS_PER_PAGE
       );
 
       return {
-        filteredProducts: filtered,
-        paginatedProducts: paginated,
+        filteredProducts: arr,
+        paginatedProducts: page,
         totalPages: total,
         safePage: safe,
       };
-    }, [items, searchQuery, currentPage]);
+    }, [items, searchQuery, sortBy, currentPage]);
+
+  const cartItemCount = useMemo(
+    () => (cartItems ?? []).reduce((n, c) => n + c.quantity, 0),
+    [cartItems]
+  );
+  const cartTotalCents = useMemo(
+    () =>
+      (cartItems ?? []).reduce(
+        (sum, c) => sum + Math.round((c.line_subtotal ?? 0) * 100),
+        0
+      ),
+    [cartItems]
+  );
+  const cartBarVisible = cartItemCount > 0;
 
   // Sync state with props/external data
   useEffect(() => {
@@ -203,6 +230,7 @@ export default function ProductsScreenComponent() {
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['top']}
       accessibilityLabel="Explore Products Screen"
     >
       <Toast
@@ -213,19 +241,40 @@ export default function ProductsScreenComponent() {
       />
       <ProductsScreenHeader />
 
-      <ProductsDisclaimer />
-
       <ProductsSearchBar
         searchQuery={searchQuery}
         setSearchQuery={query =>
           dispatch({ type: 'SET_SEARCH_QUERY', payload: query })
         }
+        sortBy={sortBy}
+        onSortChange={next => dispatch({ type: 'SET_SORT_BY', payload: next })}
       />
+
+      <View style={styles.metaRow}>
+        <Text
+          style={[styles.metaText, { color: colors.textSecondary }]}
+          numberOfLines={1}
+        >
+          {filteredProducts.length}{' '}
+          {filteredProducts.length === 1 ? 'item' : 'items'} · sorted by{' '}
+          {SORT_LABELS[sortBy]}
+        </Text>
+        {totalPages > 1 ? (
+          <Text style={[styles.metaText, { color: colors.textSecondary }]}>
+            Page {safePage} of {totalPages}
+          </Text>
+        ) : null}
+      </View>
 
       <ProductsGrid
         products={paginatedProducts}
         isLoading={isLoading}
         error={error}
+        cartBarVisible={cartBarVisible}
+        searchActive={searchQuery.length > 0}
+        onClearSearch={() =>
+          dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
+        }
         getCartQuantity={getCartQuantity}
         getStepperQuantity={getStepperQuantity}
         isStepperMode={isStepperMode}
@@ -242,6 +291,12 @@ export default function ProductsScreenComponent() {
           onPageChange={handlePageChange}
         />
       )}
+
+      <CartBar
+        itemCount={cartItemCount}
+        totalCents={cartTotalCents}
+        onPress={() => router.push(ROUTES.RESTAURANT_OWNER_DASHBOARD + '/cart')}
+      />
     </SafeAreaView>
   );
 }
@@ -249,5 +304,17 @@ export default function ProductsScreenComponent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  metaText: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
   },
 });

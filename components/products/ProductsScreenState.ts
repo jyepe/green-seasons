@@ -1,7 +1,10 @@
 import { CartItem } from '@/lib/supabase';
 
+export type SortKey = 'name' | 'price-asc' | 'price-desc';
+
 export interface ProductsScreenState {
   searchQuery: string;
+  sortBy: SortKey;
   currentPage: number;
   pendingItemId: string | null;
   showToast: boolean;
@@ -10,6 +13,7 @@ export interface ProductsScreenState {
 
 export type ProductsScreenAction =
   | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'SET_SORT_BY'; payload: SortKey }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SYNC_CART_ITEMS'; payload: CartItem[] }
   | { type: 'ADD_TO_CART_START'; payload: string }
@@ -27,6 +31,7 @@ export type ProductsScreenAction =
 
 export const initialState: ProductsScreenState = {
   searchQuery: '',
+  sortBy: 'name',
   currentPage: 1,
   pendingItemId: null,
   showToast: false,
@@ -43,6 +48,12 @@ export function productsScreenReducer(
         ...state,
         searchQuery: action.payload,
         currentPage: 1, // Resets page when search changes
+      };
+    case 'SET_SORT_BY':
+      return {
+        ...state,
+        sortBy: action.payload,
+        currentPage: 1, // Resets page when sort changes
       };
     case 'SET_PAGE':
       return {

@@ -114,9 +114,10 @@ Exported via `employee/index.ts`.
 | Component | Purpose | Key Props |
 |-----------|---------|-----------|
 | `ProductsScreenComponent` | Full explore/products screen | — (uses hooks) |
-| `ProductsGrid` | ScrollView grid of product cards | `products`, `isLoading`, `error`, `getCartQuantity`, `getStepperQuantity`, `isStepperMode`, `pendingItemId`, `onToggleFavorite`, `onAddToCart`, `onUpdateQuantity` |
-| `ProductCard` | Single product card (image, favorite, price, stepper) | `item`, `quantityInCart`, `stepperQuantity`, `isStepperMode`, `isPending`, `onToggleFavorite`, `onAddToCart`, `onUpdateQuantity` |
-| `ProductsScreenHeader` | "Fresh Produce" title + subtitle | — |
-| `ProductsSearchBar` | Search input with clear | `searchQuery` (req), `setSearchQuery` (req) |
-| `ProductsDisclaimer` | Dynamic pricing info box | — |
-| `PaginationControls` | Prev/Next with page indicator | `currentPage` (req), `totalPages` (req), `onPageChange` (req) |
+| `ProductsGrid` | FlatList (numColumns=2) of product cards with empty/error states | `products`, `isLoading`, `error`, `cartBarVisible`, `searchActive`, `onClearSearch`, `getCartQuantity`, `getStepperQuantity`, `isStepperMode`, `pendingItemId`, `onToggleFavorite`, `onAddToCart`, `onUpdateQuantity` |
+| `ProductCard` | Single product card (tile, favorite heart, price, ghost +Add or Stepper, bump animation) | `item`, `quantityInCart`, `stepperQuantity`, `isStepperMode`, `isPending`, `onToggleFavorite`, `onAddToCart`, `onUpdateQuantity` |
+| `ProductTile` | Image-or-seeded-gradient tile rendered inside `ProductCard` | `imageUrl`, `fallbackSeed`, `height?` |
+| `ProductsScreenHeader` | Date eyebrow + "Today's market" + cutoff subtitle + folded disclaimer | — |
+| `ProductsSearchBar` | Search input with focus ring + inline sort button anchoring `ProductsSortMenu` | `searchQuery`, `setSearchQuery`, `sortBy`, `onSortChange` |
+| `ProductsSortMenu` | Sort dropdown popover (Name A–Z / Price low→high / Price high→low) | `visible`, `sortBy`, `onSelect`, `onDismiss` |
+| `PaginationControls` | Numbered page buttons with chevrons + ellipsis | `currentPage` (req), `totalPages` (req), `onPageChange` (req) |

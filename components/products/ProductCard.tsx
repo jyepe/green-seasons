@@ -1,15 +1,23 @@
+import { Stepper } from '@/components/ui/Stepper';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
-  Image,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import ProductTile from './ProductTile';
 
 export type ProductItem = {
   id: string;
@@ -45,297 +53,184 @@ export function ProductCard({
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
 
+  const bumpY = useSharedValue(0);
+  const prevQty = useRef(quantityInCart);
+  useEffect(() => {
+    if (quantityInCart > prevQty.current) {
+      bumpY.value = withSequence(
+        withTiming(-2, { duration: 110 }),
+        withTiming(0, { duration: 110 })
+      );
+    }
+    prevQty.current = quantityInCart;
+  }, [quantityInCart, bumpY]);
+
+  const cardAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bumpY.value }],
+  }));
+
   return (
-    <View style={[styles.productCard, { backgroundColor: colors.surface }]}>
-      <View style={styles.productImageContainer}>
-        {item.image_url ? (
-          <Image
-            source={{ uri: item.image_url }}
-            style={styles.productImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <Ionicons
-            name="image-outline"
-            size={48}
-            color={colors.textSecondary}
-          />
-        )}
+    <Animated.View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, shadowColor: '#000' },
+        cardAnimStyle,
+      ]}
+    >
+      <View style={styles.tileWrap}>
+        <ProductTile imageUrl={item.image_url} fallbackSeed={item.name} />
         <TouchableOpacity
-          style={styles.favoriteButton}
+          style={styles.favoriteBtn}
           onPress={() => onToggleFavorite(item.id, item.is_favorite)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityState={{ selected: item.is_favorite }}
           accessibilityLabel={
             item.is_favorite
               ? `Remove ${item.name} from favorites`
               : `Add ${item.name} to favorites`
           }
-          accessibilityRole="button"
-          accessibilityState={{ selected: item.is_favorite }}
         >
           <Ionicons
             name={item.is_favorite ? 'heart' : 'heart-outline'}
-            size={22}
+            size={18}
             color={item.is_favorite ? '#EF4444' : colors.textSecondary}
           />
         </TouchableOpacity>
       </View>
-      <View style={styles.productInfo}>
-        <Text style={[styles.productName, { color: colors.text }]}>
+
+      <View style={styles.body}>
+        <Text style={[styles.name, { color: colors.text }]} numberOfLines={2}>
           {item.name}
         </Text>
-        {item.description && (
-          <Text
-            style={[styles.productDescription, { color: colors.textSecondary }]}
-          >
-            {item.description}
-          </Text>
-        )}
-        <View style={styles.productPriceContainer}>
-          <Text style={[styles.productPrice, { color: colors.primary }]}>
+
+        <View style={styles.priceRow}>
+          <Text style={[styles.price, { color: colors.text }]}>
             ${item.price.toFixed(2)}
           </Text>
-          <Text style={[styles.productUnit, { color: colors.textSecondary }]}>
-            {item.unit}
+          <Text style={[styles.unit, { color: colors.textSecondary }]}>
+            {' '}
+            / {item.unit}
           </Text>
         </View>
 
-        {/* Cart Badge */}
-        {quantityInCart > 0 && (
-          <View style={[styles.cartBadge, { backgroundColor: colors.primary }]}>
-            <Ionicons name="checkmark" size={12} color="white" />
-            <Text style={styles.cartBadgeText}>{quantityInCart} in cart</Text>
-          </View>
-        )}
-
-        {/* Add to Cart Button or Stepper */}
-        {!isStepperMode ? (
-          <TouchableOpacity
-            style={[
-              styles.addToCartButton,
-              {
-                backgroundColor: colors.primary,
-              },
-              isPending && styles.addButtonDisabled,
-            ]}
-            onPress={() => onAddToCart(item.id)}
-            disabled={isPending}
-            accessibilityRole="button"
-            accessibilityLabel={`Add ${item.name} to cart`}
-            accessibilityState={{ disabled: isPending, busy: isPending }}
-          >
-            {isPending ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <>
-                <Ionicons name="cart" size={18} color="white" />
-                <Text style={styles.addToCartButtonText}>Add to Cart</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        ) : (
-          <View
-            style={[styles.stepperContainer, { borderColor: colors.border }]}
-          >
-            <TouchableOpacity
-              style={[
-                styles.stepperButton,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  borderRightWidth: 1,
-                },
-                isPending && styles.stepperButtonDisabled,
-              ]}
-              onPress={() => onUpdateQuantity(item.id, -1)}
+        <View style={styles.actionRow}>
+          {isStepperMode ? (
+            <Stepper
+              qty={stepperQuantity}
+              busy={isPending}
+              onInc={() => onUpdateQuantity(item.id, 1)}
+              onDec={() => onUpdateQuantity(item.id, -1)}
+              decLabel={`Decrease quantity of ${item.name}`}
+              incLabel={`Increase quantity of ${item.name}`}
+            />
+          ) : (
+            <Pressable
+              onPress={() => onAddToCart(item.id)}
               disabled={isPending}
-              accessibilityRole="button"
-              accessibilityLabel={`Decrease quantity of ${item.name}`}
-              accessibilityState={{
-                disabled: isPending || stepperQuantity <= 0,
-              }}
-            >
-              <Ionicons name="remove" size={18} color={colors.text} />
-            </TouchableOpacity>
-            <View
-              style={[
-                styles.stepperQuantity,
-                { backgroundColor: colors.surface },
-              ]}
-            >
-              {isPending ? (
-                <ActivityIndicator size="small" color={colors.primary} />
-              ) : (
-                <Text
-                  style={[styles.stepperQuantityText, { color: colors.text }]}
-                >
-                  {stepperQuantity}
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.stepperButton,
+              style={({ pressed }) => [
+                styles.addBtn,
                 {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  borderLeftWidth: 1,
+                  borderColor: colors.primary,
+                  backgroundColor: pressed ? colors.primary : 'transparent',
                 },
-                isPending && styles.stepperButtonDisabled,
+                isPending && styles.addBtnDisabled,
               ]}
-              onPress={() => onUpdateQuantity(item.id, 1)}
-              disabled={isPending}
               accessibilityRole="button"
-              accessibilityLabel={`Increase quantity of ${item.name}`}
-              accessibilityState={{ disabled: isPending }}
+              accessibilityLabel={`Add ${item.name} to cart`}
+              accessibilityState={{ disabled: isPending, busy: isPending }}
             >
-              <Ionicons name="add" size={18} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-        )}
+              {({ pressed }) =>
+                isPending ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <Text
+                    style={[
+                      styles.addBtnText,
+                      { color: pressed ? 'white' : colors.primary },
+                    ]}
+                  >
+                    + Add
+                  </Text>
+                )
+              }
+            </Pressable>
+          )}
+        </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  productCard: {
-    width: '48%',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  card: {
+    width: '100%',
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
-    overflow: 'hidden',
   },
-  productImageContainer: {
-    height: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+  tileWrap: {
     position: 'relative',
-    overflow: 'hidden',
   },
-  favoriteButton: {
+  favoriteBtn: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 16,
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.15,
     shadowRadius: 2,
     elevation: 2,
   },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  productInfo: {
+  body: {
     padding: 12,
+    gap: 8,
   },
-  productName: {
-    fontSize: 16,
+  name: {
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
-    marginBottom: 4,
+    lineHeight: 18,
   },
-  productDescription: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    marginBottom: 8,
-    lineHeight: 16,
-  },
-  productPriceContainer: {
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 12,
   },
-  productPrice: {
+  price: {
     fontSize: 18,
     fontWeight: '700',
     fontFamily: 'Inter_700Bold',
   },
-  productUnit: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    marginLeft: 4,
-  },
-  cartBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 8,
-    gap: 4,
-  },
-  cartBadgeText: {
-    color: 'white',
+  unit: {
     fontSize: 11,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_500Medium',
   },
-  addToCartButton: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 8,
+  actionRow: {
     marginTop: 4,
   },
-  addToCartButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  stepperContainer: {
-    flexDirection: 'row',
+  addBtn: {
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1.5,
     alignItems: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginTop: 4,
-  },
-  stepperButton: {
-    width: 44,
-    height: 44,
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 12,
   },
-  stepperButtonDisabled: {
-    opacity: 0.5,
-  },
-  stepperQuantity: {
-    flex: 1,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepperQuantityText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  addButtonDisabled: {
+  addBtnDisabled: {
     opacity: 0.6,
+  },
+  addBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
   },
 });
