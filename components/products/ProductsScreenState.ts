@@ -53,7 +53,7 @@ export function productsScreenReducer(
       return {
         ...state,
         sortBy: action.payload,
-        currentPage: 1,
+        currentPage: 1, // Resets page when sort changes
       };
     case 'SET_PAGE':
       return {
