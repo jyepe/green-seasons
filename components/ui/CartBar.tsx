@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -21,6 +21,12 @@ type CartBarProps = {
 const formatCents = (cents: number) =>
   `$${(Math.max(0, cents) / 100).toFixed(2)}`;
 
+/**
+ * Sticky floating cart preview. Must be mounted inside a screen of a
+ * BottomTabNavigator (Expo Router `(tabs)`), because it calls
+ * `useBottomTabBarHeight()` to anchor itself above the tab bar. If you
+ * need this outside tabs, pass an explicit `bottomOffset`.
+ */
 export function CartBar({
   itemCount,
   totalCents,
@@ -35,14 +41,19 @@ export function CartBar({
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(40);
 
+  const [visible, setVisible] = useState(itemCount > 0);
+
   useEffect(() => {
     if (itemCount > 0) {
+      setVisible(true);
       opacity.value = withTiming(1, { duration: 220 });
       translateY.value = withSpring(0, { damping: 18 });
-    } else {
-      opacity.value = withTiming(0, { duration: 180 });
-      translateY.value = withTiming(40, { duration: 180 });
+      return;
     }
+    opacity.value = withTiming(0, { duration: 180 });
+    translateY.value = withTiming(40, { duration: 180 });
+    const t = setTimeout(() => setVisible(false), 200);
+    return () => clearTimeout(t);
   }, [itemCount, opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -50,7 +61,7 @@ export function CartBar({
     transform: [{ translateY: translateY.value }],
   }));
 
-  if (itemCount === 0) return null;
+  if (!visible) return null;
 
   const itemWord = itemCount === 1 ? 'item' : 'items';
 
@@ -63,7 +74,10 @@ export function CartBar({
         onPress={onPress}
         style={({ pressed }) => [
           styles.bar,
-          { backgroundColor: colors.primary, shadowColor: colors.primary },
+          {
+            backgroundColor: colors.primaryDark,
+            shadowColor: colors.primaryDark,
+          },
           pressed && styles.pressed,
         ]}
         accessibilityRole="button"
@@ -92,6 +106,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 12,
     right: 12,
+    zIndex: 100,
   },
   bar: {
     flexDirection: 'row',
@@ -105,7 +120,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  pressed: { opacity: 0.9 },
+  pressed: { opacity: 0.85 },
   iconWrap: {
     position: 'relative',
     width: 28,
@@ -125,6 +140,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeText: {
+    // Badge always renders on amber accent; #111 ensures AA contrast in
+    // both light and dark themes. Do not theme-token this color.
     color: '#111',
     fontSize: 11,
     fontWeight: '700',
