@@ -45,17 +45,20 @@ export function Stepper({
         disabled={isInert}
         style={({ pressed }) => [
           styles.button,
-          pressed && styles.pressed,
-          isInert && styles.disabled,
+          isInert ? styles.disabled : pressed && styles.pressed,
         ]}
         accessibilityRole="button"
         accessibilityLabel={decLabel}
         accessibilityState={{ disabled: isInert }}
-        hitSlop={6}
       >
         <Ionicons name="remove" size={18} color="white" />
       </Pressable>
-      <View style={styles.qtyContainer}>
+      <View
+        style={styles.qtyContainer}
+        accessible
+        accessibilityLiveRegion="polite"
+        accessibilityLabel={busy ? 'Updating quantity' : `Quantity: ${qty}`}
+      >
         {busy ? (
           <ActivityIndicator size="small" color="white" />
         ) : (
@@ -67,13 +70,11 @@ export function Stepper({
         disabled={isInert}
         style={({ pressed }) => [
           styles.button,
-          pressed && styles.pressed,
-          isInert && styles.disabled,
+          isInert ? styles.disabled : pressed && styles.pressed,
         ]}
         accessibilityRole="button"
         accessibilityLabel={incLabel}
         accessibilityState={{ disabled: isInert }}
-        hitSlop={6}
       >
         <Ionicons name="add" size={18} color="white" />
       </Pressable>
