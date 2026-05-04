@@ -130,11 +130,16 @@ export default function ProductsGrid({
         { paddingBottom: cartBarVisible ? 96 : 24 },
       ]}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      style={styles.list}
     />
   );
 }
 
 const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+  },
   content: {
     paddingHorizontal: 20,
     paddingTop: 4,
