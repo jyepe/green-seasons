@@ -9,6 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import ProductsSortMenu from './ProductsSortMenu';
 import type { SortKey } from './ProductsScreenState';
 
@@ -27,27 +33,27 @@ export default function ProductsSearchBar({
 }: ProductsSearchBarProps) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
-  const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const borderColor = focused ? colors.primary : colors.border;
+  // Animate border color on the native side to avoid a synchronous React
+  // re-render during the native focus event, which can cause immediate blur
+  // in the New Architecture.
+  const focusProgress = useSharedValue(0);
+  const inputWrapAnimStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      focusProgress.value,
+      [0, 1],
+      [colors.border, colors.primary]
+    ),
+  }));
 
   return (
     <View style={styles.row}>
-      <View
+      <Animated.View
         style={[
           styles.inputWrap,
-          {
-            backgroundColor: colors.surface,
-            borderColor,
-          },
-          focused && {
-            shadowColor: colors.primary,
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            shadowOffset: { width: 0, height: 0 },
-            elevation: 0,
-          },
+          { backgroundColor: colors.surface },
+          inputWrapAnimStyle,
         ]}
       >
         <Ionicons
@@ -59,8 +65,12 @@ export default function ProductsSearchBar({
         <TextInput
           value={searchQuery}
           onChangeText={setSearchQuery}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={() => {
+            focusProgress.value = withTiming(1, { duration: 150 });
+          }}
+          onBlur={() => {
+            focusProgress.value = withTiming(0, { duration: 150 });
+          }}
           placeholder="Search products..."
           placeholderTextColor={colors.textSecondary + '99'}
           style={[styles.input, { color: colors.text }]}
@@ -82,7 +92,7 @@ export default function ProductsSearchBar({
             />
           </TouchableOpacity>
         ) : null}
-      </View>
+      </Animated.View>
 
       <View style={styles.sortAnchor}>
         <Pressable

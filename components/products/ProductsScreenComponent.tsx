@@ -1,7 +1,5 @@
 import { CartBar } from '@/components/ui/CartBar';
-import { Toast } from '@/components/ui/Toast';
 import { Colors } from '@/constants/Colors';
-import { ROUTES } from '@/constants/Routes';
 import { useAddToCart, useCart, useCartRefetchOnFocus } from '@/hooks/useCart';
 import { useToggleFavorite } from '@/hooks/useFavorite';
 import { useItems, useItemsRefetchOnFocus } from '@/hooks/useItems';
@@ -23,14 +21,8 @@ export default function ProductsScreenComponent() {
   // Use a reducer to manage complex state transitions and avoid synchronization issues
   // between search query, pagination, and optimistic cart updates.
   const [state, dispatch] = useReducer(productsScreenReducer, initialState);
-  const {
-    searchQuery,
-    sortBy,
-    currentPage,
-    pendingItemId,
-    showToast,
-    stepperItems,
-  } = state;
+  const { searchQuery, sortBy, currentPage, pendingItemId, stepperItems } =
+    state;
 
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
@@ -191,10 +183,6 @@ export default function ProductsScreenComponent() {
     }
   };
 
-  const handleToastHide = useCallback(() => {
-    dispatch({ type: 'HIDE_TOAST' });
-  }, []);
-
   const handleToggleFavorite = useCallback(
     (itemId: string, currentlyFavorite: boolean) => {
       toggleFavoriteMutation.mutate(
@@ -233,12 +221,6 @@ export default function ProductsScreenComponent() {
       edges={['top']}
       accessibilityLabel="Explore Products Screen"
     >
-      <Toast
-        message="Item added to cart!"
-        type="success"
-        visible={showToast}
-        onHide={handleToastHide}
-      />
       <ProductsScreenHeader />
 
       <ProductsSearchBar
@@ -295,7 +277,7 @@ export default function ProductsScreenComponent() {
       <CartBar
         itemCount={cartItemCount}
         totalCents={cartTotalCents}
-        onPress={() => router.push(ROUTES.RESTAURANT_OWNER_DASHBOARD + '/cart')}
+        onPress={() => router.push('/(tabs)/cart')}
       />
     </SafeAreaView>
   );
