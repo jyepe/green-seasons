@@ -1,13 +1,13 @@
-import { Colors } from '@/constants/Colors';
-import { useAppColorScheme } from '@/hooks/useTheme';
-import { useCart, useClearCart, useAddToCart } from '@/hooks/useCart';
-import { useItems } from '@/hooks/useItems';
-import { useUserInfo } from '@/hooks/useUserInfo';
-import { useRestaurant } from '@/hooks/useRestaurant';
-import { useAdmin } from '@/hooks/useAdmin';
-import * as Haptics from 'expo-haptics';
-import React, { useEffect, useMemo, useRef, useReducer } from 'react';
-import { Alert, StyleSheet, AccessibilityInfo } from 'react-native';
+// components/cart/CartScreenComponent.tsx
+import React, { useEffect, useMemo, useReducer, useRef } from 'react';
+import {
+  AccessibilityInfo,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useAnimatedStyle,
@@ -15,19 +15,46 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { Colors } from '@/constants/Colors';
+import { useAppColorScheme } from '@/hooks/useTheme';
+import {
+  useAddToCart,
+  useCart,
+  useCartRefetchOnFocus,
+  useClearCart,
+} from '@/hooks/useCart';
+import { useItems } from '@/hooks/useItems';
+import { useUserInfo } from '@/hooks/useUserInfo';
+import { useRestaurant } from '@/hooks/useRestaurant';
+import { useAdmin } from '@/hooks/useAdmin';
+import { LoadingView } from '@/components/ThemedView';
 import type { CartItem } from '@/lib/supabase';
-import { CartHeader } from '@/components/cart/CartHeader';
-import { CartList } from '@/components/cart/CartList';
-import { CartFooter } from '@/components/cart/CartFooter';
-import { EditQuantityModal, EditingItem } from '@/components/cart/EditQuantityModal';
 import { cartReducer, initialCartState } from '@/reducers/cartReducer';
+import { EditQuantityModal, type EditingItem } from './EditQuantityModal';
+import { CartHeader } from './CartHeader';
+import { CartSectionTitle } from './CartSectionTitle';
+import { CartSwipeableLine } from './CartSwipeableLine';
+import { CartDisclaimer } from './CartDisclaimer';
+import { CART_FOOTER_HEIGHT, CartSummaryFooter } from './CartSummaryFooter';
+import { CartEmptyState } from './CartEmptyState';
 
 export default function CartScreenComponent() {
   const router = useRouter();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+
+  useCartRefetchOnFocus();
+
   const { data: cartItems, isLoading, error } = useCart();
   const { data: items } = useItems();
   const { data: userInfo } = useUserInfo();
@@ -52,8 +79,11 @@ export default function CartScreenComponent() {
     return map;
   }, [items]);
 
+  const productCount = cartItems?.length ?? 0;
+  const unitCount =
+    cartItems?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   const total =
-    cartItems?.reduce((sum, item) => sum + item.line_subtotal, 0) || 0;
+    cartItems?.reduce((sum, item) => sum + item.line_subtotal, 0) ?? 0;
 
   useEffect(() => {
     if (prevTotalRef.current !== total && prevTotalRef.current > 0) {
@@ -144,7 +174,6 @@ export default function CartScreenComponent() {
 
   const handleSaveEdit = () => {
     if (!editingItem) return;
-
     const newQuantity = parseInt(editQuantity, 10);
     if (isNaN(newQuantity) || newQuantity < 1) {
       Alert.alert(
@@ -153,7 +182,6 @@ export default function CartScreenComponent() {
       );
       return;
     }
-
     const delta = newQuantity - editingItem.quantity;
     if (delta !== 0) {
       handleUpdateCartItem(editingItem.item_id, delta);
@@ -168,38 +196,92 @@ export default function CartScreenComponent() {
     router.push('/checkout');
   };
 
+  const handleBrowse = () => {
+    router.push(isUserAdmin ? '/admin/(tabs)/explore' : '/(tabs)/explore');
+  };
+
+  const renderBody = () => {
+    if (isLoading) {
+      return <LoadingView message="Loading cart..." />;
+    }
+    if (error) {
+      return (
+        <View style={styles.errorContainer}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={48}
+            color={colors.error}
+            style={styles.errorIcon}
+          />
+          <Text style={[styles.errorText, { color: colors.text }]}>
+            Failed to load cart. Please try again.
+          </Text>
+        </View>
+      );
+    }
+    if (!cartItems || cartItems.length === 0) {
+      return <CartEmptyState onBrowse={handleBrowse} />;
+    }
+
+    const scrollPaddingBottom =
+      CART_FOOTER_HEIGHT + insets.bottom + tabBarHeight + 16;
+
+    return (
+      <>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}
+          showsVerticalScrollIndicator={false}
+        >
+          <CartHeader
+            productCount={productCount}
+            unitCount={unitCount}
+            restaurantName={isUserAdmin ? undefined : restaurant?.name}
+          />
+          <CartSectionTitle
+            title="This order"
+            actionLabel="Clear all"
+            onActionPress={handleClearCart}
+            actionDisabled={isClearing || clearCartMutation.isPending}
+            actionBusy={isClearing || clearCartMutation.isPending}
+          />
+          <View style={styles.cardsList}>
+            {cartItems.map(item => (
+              <CartSwipeableLine
+                key={item.item_row_id}
+                item={item}
+                imageUrl={itemImageMap.get(item.item_id) ?? null}
+                isUpdating={updatingItemId === item.item_id}
+                onIncrement={() => handleUpdateCartItem(item.item_id, 1)}
+                onDecrement={() =>
+                  item.quantity === 1
+                    ? handleDeleteItem(item.item_id)
+                    : handleUpdateCartItem(item.item_id, -1)
+                }
+                onRemove={() => handleDeleteItem(item.item_id)}
+                onPress={() => handleItemPress(item)}
+              />
+            ))}
+          </View>
+          <CartDisclaimer />
+        </ScrollView>
+        <CartSummaryFooter
+          total={total}
+          animatedTotalStyle={animatedTotalStyle}
+          onCheckout={handleCheckout}
+        />
+      </>
+    );
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView
+        edges={['left', 'right']}
         style={[styles.container, { backgroundColor: colors.background }]}
         accessibilityLabel="Shopping Cart Screen"
       >
-        <CartHeader
-          restaurantName={isUserAdmin ? undefined : restaurant?.name}
-          itemCount={cartItems?.length || 0}
-          onClearCart={handleClearCart}
-          isClearing={isClearing || clearCartMutation.isPending}
-        />
-
-        <CartList
-          cartItems={cartItems || []}
-          isLoading={isLoading}
-          error={error}
-          updatingItemId={updatingItemId}
-          itemImageMap={itemImageMap}
-          onQuantityChange={handleUpdateCartItem}
-          onDeleteItem={handleDeleteItem}
-          onItemPress={handleItemPress}
-        />
-
-        {cartItems && cartItems.length > 0 && (
-          <CartFooter
-            total={total}
-            animatedTotalStyle={animatedTotalStyle}
-            onCheckout={handleCheckout}
-          />
-        )}
-
+        {renderBody()}
         <EditQuantityModal
           editingItem={editingItem}
           editQuantity={editQuantity}
@@ -218,5 +300,25 @@ export default function CartScreenComponent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  cardsList: {
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorIcon: {
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 18,
+    textAlign: 'center',
   },
 });

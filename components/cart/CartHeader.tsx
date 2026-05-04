@@ -1,117 +1,65 @@
-import { Ionicons } from '@expo/vector-icons';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+// components/cart/CartHeader.tsx
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
 
-type CartHeaderProps = {
+type Props = {
+  productCount: number;
+  unitCount: number;
   restaurantName?: string;
-  itemCount: number;
-  onClearCart: () => void;
-  isClearing: boolean;
 };
 
-export function CartHeader({
-  restaurantName,
-  itemCount,
-  onClearCart,
-  isClearing,
-}: CartHeaderProps) {
+export function CartHeader({ productCount, unitCount, restaurantName }: Props) {
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
+
+  const productLabel = productCount === 1 ? 'product' : 'products';
+  const subtitleParts = [
+    `${productCount} ${productLabel}`,
+    `${unitCount} units`,
+  ];
+  if (restaurantName) subtitleParts.push(restaurantName);
+  const subtitle = subtitleParts.join(' · ');
+
+  const a11yLabel = restaurantName
+    ? `Cart, ${productCount} ${productLabel}, ${unitCount} units, ${restaurantName}`
+    : `Cart, ${productCount} ${productLabel}, ${unitCount} units`;
 
   return (
-    <View
-      style={[
-        styles.header,
-        {
-          backgroundColor: colors.surface,
-          borderBottomColor: colors.border,
-        },
-      ]}
-    >
-      <View style={styles.headerContent}>
-        <View style={styles.headerTextContainer}>
-          <Text
-            style={[styles.headerTitle, { color: colors.text }]}
-            accessibilityRole="header"
-          >
-            Cart{restaurantName ? ` • ${restaurantName}` : ''}
-          </Text>
-          {itemCount > 0 && (
-            <Text
-              style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-            >
-              {itemCount} {itemCount === 1 ? 'item' : 'items'}
-            </Text>
-          )}
-        </View>
-        {itemCount > 0 && (
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={onClearCart}
-            disabled={isClearing}
-            accessibilityRole="button"
-            accessibilityLabel="Clear cart"
-            accessibilityState={{ disabled: isClearing, busy: isClearing }}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            {isClearing ? (
-              <ActivityIndicator size="small" color={colors.error} />
-            ) : (
-              <>
-                <Ionicons name="trash-outline" size={16} color={colors.error} />
-                <Text style={[styles.clearButtonText, { color: colors.error }]}>
-                  Clear
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
+    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
+      <Text
+        accessibilityRole="header"
+        accessibilityLabel={a11yLabel}
+        style={[styles.title, { color: colors.text }]}
+      >
+        Cart
+      </Text>
+      <Text
+        style={[styles.subtitle, { color: colors.textSecondary }]}
+        numberOfLines={1}
+      >
+        {subtitle}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
+    paddingBottom: 8,
   },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTextContainer: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
+  title: {
+    fontSize: 26,
     fontWeight: '700',
-    marginBottom: 2,
+    letterSpacing: -0.26,
   },
-  headerSubtitle: {
+  subtitle: {
+    marginTop: 2,
     fontSize: 13,
     fontWeight: '400',
-    opacity: 0.7,
-  },
-  clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  clearButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
 });
