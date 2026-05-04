@@ -1,77 +1,75 @@
-import type { Restaurant, UserInfo } from '@/lib/supabase';
+// reducers/checkoutReducer.ts
+import type { Restaurant } from '@/lib/supabase';
 
-export type PaymentMethod = 'net30' | 'credit' | 'cash';
+export type PaymentMethod = 'cash';
 
 export interface CheckoutState {
-  // Restaurant Information
+  step: 0 | 1 | 2 | 3;
+
+  // Restaurant
   selectedRestaurantId: string | null;
-  restaurantName: string;
   dropdownVisible: boolean;
 
-  // Contact Information
-  contactPerson: string;
-  phoneNumber: string;
-  email: string;
-
-  // Delivery Information
-  deliveryAddress: string;
+  // Delivery slot
+  selectedSlotId: string | null;
   deliveryDate: Date | null;
-  specialInstructions: string;
 
-  // iOS Date Picker State
+  // iOS date picker
   iosPickerVisible: boolean;
   iosTempDate: Date;
 
+  // Driver notes
+  specialInstructions: string;
+
   // Payment
   paymentMethod: PaymentMethod;
+
+  // Review
+  agreed: boolean;
+
+  // Confirmed
+  placedOrderId: string | null;
+  placedTotal: number | null;
+
+  // Toast
+  toastMessage: string | null;
 }
 
 export const initialCheckoutState: CheckoutState = {
+  step: 0,
   selectedRestaurantId: null,
-  restaurantName: '',
   dropdownVisible: false,
-  contactPerson: '',
-  phoneNumber: '',
-  email: '',
-  deliveryAddress: '',
+  selectedSlotId: null,
   deliveryDate: null,
-  specialInstructions: '',
   iosPickerVisible: false,
   iosTempDate: new Date(),
+  specialInstructions: '',
   paymentMethod: 'cash',
+  agreed: false,
+  placedOrderId: null,
+  placedTotal: null,
+  toastMessage: null,
 };
 
 export type CheckoutAction =
   | { type: 'SET_SELECTED_RESTAURANT_ID'; payload: string | null }
   | { type: 'TOGGLE_DROPDOWN' }
   | { type: 'SET_DROPDOWN_VISIBLE'; payload: boolean }
-  | { type: 'SET_EMAIL'; payload: string }
+  | { type: 'SELECT_ADMIN_RESTAURANT'; payload: Restaurant }
+  | { type: 'SET_SLOT'; payload: { slotId: string; slotDate: Date } }
   | { type: 'SET_DELIVERY_DATE'; payload: Date }
-  | { type: 'SET_SPECIAL_INSTRUCTIONS'; payload: string }
-  | { type: 'SET_PAYMENT_METHOD'; payload: PaymentMethod }
   | { type: 'OPEN_IOS_PICKER'; payload: Date }
   | { type: 'SET_IOS_TEMP_DATE'; payload: Date }
   | { type: 'CONFIRM_IOS_DATE' }
   | { type: 'CANCEL_IOS_DATE' }
-  | {
-      type: 'SELECT_ADMIN_RESTAURANT';
-      payload: Restaurant;
-    }
-  | {
-      type: 'SYNC_RESTAURANT_DATA';
-      payload: {
-        restaurant: Restaurant | null;
-        selectedRestaurant: Restaurant | null;
-      };
-    }
-  | {
-      type: 'SYNC_CONTACT_DATA';
-      payload: {
-        isUserAdmin: boolean;
-        userInfo: UserInfo | null;
-        ownerInfo: UserInfo | null;
-      };
-    };
+  | { type: 'SET_SPECIAL_INSTRUCTIONS'; payload: string }
+  | { type: 'TOGGLE_AGREEMENT' }
+  | { type: 'NEXT_STEP' }
+  | { type: 'PREV_STEP' }
+  | { type: 'GO_TO_STEP'; payload: 0 | 1 | 2 | 3 }
+  | { type: 'ORDER_PLACED'; payload: { orderId: string; total: number } }
+  | { type: 'SHOW_TOAST'; payload: string }
+  | { type: 'DISMISS_TOAST' };
 
 export function checkoutReducer(
   state: CheckoutState,
@@ -87,23 +85,32 @@ export function checkoutReducer(
     case 'SET_DROPDOWN_VISIBLE':
       return { ...state, dropdownVisible: action.payload };
 
-    case 'SET_EMAIL':
-      return { ...state, email: action.payload };
+    case 'SELECT_ADMIN_RESTAURANT':
+      return {
+        ...state,
+        selectedRestaurantId: action.payload.id,
+        dropdownVisible: false,
+      };
+
+    case 'SET_SLOT':
+      return {
+        ...state,
+        selectedSlotId: action.payload.slotId,
+        deliveryDate: action.payload.slotDate,
+      };
 
     case 'SET_DELIVERY_DATE':
-      return { ...state, deliveryDate: action.payload };
-
-    case 'SET_SPECIAL_INSTRUCTIONS':
-      return { ...state, specialInstructions: action.payload };
-
-    case 'SET_PAYMENT_METHOD':
-      return { ...state, paymentMethod: action.payload };
+      return {
+        ...state,
+        deliveryDate: action.payload,
+        selectedSlotId: null,
+      };
 
     case 'OPEN_IOS_PICKER':
       return {
         ...state,
-        iosTempDate: action.payload,
         iosPickerVisible: true,
+        iosTempDate: action.payload,
       };
 
     case 'SET_IOS_TEMP_DATE':
@@ -113,126 +120,47 @@ export function checkoutReducer(
       return {
         ...state,
         deliveryDate: state.iosTempDate,
+        selectedSlotId: null,
         iosPickerVisible: false,
       };
 
     case 'CANCEL_IOS_DATE':
       return { ...state, iosPickerVisible: false };
 
-    case 'SELECT_ADMIN_RESTAURANT': {
-      const rest = action.payload;
-      const formattedAddress = [
-        rest.address_line1,
-        rest.address_line2,
-        [rest.city, rest.postal_code].filter(Boolean).join(', '),
-        rest.country,
-      ]
-        .filter(part => part && part.trim().length > 0)
-        .join('\n');
+    case 'SET_SPECIAL_INSTRUCTIONS':
+      return { ...state, specialInstructions: action.payload };
 
-      return {
-        ...state,
-        selectedRestaurantId: rest.id,
-        restaurantName: rest.name,
-        dropdownVisible: false,
-        deliveryAddress: formattedAddress || '',
-      };
+    case 'TOGGLE_AGREEMENT':
+      return { ...state, agreed: !state.agreed };
+
+    case 'NEXT_STEP': {
+      if (state.step === 3) return state;
+      const next = (state.step + 1) as 0 | 1 | 2 | 3;
+      return { ...state, step: next };
     }
 
-    case 'SYNC_RESTAURANT_DATA': {
-      const { restaurant, selectedRestaurant } = action.payload;
-
-      if (!restaurant && !selectedRestaurant) {
-        // Only clear if we really have no data sources
-        // But if we already have data, maybe we shouldn't clear?
-        // The original effect cleared it.
-        return {
-          ...state,
-          restaurantName: '',
-          deliveryAddress: '',
-        };
-      }
-
-      const activeRestaurant = selectedRestaurant || restaurant;
-      if (!activeRestaurant) return state;
-
-      const formattedAddress = [
-        activeRestaurant.address_line1,
-        activeRestaurant.address_line2,
-        [activeRestaurant.city, activeRestaurant.postal_code]
-          .filter(Boolean)
-          .join(', '),
-        activeRestaurant.country,
-      ]
-        .filter(part => part && part.trim().length > 0)
-        .join('\n');
-
-      return {
-        ...state,
-        restaurantName: activeRestaurant.name ?? '',
-        deliveryAddress: formattedAddress || '',
-      };
+    case 'PREV_STEP': {
+      if (state.step === 0 || state.step === 3) return state;
+      const prev = (state.step - 1) as 0 | 1 | 2;
+      return { ...state, step: prev };
     }
 
-    case 'SYNC_CONTACT_DATA': {
-      const { isUserAdmin, userInfo, ownerInfo } = action.payload;
+    case 'GO_TO_STEP':
+      return { ...state, step: action.payload };
 
-      let newContactPerson = state.contactPerson;
-      let newEmail = state.email;
-      let newPhoneNumber = state.phoneNumber;
-
-      if (isUserAdmin && ownerInfo) {
-        // Admin has selected a restaurant - use owner info
-        const fullName = [ownerInfo.first_name, ownerInfo.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
-        newContactPerson = fullName || '';
-        newEmail = ownerInfo.email ?? '';
-        newPhoneNumber = ownerInfo.phone ?? '';
-      } else if (isUserAdmin && !ownerInfo && userInfo) {
-        // Admin without selected restaurant - use admin's own info
-        const fullName = [userInfo.first_name, userInfo.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
-        newContactPerson = fullName || userInfo.email || '';
-        newEmail = userInfo.email ?? '';
-        newPhoneNumber = userInfo.phone ?? '';
-      } else if (!isUserAdmin) {
-        // Reset to current user info if not admin
-        if (userInfo) {
-          const fullName = [userInfo.first_name, userInfo.last_name]
-            .filter(Boolean)
-            .join(' ')
-            .trim();
-          newContactPerson = fullName || userInfo.email || '';
-          newEmail = userInfo.email ?? '';
-          newPhoneNumber = userInfo.phone ?? '';
-        } else {
-          // Clear fields if not admin and no user info
-          newContactPerson = '';
-          newEmail = '';
-          newPhoneNumber = '';
-        }
-      }
-
-      // Optimization: Only return new object if values changed
-      if (
-        newContactPerson === state.contactPerson &&
-        newEmail === state.email &&
-        newPhoneNumber === state.phoneNumber
-      ) {
-        return state;
-      }
-
+    case 'ORDER_PLACED':
       return {
         ...state,
-        contactPerson: newContactPerson,
-        email: newEmail,
-        phoneNumber: newPhoneNumber,
+        step: 3,
+        placedOrderId: action.payload.orderId,
+        placedTotal: action.payload.total,
       };
-    }
+
+    case 'SHOW_TOAST':
+      return { ...state, toastMessage: action.payload };
+
+    case 'DISMISS_TOAST':
+      return { ...state, toastMessage: null };
 
     default:
       return state;
