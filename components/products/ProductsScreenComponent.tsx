@@ -19,8 +19,14 @@ export default function ProductsScreenComponent() {
   // Use a reducer to manage complex state transitions and avoid synchronization issues
   // between search query, pagination, and optimistic cart updates.
   const [state, dispatch] = useReducer(productsScreenReducer, initialState);
-  const { searchQuery, currentPage, pendingItemId, showToast, stepperItems } =
-    state;
+  const {
+    searchQuery,
+    sortBy,
+    currentPage,
+    pendingItemId,
+    showToast,
+    stepperItems,
+  } = state;
 
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
@@ -217,6 +223,8 @@ export default function ProductsScreenComponent() {
         setSearchQuery={query =>
           dispatch({ type: 'SET_SEARCH_QUERY', payload: query })
         }
+        sortBy={sortBy}
+        onSortChange={next => dispatch({ type: 'SET_SORT_BY', payload: next })}
       />
 
       <ProductsGrid
