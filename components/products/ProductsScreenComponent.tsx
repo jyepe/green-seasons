@@ -8,7 +8,6 @@ import React, { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { Alert, StyleSheet, AccessibilityInfo } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductsScreenHeader from './ProductsScreenHeader';
-import ProductsDisclaimer from './ProductsDisclaimer';
 import ProductsSearchBar from './ProductsSearchBar';
 import ProductsGrid from './ProductsGrid';
 import PaginationControls from './PaginationControls';
@@ -212,8 +211,6 @@ export default function ProductsScreenComponent() {
         onHide={handleToastHide}
       />
       <ProductsScreenHeader />
-
-      <ProductsDisclaimer />
 
       <ProductsSearchBar
         searchQuery={searchQuery}
