@@ -1,5 +1,5 @@
 // app/checkout.tsx
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -275,8 +275,11 @@ function CheckoutScreenInner() {
     dispatch({ type: 'PREV_STEP' });
   };
 
+  const allowLeaveRef = useRef(false);
+
   const handleTrackOrder = () => {
     if (state.placedOrderId) {
+      allowLeaveRef.current = true;
       router.replace({
         pathname: '/order/[id]',
         params: { id: state.placedOrderId },
@@ -285,17 +288,23 @@ function CheckoutScreenInner() {
   };
 
   const handleKeepShopping = () => {
+    allowLeaveRef.current = true;
     router.replace(isUserAdmin ? '/admin/(tabs)' : '/(tabs)');
   };
 
   // On the Confirmed step, override hardware back / iOS-gesture back so the user
   // can't pop back to the cart with a placed-order screen still mounted behind.
+  // The ref lets intentional in-screen CTAs (Track / Keep shopping) pass through
+  // without re-entering this handler — otherwise router.replace itself fires
+  // beforeRemove and we recurse into an infinite loop.
   useEffect(() => {
     if (state.step !== 3) return undefined;
     const unsubscribe = navigation.addListener(
       'beforeRemove',
       (event: { preventDefault: () => void }) => {
+        if (allowLeaveRef.current) return;
         event.preventDefault();
+        allowLeaveRef.current = true;
         router.replace(isUserAdmin ? '/admin/(tabs)' : '/(tabs)');
       }
     );
