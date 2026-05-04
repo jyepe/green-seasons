@@ -29,7 +29,7 @@ export async function logError(
       data: { user },
     } = await supabase.auth.getUser();
 
-    await supabase.from('client_errors').insert({
+    const { error: insertError } = await supabase.from('client_errors').insert({
       user_id: user?.id ?? null,
       user_role: context?.userRole ?? null,
       error_message: message,
@@ -38,6 +38,8 @@ export async function logError(
       platform: Platform.OS,
       app_version: Constants.expoConfig?.version ?? null,
     });
+    if (__DEV__ && insertError)
+      console.warn('[logError] insert failed', insertError);
   } catch {
     // intentionally silent — logger must never throw
   }
