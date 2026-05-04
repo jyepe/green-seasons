@@ -44,7 +44,6 @@ import {
 import {
   checkoutReducer,
   initialCheckoutState,
-  type PaymentMethod,
 } from '../reducers/checkoutReducer';
 
 const STEPS: StepperStep[] = [
@@ -58,11 +57,6 @@ const ARRIVES_FORMAT = new Intl.DateTimeFormat(undefined, {
   month: 'short',
   day: 'numeric',
 });
-
-const SAVED_CARDS = [
-  { id: 'c1', brand: 'Visa', last4: '4242', exp: '08/27' },
-  { id: 'c2', brand: 'Mastercard', last4: '8841', exp: '02/26' },
-] as const;
 
 function CheckoutScreenInner() {
   const router = useRouter();
@@ -199,11 +193,6 @@ function CheckoutScreenInner() {
     iconName: 'storefront-outline' as const,
   };
 
-  const savedCard =
-    state.paymentMethod === 'card'
-      ? (SAVED_CARDS.find(c => c.id === state.selectedCardId) ?? null)
-      : null;
-
   const ctaLabel = (() => {
     if (state.step === 0) return 'Continue to payment';
     if (state.step === 1) return 'Continue to review';
@@ -242,13 +231,6 @@ function CheckoutScreenInner() {
         'Please select a delivery date before placing your order.'
       );
       return;
-    }
-
-    if (state.paymentMethod !== 'cash') {
-      dispatch({
-        type: 'SHOW_TOAST',
-        payload: 'Coming soon — placed as cash on delivery',
-      });
     }
 
     setPlacing(true);
@@ -418,26 +400,7 @@ function CheckoutScreenInner() {
               />
             )}
 
-            {state.step === 1 && (
-              <StepPayment
-                colors={colors}
-                paymentMethod={state.paymentMethod}
-                onSelectMethod={method =>
-                  dispatch({
-                    type: 'SET_PAYMENT_METHOD',
-                    payload: method as PaymentMethod,
-                  })
-                }
-                selectedCardId={state.selectedCardId}
-                onSelectCard={cardId =>
-                  dispatch({ type: 'SET_SELECTED_CARD', payload: cardId })
-                }
-                email={userInfo?.email ?? ''}
-                onShowToast={message =>
-                  dispatch({ type: 'SHOW_TOAST', payload: message })
-                }
-              />
-            )}
+            {state.step === 1 && <StepPayment colors={colors} />}
 
             {state.step === 2 && (
               <StepReview
@@ -445,8 +408,6 @@ function CheckoutScreenInner() {
                 items={cartItems}
                 address={addressSummary}
                 slot={slotSummary}
-                paymentMethod={state.paymentMethod}
-                savedCard={savedCard}
                 totals={totals}
                 agreed={state.agreed}
                 onToggleAgree={() => dispatch({ type: 'TOGGLE_AGREEMENT' })}

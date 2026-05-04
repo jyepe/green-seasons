@@ -17,12 +17,6 @@ type SlotSummary = {
   window: string;
 };
 
-type SavedCardSummary = {
-  brand: string;
-  last4: string;
-  exp: string;
-} | null;
-
 type Totals = {
   subtotal: number;
   delivery: number;
@@ -36,49 +30,16 @@ type Props = {
   items: CartItem[];
   address: AddressSummary;
   slot: SlotSummary;
-  paymentMethod: 'card' | 'ach' | 'invoice' | 'cash';
-  savedCard: SavedCardSummary;
   totals: Totals;
   agreed: boolean;
   onToggleAgree: () => void;
 };
-
-function paymentTitle(
-  method: Props['paymentMethod'],
-  card: SavedCardSummary
-): string {
-  if (method === 'card' && card) return `${card.brand} •••• ${card.last4}`;
-  if (method === 'ach') return 'ACH bank';
-  if (method === 'invoice') return 'Net-30 invoice';
-  return 'Cash on delivery';
-}
-
-function paymentSubtitle(
-  method: Props['paymentMethod'],
-  card: SavedCardSummary
-): string {
-  if (method === 'card' && card) return `Expires ${card.exp}`;
-  if (method === 'ach') return 'Chase Business ••5821';
-  if (method === 'invoice') return 'Net-30 terms';
-  return 'Pay driver on arrival';
-}
-
-function paymentIcon(
-  method: Props['paymentMethod']
-): keyof typeof Ionicons.glyphMap {
-  if (method === 'ach') return 'business-outline';
-  if (method === 'invoice') return 'receipt-outline';
-  if (method === 'cash') return 'cash-outline';
-  return 'card-outline';
-}
 
 export function StepReview({
   colors,
   items,
   address,
   slot,
-  paymentMethod,
-  savedCard,
   totals,
   agreed,
   onToggleAgree,
@@ -202,17 +163,17 @@ export function StepReview({
         >
           <View style={styles.iconRow}>
             <Ionicons
-              name={paymentIcon(paymentMethod)}
+              name="cash-outline"
               size={18}
               color={colors.textSecondary}
               style={styles.rowIcon}
             />
             <View style={styles.rowBody}>
               <Text style={[styles.rowTitle, { color: colors.text }]}>
-                {paymentTitle(paymentMethod, savedCard)}
+                Cash on delivery
               </Text>
               <Text style={[styles.rowSub, { color: colors.textSecondary }]}>
-                {paymentSubtitle(paymentMethod, savedCard)}
+                Pay driver on arrival
               </Text>
             </View>
           </View>

@@ -1,7 +1,7 @@
 // reducers/checkoutReducer.ts
 import type { Restaurant } from '@/lib/supabase';
 
-export type PaymentMethod = 'card' | 'ach' | 'invoice' | 'cash';
+export type PaymentMethod = 'cash';
 
 export interface CheckoutState {
   step: 0 | 1 | 2 | 3;
@@ -23,7 +23,6 @@ export interface CheckoutState {
 
   // Payment
   paymentMethod: PaymentMethod;
-  selectedCardId: string;
 
   // Review
   agreed: boolean;
@@ -45,8 +44,7 @@ export const initialCheckoutState: CheckoutState = {
   iosPickerVisible: false,
   iosTempDate: new Date(),
   specialInstructions: '',
-  paymentMethod: 'card',
-  selectedCardId: 'c1',
+  paymentMethod: 'cash',
   agreed: false,
   placedOrderId: null,
   placedTotal: null,
@@ -65,8 +63,6 @@ export type CheckoutAction =
   | { type: 'CONFIRM_IOS_DATE' }
   | { type: 'CANCEL_IOS_DATE' }
   | { type: 'SET_SPECIAL_INSTRUCTIONS'; payload: string }
-  | { type: 'SET_PAYMENT_METHOD'; payload: PaymentMethod }
-  | { type: 'SET_SELECTED_CARD'; payload: string }
   | { type: 'TOGGLE_AGREEMENT' }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
@@ -133,12 +129,6 @@ export function checkoutReducer(
 
     case 'SET_SPECIAL_INSTRUCTIONS':
       return { ...state, specialInstructions: action.payload };
-
-    case 'SET_PAYMENT_METHOD':
-      return { ...state, paymentMethod: action.payload };
-
-    case 'SET_SELECTED_CARD':
-      return { ...state, selectedCardId: action.payload };
 
     case 'TOGGLE_AGREEMENT':
       return { ...state, agreed: !state.agreed };
