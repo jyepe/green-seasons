@@ -1,14 +1,20 @@
 // components/cart/CartSummaryFooter.tsx
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextStyle, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+} from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { useAppColorScheme } from '@/hooks/useTheme';
-
-export const CART_FOOTER_HEIGHT = 128;
 
 type Props = {
   total: number;
@@ -24,71 +30,70 @@ export function CartSummaryFooter({
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
   const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
+
+  // On iOS the tab bar is position:'absolute' and overlays the screen — we pad
+  // the footer's bottom to push content above it. On Android the screen is
+  // already bounded above the tab bar, so only the safe-area inset matters.
+  const extraBottomPadding =
+    Platform.OS === 'ios' ? tabBarHeight : insets.bottom;
 
   return (
     <View
-      pointerEvents="box-none"
-      style={[styles.wrapper, { bottom: tabBarHeight }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+      ]}
     >
+      <BlurView
+        intensity={80}
+        tint={colorScheme === 'dark' ? 'dark' : 'light'}
+        style={StyleSheet.absoluteFill}
+      />
       <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.border,
-          },
-        ]}
+        style={[styles.content, { paddingBottom: 14 + extraBottomPadding }]}
       >
-        <BlurView
-          intensity={80}
-          tint={colorScheme === 'dark' ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.content}>
-          <View style={styles.totalBlock}>
-            <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>
-              Estimated total
-            </Text>
-            <Animated.Text
-              style={[
-                styles.totalValue,
-                { color: colors.text },
-                animatedTotalStyle,
-              ]}
-            >
-              ${total.toFixed(2)}
-            </Animated.Text>
-          </View>
-
-          <Pressable
-            onPress={onCheckout}
-            accessibilityRole="button"
-            accessibilityLabel="Proceed to checkout"
-            accessibilityHint="Reviews your order and payment details"
-            style={({ pressed }) => [
-              styles.checkoutBtn,
-              {
-                backgroundColor: colors.primary,
-                shadowColor: colors.primary,
-              },
-              pressed && { opacity: 0.85 },
+        <View style={styles.totalBlock}>
+          <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>
+            Estimated total
+          </Text>
+          <Animated.Text
+            style={[
+              styles.totalValue,
+              { color: colors.text },
+              animatedTotalStyle,
             ]}
           >
-            <Text style={styles.checkoutText}>Checkout</Text>
-            <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
-          </Pressable>
+            ${total.toFixed(2)}
+          </Animated.Text>
         </View>
+
+        <Pressable
+          onPress={onCheckout}
+          accessibilityRole="button"
+          accessibilityLabel="Proceed to checkout"
+          accessibilityHint="Reviews your order and payment details"
+          style={({ pressed }) => [
+            styles.checkoutBtn,
+            {
+              backgroundColor: colors.primary,
+              shadowColor: colors.primary,
+            },
+            pressed && { opacity: 0.85 },
+          ]}
+        >
+          <Text style={styles.checkoutText}>Checkout</Text>
+          <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+        </Pressable>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-  },
   container: {
     overflow: 'hidden',
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -96,7 +101,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 14,
     gap: 10,
   },
   totalBlock: {

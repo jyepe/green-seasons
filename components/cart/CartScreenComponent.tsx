@@ -16,7 +16,6 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -40,14 +39,13 @@ import { CartHeader } from './CartHeader';
 import { CartSectionTitle } from './CartSectionTitle';
 import { CartSwipeableLine } from './CartSwipeableLine';
 import { CartDisclaimer } from './CartDisclaimer';
-import { CART_FOOTER_HEIGHT, CartSummaryFooter } from './CartSummaryFooter';
+import { CartSummaryFooter } from './CartSummaryFooter';
 import { CartEmptyState } from './CartEmptyState';
 
 export default function CartScreenComponent() {
   const router = useRouter();
   const colorScheme = useAppColorScheme();
   const colors = Colors[colorScheme];
-  const tabBarHeight = useBottomTabBarHeight();
 
   useCartRefetchOnFocus();
 
@@ -219,8 +217,6 @@ export default function CartScreenComponent() {
       return <CartEmptyState onBrowse={handleBrowse} />;
     }
 
-    const scrollPaddingBottom = CART_FOOTER_HEIGHT + tabBarHeight + 16;
-
     return (
       <>
         <CartHeader
@@ -230,7 +226,7 @@ export default function CartScreenComponent() {
         />
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}
+          contentContainerStyle={{ paddingBottom: 16 }}
           showsVerticalScrollIndicator={false}
         >
           <CartSectionTitle
