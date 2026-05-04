@@ -231,6 +231,11 @@ export default function ProductsScreenComponent() {
         products={paginatedProducts}
         isLoading={isLoading}
         error={error}
+        cartBarVisible={false}
+        searchActive={searchQuery.length > 0}
+        onClearSearch={() =>
+          dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
+        }
         getCartQuantity={getCartQuantity}
         getStepperQuantity={getStepperQuantity}
         isStepperMode={isStepperMode}
