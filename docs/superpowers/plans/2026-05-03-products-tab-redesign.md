@@ -14,6 +14,28 @@
 
 ---
 
+## Handoff Notes (added mid-execution)
+
+These supersede or refine the original plan based on what was discovered during Tasks 1–4.
+
+**Verification gate — narrowed.** `npm run check-all` is broken on `origin/preview`: `npm run prettier:check` fails on ~185 unrelated files (reducers, scripts, supabase functions, etc.) that pre-date this work. Running `npm run prettier:fix` would touch all of them and conflict with parallel branches. Use this gate instead until the baseline is repaired:
+
+```bash
+npm run typecheck
+npm run lint
+npx prettier --check <files-changed-in-this-task>
+# If prettier fails: npx prettier --write <files-changed-in-this-task>
+```
+
+(`tsconfig.json` was updated in Task 1's prep to exclude `supabase/functions/**` so Deno-style edge functions don't break typecheck — see commit `1de75d5`.)
+
+**Deferred items found during Task 4 review:**
+
+- **Task 5:** When rewriting `ProductsSearchBar`, verify the horizontal-gutter alignment with the new `ProductsScreenHeader`. Header now uses `paddingHorizontal: 20` with no card background; search bar previously used `marginHorizontal: 16`. Pick one and apply consistently — otherwise the header text edge and search-field edge will visibly mis-align in the new flush layout.
+- **Task 11:** Update `docs/components.md` lines 119 and 121 — line 119 still describes `ProductsScreenHeader` as `"Fresh Produce" title + subtitle` (now "Today's market" with eyebrow + folded disclaimer); line 121 still lists `ProductsDisclaimer` as a component (deleted in Task 4). Roll into Task 11's verification sweep.
+
+---
+
 ## File Structure
 
 | Path                                                  | Action  | Responsibility                                                         |
