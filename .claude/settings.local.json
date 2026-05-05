@@ -17,7 +17,8 @@
       "Bash(cat app/admin/\\\\\\(tabs\\\\\\)/profile.tsx)",
       "Bash(cat \"app/admin/\\(tabs\\)/profile.tsx\")",
       "Bash(findstr /R /S \"try\\\\|catch\\\\|console\\\\.\" app\\\\*.tsx hooks\\\\*.ts*)",
-      "Bash(npx supabase@2.98.1 --version)"
+      "Bash(npx supabase@2.98.1 --version)",
+      "Bash(node *)"
     ]
   },
   "enabledMcpjsonServers": [

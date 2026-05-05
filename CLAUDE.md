@@ -35,6 +35,7 @@ GitHub Actions (`.github/workflows/dev.yml`, `main.yml`) trigger EAS builds **on
 
 - `dev-*`, `v*-dev*`, `v*-rc-dev*` → `eas build --profile development --platform android`
 - `preview-*`, `v*-preview*`, `v*-rc*` → `eas build --profile preview --platform all`
+- `prod-*`, `v*-prod*` → `eas build --profile production --platform all`
 
 `eas.json` defines `development` / `preview` / `production` profiles (`appVersionSource: remote`).
 
