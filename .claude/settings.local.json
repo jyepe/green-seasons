@@ -15,7 +15,9 @@
       "Bash(grep -v \"//\")",
       "Bash(echo \"EXIT:$?\")",
       "Bash(cat app/admin/\\\\\\(tabs\\\\\\)/profile.tsx)",
-      "Bash(cat \"app/admin/\\(tabs\\)/profile.tsx\")"
+      "Bash(cat \"app/admin/\\(tabs\\)/profile.tsx\")",
+      "Bash(findstr /R /S \"try\\\\|catch\\\\|console\\\\.\" app\\\\*.tsx hooks\\\\*.ts*)",
+      "Bash(npx supabase@2.98.1 --version)"
     ]
   },
   "enabledMcpjsonServers": [
