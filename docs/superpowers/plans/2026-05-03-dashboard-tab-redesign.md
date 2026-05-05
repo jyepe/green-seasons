@@ -44,11 +44,10 @@ export function greetingForHour(
  * date. Handles year boundaries: previousMonthLabel(new Date(2026, 0, 5)) === 'Dec'.
  */
 export function previousMonthLabel(now: Date): string {
-  return new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    1
-  ).toLocaleString('en-US', { month: 'short' });
+  return new Date(now.getFullYear(), now.getMonth() - 1, 1).toLocaleString(
+    'en-US',
+    { month: 'short' }
+  );
 }
 
 export type Mtd = {
@@ -185,12 +184,7 @@ export function DashboardHeader({
   const greeting = useMemo(() => greetingForHour(new Date()), []);
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: insets.top + 10 },
-      ]}
-    >
+    <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
       <View style={styles.titleBlock}>
         <Text style={[styles.greeting, { color: colors.textSecondary }]}>
           {greeting},
@@ -201,10 +195,7 @@ export function DashboardHeader({
             style={[styles.nameSkeleton, { backgroundColor: colors.border }]}
           />
         ) : (
-          <Text
-            style={[styles.name, { color: colors.text }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
             {firstName}
           </Text>
         )}
@@ -351,12 +342,7 @@ export function KpiTile({
         !isDark && styles.tileShadow,
       ]}
     >
-      <View
-        style={[
-          styles.iconChip,
-          { backgroundColor: iconColor + '1F' },
-        ]}
-      >
+      <View style={[styles.iconChip, { backgroundColor: iconColor + '1F' }]}>
         <Ionicons name={icon} size={16} color={iconColor} />
       </View>
       <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
@@ -539,12 +525,7 @@ export function RecentOrderRow({ order, isLast, onPress }: Props) {
       }, ${dateLabel}, ${formatCurrency(total)}`}
       activeOpacity={0.7}
     >
-      <View
-        style={[
-          styles.iconTile,
-          { backgroundColor: statusColor + '1F' },
-        ]}
-      >
+      <View style={[styles.iconTile, { backgroundColor: statusColor + '1F' }]}>
         <Ionicons
           name={STATUS_CONFIG[order.status].icon}
           size={18}
@@ -554,10 +535,7 @@ export function RecentOrderRow({ order, isLast, onPress }: Props) {
 
       <View style={styles.body}>
         <View style={styles.topRow}>
-          <Text
-            style={[styles.id, { color: colors.text }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.id, { color: colors.text }]} numberOfLines={1}>
             #{order.id.slice(0, 8)}
           </Text>
           <Text style={[styles.total, { color: colors.text }]}>
@@ -673,9 +651,7 @@ export function EmptyOrdersInline({ onBrowseProduce }: Props) {
   return (
     <View style={styles.wrapper}>
       <Ionicons name="leaf-outline" size={36} color={colors.textTertiary} />
-      <Text style={[styles.title, { color: colors.text }]}>
-        No orders yet
-      </Text>
+      <Text style={[styles.title, { color: colors.text }]}>No orders yet</Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Place your first order to see it here
       </Text>
@@ -781,9 +757,7 @@ function SkeletonRow({
         },
       ]}
     >
-      <View
-        style={[styles.skeletonTile, { backgroundColor: borderColor }]}
-      />
+      <View style={[styles.skeletonTile, { backgroundColor: borderColor }]} />
       <View style={styles.skeletonBody}>
         <View
           style={[styles.skeletonBarTop, { backgroundColor: borderColor }]}
@@ -843,11 +817,7 @@ export function RecentOrdersCard({
       >
         {isLoading ? (
           [0, 1, 2].map(i => (
-            <SkeletonRow
-              key={i}
-              isLast={i === 2}
-              borderColor={colors.border}
-            />
+            <SkeletonRow key={i} isLast={i === 2} borderColor={colors.border} />
           ))
         ) : orders.length === 0 ? (
           <EmptyOrdersInline onBrowseProduce={onBrowseProduce} />

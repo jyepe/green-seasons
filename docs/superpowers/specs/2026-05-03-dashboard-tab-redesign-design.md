@@ -21,19 +21,19 @@ The template ships with extra sections (Today's delivery hero, Quick actions, "R
 
 ## Scope decisions
 
-| Decision           | Choice                                            | Rationale                                                                                                                                                                   |
-| ------------------ | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sections rendered  | Greeting, 2 KPIs (Orders MTD + Spend MTD), Recent orders (3 rows) | Match the template's `EDITMODE-BEGIN` defaults exactly. Other sections deferred to follow-up work.                                                                          |
-| KPI sub-lines      | Computed prior-month comparison; **drop "of $4K budget"** | No `monthly_budget` field exists in the schema; faking it is a lie. Both tiles use the `↑/↓ x% vs <prevMonth>` shape, with `New this month` / `No orders yet` fallbacks. |
-| Reorder action     | **Decorative**; row taps navigate to `/order/[id]` | The mock's right-edge "Reorder" text is rendered as a visual tease, but the whole row is the tappable target. Real reorder flow deferred. The detail screen already exists for any reorder action. |
-| Notifications bell | **Dropped**                                       | No `/notifications` screen and no notification backend. Mock's bell + red dot would be a fake affordance.                                                                   |
-| Greeting time      | Computed from local time (`Good morning` <12, `Good afternoon` <17, `Good evening` else) | Mock hardcodes "Good morning"; real users hit this any hour.                                                                                                |
-| Empty state        | Inline empty state inside the recent-orders card  | Avoids redirecting to a separate empty screen. Leaf icon + "No orders yet" + "Browse produce" CTA → `/(tabs)/explore`.                                                       |
-| Loading state      | `…` value + skeleton sub-line bar in KPI tiles; 3 placeholder rows in recent card | No shimmer animation — matches existing project simplicity.                                                                                                                |
-| Error state        | Folded into empty state (KPIs `0`, recent card empty) | Matches the rest of the app, which doesn't surface React Query errors inline. Acceptable for a visual redesign.                                                              |
-| Styling            | React Native `StyleSheet` only                    | Matches every other screen and the precedent set by the profile redesign.                                                                                                   |
-| Background         | Flat `colors.background` — no radial gradient     | Mock's body radial gradient is decorative; RN gradient overhead isn't worth it. Cart and other screens use flat backgrounds too.                                            |
-| Safe-area handling | `useSafeAreaInsets()` in the header, no full `SafeAreaView` wrapper | Matches the profile-redesign pattern for tab screens; ScrollView gets `contentContainerStyle.paddingBottom: 24` for the tab bar.                                            |
+| Decision           | Choice                                                                                   | Rationale                                                                                                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sections rendered  | Greeting, 2 KPIs (Orders MTD + Spend MTD), Recent orders (3 rows)                        | Match the template's `EDITMODE-BEGIN` defaults exactly. Other sections deferred to follow-up work.                                                                                                 |
+| KPI sub-lines      | Computed prior-month comparison; **drop "of $4K budget"**                                | No `monthly_budget` field exists in the schema; faking it is a lie. Both tiles use the `↑/↓ x% vs <prevMonth>` shape, with `New this month` / `No orders yet` fallbacks.                           |
+| Reorder action     | **Decorative**; row taps navigate to `/order/[id]`                                       | The mock's right-edge "Reorder" text is rendered as a visual tease, but the whole row is the tappable target. Real reorder flow deferred. The detail screen already exists for any reorder action. |
+| Notifications bell | **Dropped**                                                                              | No `/notifications` screen and no notification backend. Mock's bell + red dot would be a fake affordance.                                                                                          |
+| Greeting time      | Computed from local time (`Good morning` <12, `Good afternoon` <17, `Good evening` else) | Mock hardcodes "Good morning"; real users hit this any hour.                                                                                                                                       |
+| Empty state        | Inline empty state inside the recent-orders card                                         | Avoids redirecting to a separate empty screen. Leaf icon + "No orders yet" + "Browse produce" CTA → `/(tabs)/explore`.                                                                             |
+| Loading state      | `…` value + skeleton sub-line bar in KPI tiles; 3 placeholder rows in recent card        | No shimmer animation — matches existing project simplicity.                                                                                                                                        |
+| Error state        | Folded into empty state (KPIs `0`, recent card empty)                                    | Matches the rest of the app, which doesn't surface React Query errors inline. Acceptable for a visual redesign.                                                                                    |
+| Styling            | React Native `StyleSheet` only                                                           | Matches every other screen and the precedent set by the profile redesign.                                                                                                                          |
+| Background         | Flat `colors.background` — no radial gradient                                            | Mock's body radial gradient is decorative; RN gradient overhead isn't worth it. Cart and other screens use flat backgrounds too.                                                                   |
+| Safe-area handling | `useSafeAreaInsets()` in the header, no full `SafeAreaView` wrapper                      | Matches the profile-redesign pattern for tab screens; ScrollView gets `contentContainerStyle.paddingBottom: 24` for the tab bar.                                                                   |
 
 ## File layout
 
@@ -66,13 +66,13 @@ type Props = {
 
 Layout: `paddingHorizontal: 20`, `paddingTop: insets.top + 10`, `paddingBottom: 8`, `flexDirection: 'row'`, `justifyContent: 'space-between'`, `alignItems: 'center'`. Right slot is empty (no bell). The title block fills the row.
 
-| Element                | Style                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `Good morning,` line   | `fontSize: 13, fontFamily: 'Inter_500Medium', color: textSecondary`                                            |
-| First name             | `fontSize: 26, fontFamily: 'Inter_700Bold', letterSpacing: -0.26, lineHeight: 30, marginTop: 1, color: text`   |
-| Storefront row         | `flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4`                                             |
-| Storefront icon        | `Ionicons name="storefront-outline" size={13} color={textSecondary}`                                           |
-| Restaurant name        | `fontSize: 13, fontFamily: 'Inter_400Regular', color: textSecondary` (numberOfLines={1})                       |
+| Element              | Style                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `Good morning,` line | `fontSize: 13, fontFamily: 'Inter_500Medium', color: textSecondary`                                          |
+| First name           | `fontSize: 26, fontFamily: 'Inter_700Bold', letterSpacing: -0.26, lineHeight: 30, marginTop: 1, color: text` |
+| Storefront row       | `flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4`                                           |
+| Storefront icon      | `Ionicons name="storefront-outline" size={13} color={textSecondary}`                                         |
+| Restaurant name      | `fontSize: 13, fontFamily: 'Inter_400Regular', color: textSecondary` (numberOfLines={1})                     |
 
 When `isLoading`: the `Good morning,` line still renders (greeting doesn't depend on profile), but firstName is replaced by a `width: 160, height: 26, borderRadius: 6, backgroundColor: border, marginTop: 1` skeleton bar, and the storefront row is replaced by a `width: 110, height: 13, borderRadius: 4, backgroundColor: border, marginTop: 6` bar.
 
@@ -93,13 +93,13 @@ type Props = {
 
 `flex: 1, backgroundColor: surface, borderRadius: 14, padding: 14, minWidth: 0`. Light: `shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, shadowOffset: {width: 0, height: 2}, elevation: 2`. Dark: `borderWidth: 1, borderColor: border` (no shadow).
 
-| Element  | Style                                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------------------ |
-| Icon chip| `width: 30, height: 30, borderRadius: 9, backgroundColor: iconColor + '1F', alignItems/justifyContent: 'center'`   |
-| Icon     | `Ionicons size={16} color={iconColor}`                                                                             |
-| Value    | `fontSize: 20, fontFamily: 'Inter_700Bold', letterSpacing: -0.2, lineHeight: 22, marginTop: 10, color: text`       |
-| Label    | `fontSize: 11, fontFamily: 'Inter_500Medium', color: textSecondary, marginTop: 2`                                  |
-| Sub      | `fontSize: 10, fontFamily: 'Inter_400Regular', color: textTertiary, marginTop: 1`                                  |
+| Element   | Style                                                                                                            |
+| --------- | ---------------------------------------------------------------------------------------------------------------- |
+| Icon chip | `width: 30, height: 30, borderRadius: 9, backgroundColor: iconColor + '1F', alignItems/justifyContent: 'center'` |
+| Icon      | `Ionicons size={16} color={iconColor}`                                                                           |
+| Value     | `fontSize: 20, fontFamily: 'Inter_700Bold', letterSpacing: -0.2, lineHeight: 22, marginTop: 10, color: text`     |
+| Label     | `fontSize: 11, fontFamily: 'Inter_500Medium', color: textSecondary, marginTop: 2`                                |
+| Sub       | `fontSize: 10, fontFamily: 'Inter_400Regular', color: textTertiary, marginTop: 1`                                |
 
 When `isLoading`: `value` shows `…`, `sub` is omitted, and a skeleton bar (`width: 80, height: 10, borderRadius: 4, backgroundColor: border, marginTop: 4`) renders in place of the sub-line. The icon chip and label always render (they don't depend on order data).
 
@@ -142,17 +142,17 @@ type Props = {
 
 `TouchableOpacity` with `paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 12`. When not `isLast`: `borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: border`.
 
-| Element             | Style                                                                                                                                                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status icon tile    | `width: 36, height: 36, borderRadius: 10, backgroundColor: orderStatus[status] + '1F', alignItems/justifyContent: 'center'`                                 |
-| Status icon         | `Ionicons name={STATUS_CONFIG[status].icon} size={18} color={orderStatus[status]}` (reuse `STATUS_CONFIG` already exported from `OrderListItem.tsx`)        |
-| Body                | `flex: 1, minWidth: 0`                                                                                                                                      |
-| Top row (id+total)  | `flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8`                                                                     |
-| Order id            | `#${order.id.slice(0, 8)}` — `fontSize: 13, fontFamily: 'Inter_600SemiBold', color: text` (matches existing `BaseOrderListItem` convention)                 |
-| Total               | `formatCurrency(order.final_total_amount ?? order.total_amount)` — `fontSize: 13, fontFamily: 'Inter_700Bold', color: text`                                 |
-| Bottom row          | `flexDirection: 'row', justifyContent: 'space-between', marginTop: 2`                                                                                       |
-| Meta                | `${formatDate(order.delivery_at ?? order.created_at)}` — `fontSize: 11, fontFamily: 'Inter_400Regular', color: textSecondary`                               |
-| Reorder text        | `fontSize: 11, fontFamily: 'Inter_600SemiBold', color: primary` — decorative; the whole row is the tap target                                               |
+| Element            | Style                                                                                                                                                |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status icon tile   | `width: 36, height: 36, borderRadius: 10, backgroundColor: orderStatus[status] + '1F', alignItems/justifyContent: 'center'`                          |
+| Status icon        | `Ionicons name={STATUS_CONFIG[status].icon} size={18} color={orderStatus[status]}` (reuse `STATUS_CONFIG` already exported from `OrderListItem.tsx`) |
+| Body               | `flex: 1, minWidth: 0`                                                                                                                               |
+| Top row (id+total) | `flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8`                                                              |
+| Order id           | `#${order.id.slice(0, 8)}` — `fontSize: 13, fontFamily: 'Inter_600SemiBold', color: text` (matches existing `BaseOrderListItem` convention)          |
+| Total              | `formatCurrency(order.final_total_amount ?? order.total_amount)` — `fontSize: 13, fontFamily: 'Inter_700Bold', color: text`                          |
+| Bottom row         | `flexDirection: 'row', justifyContent: 'space-between', marginTop: 2`                                                                                |
+| Meta               | `${formatDate(order.delivery_at ?? order.created_at)}` — `fontSize: 11, fontFamily: 'Inter_400Regular', color: textSecondary`                        |
+| Reorder text       | `fontSize: 11, fontFamily: 'Inter_600SemiBold', color: primary` — decorative; the whole row is the tap target                                        |
 
 `formatCurrency` is imported from `@/utils/currency`. `formatDate` and `STATUS_CONFIG` are imported from `@/components/OrderListItem` (already exported). Item count is **not** rendered — `getOrdersForUser`'s row shape does not include items, and joining them per row is out of scope.
 
@@ -175,7 +175,9 @@ Inside the recent-orders card surface:
 ### `utils.ts`
 
 ```ts
-export function greetingForHour(d: Date): 'Good morning' | 'Good afternoon' | 'Good evening' {
+export function greetingForHour(
+  d: Date
+): 'Good morning' | 'Good afternoon' | 'Good evening' {
   const h = d.getHours();
   if (h < 12) return 'Good morning';
   if (h < 17) return 'Good afternoon';
@@ -204,7 +206,11 @@ export function formatCompactDollars(cents: number): string;
 // >= $1000 → '$3.2K' (one decimal)
 // 0 → '$0'
 
-export function formatChange(now: number, prev: number, prevMonthLabel: string): string;
+export function formatChange(
+  now: number,
+  prev: number,
+  prevMonthLabel: string
+): string;
 // (0, 0, _)        → 'No orders yet'
 // (n, 0, _) n>0    → 'New this month'
 // otherwise        → '↑ 12% vs Apr' or '↓ 4% vs Apr' (Math.round of pct)
@@ -231,7 +237,9 @@ export default function HomeScreen() {
 
   const { data: userInfo } = useUserInfo();
   const { data: restaurant } = useRestaurant(userInfo?.owned_restaurant_id);
-  const { data: orders = [], isLoading: ordersLoading } = useOrders(userInfo?.id);
+  const { data: orders = [], isLoading: ordersLoading } = useOrders(
+    userInfo?.id
+  );
   const { data: isUserAdmin, isLoading: isAdminLoading } = useAdmin();
 
   // Existing admin redirect — preserved verbatim
@@ -248,9 +256,15 @@ export default function HomeScreen() {
   const recent = orders.slice(0, 3);
 
   const ordersValue = ordersLoading ? '…' : String(mtd.ordersThisMonth);
-  const ordersSub   = ordersLoading ? undefined : formatChange(mtd.ordersThisMonth, mtd.ordersLastMonth, prevLabel);
-  const spendValue  = ordersLoading ? '…' : formatCompactDollars(mtd.spendThisMonthCents);
-  const spendSub    = ordersLoading ? undefined : formatChange(mtd.spendThisMonthCents, mtd.spendLastMonthCents, prevLabel);
+  const ordersSub = ordersLoading
+    ? undefined
+    : formatChange(mtd.ordersThisMonth, mtd.ordersLastMonth, prevLabel);
+  const spendValue = ordersLoading
+    ? '…'
+    : formatCompactDollars(mtd.spendThisMonthCents);
+  const spendSub = ordersLoading
+    ? undefined
+    : formatChange(mtd.spendThisMonthCents, mtd.spendLastMonthCents, prevLabel);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -261,15 +275,31 @@ export default function HomeScreen() {
           isLoading={!userInfo}
         />
         <KpiRow>
-          <KpiTile icon="cube-outline" iconColor={colors.primary}    label="Orders MTD" value={ordersValue} sub={ordersSub} isLoading={ordersLoading} />
-          <KpiTile icon="cash-outline" iconColor={colors.accentWarm} label="Spend MTD"  value={spendValue}  sub={spendSub}  isLoading={ordersLoading} />
+          <KpiTile
+            icon="cube-outline"
+            iconColor={colors.primary}
+            label="Orders MTD"
+            value={ordersValue}
+            sub={ordersSub}
+            isLoading={ordersLoading}
+          />
+          <KpiTile
+            icon="cash-outline"
+            iconColor={colors.accentWarm}
+            label="Spend MTD"
+            value={spendValue}
+            sub={spendSub}
+            isLoading={ordersLoading}
+          />
         </KpiRow>
         <RecentOrdersCard
           orders={recent}
           isLoading={ordersLoading}
           onSeeAll={() => router.push('/orders')}
           onBrowseProduce={() => router.push('/(tabs)/explore')}
-          onPressRow={(id) => router.push({ pathname: '/order/[id]', params: { id } })}
+          onPressRow={id =>
+            router.push({ pathname: '/order/[id]', params: { id } })
+          }
         />
       </ScrollView>
     </View>

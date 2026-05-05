@@ -72,9 +72,9 @@ Confirm success and tell the user the tag name and that the EAS build has been t
 
 ## Error cases
 
-| Situation | Action |
-|-----------|--------|
-| Not on `preview` branch | Switch to `preview`, then re-check status |
-| Uncommitted changes exist | Stop, tell user to commit or stash first |
-| Push fails (rejected) | Tell user — do not force push |
-| Tag already exists | This shouldn't happen with auto-increment; if it does, increment again |
+| Situation                 | Action                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- |
+| Not on `preview` branch   | Switch to `preview`, then re-check status                              |
+| Uncommitted changes exist | Stop, tell user to commit or stash first                               |
+| Push fails (rejected)     | Tell user — do not force push                                          |
+| Tag already exists        | This shouldn't happen with auto-increment; if it does, increment again |

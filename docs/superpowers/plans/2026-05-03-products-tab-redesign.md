@@ -38,22 +38,22 @@ npx prettier --check <files-changed-in-this-task>
 
 ## File Structure
 
-| Path                                                  | Action  | Responsibility                                                         |
-| ----------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
-| `components/ui/Stepper.tsx`                           | CREATE  | Reusable +/qty/− pill — primary green pill with white glyphs           |
-| `components/ui/CartBar.tsx`                           | CREATE  | Sticky floating cart preview, anchored above tab bar                   |
-| `components/products/ProductTile.tsx`                 | CREATE  | Image-or-gradient image area used by `ProductCard`                     |
-| `components/products/ProductsSortMenu.tsx`            | CREATE  | Sort dropdown (Name A–Z / Price low→high / Price high→low)             |
-| `components/products/index.ts`                        | CREATE  | Barrel export                                                          |
-| `components/products/ProductsScreenState.ts`          | MODIFY  | Add `sortBy` field + `SET_SORT_BY` action                              |
-| `components/products/ProductsScreenHeader.tsx`        | REWRITE | Date eyebrow + "Today's market" + cutoff subtitle + disclaimer note    |
-| `components/products/ProductsSearchBar.tsx`           | REWRITE | Focus-ring input; renders `ProductsSortMenu` trigger inline            |
-| `components/products/ProductCard.tsx`                 | REWRITE | Tile + heart + new typography + Stepper-replaces-Add + bump animation  |
-| `components/products/ProductsGrid.tsx`                | REWRITE | `FlatList` (numColumns=2), conditional `paddingBottom` for cart bar    |
-| `components/products/PaginationControls.tsx`          | REWRITE | Numbered bar with chevrons + ellipsis (no dot row)                     |
-| `components/products/ProductsScreenComponent.tsx`     | REWRITE | Add sort, filter+sort pipeline, result-count row, mount `<CartBar>`    |
-| `components/products/ProductsDisclaimer.tsx`          | DELETE  | Folded into the new header                                             |
-| `app/(tabs)/explore.tsx`                              | UNCHANGED | One-line wrapper stays                                              |
+| Path                                              | Action    | Responsibility                                                        |
+| ------------------------------------------------- | --------- | --------------------------------------------------------------------- |
+| `components/ui/Stepper.tsx`                       | CREATE    | Reusable +/qty/− pill — primary green pill with white glyphs          |
+| `components/ui/CartBar.tsx`                       | CREATE    | Sticky floating cart preview, anchored above tab bar                  |
+| `components/products/ProductTile.tsx`             | CREATE    | Image-or-gradient image area used by `ProductCard`                    |
+| `components/products/ProductsSortMenu.tsx`        | CREATE    | Sort dropdown (Name A–Z / Price low→high / Price high→low)            |
+| `components/products/index.ts`                    | CREATE    | Barrel export                                                         |
+| `components/products/ProductsScreenState.ts`      | MODIFY    | Add `sortBy` field + `SET_SORT_BY` action                             |
+| `components/products/ProductsScreenHeader.tsx`    | REWRITE   | Date eyebrow + "Today's market" + cutoff subtitle + disclaimer note   |
+| `components/products/ProductsSearchBar.tsx`       | REWRITE   | Focus-ring input; renders `ProductsSortMenu` trigger inline           |
+| `components/products/ProductCard.tsx`             | REWRITE   | Tile + heart + new typography + Stepper-replaces-Add + bump animation |
+| `components/products/ProductsGrid.tsx`            | REWRITE   | `FlatList` (numColumns=2), conditional `paddingBottom` for cart bar   |
+| `components/products/PaginationControls.tsx`      | REWRITE   | Numbered bar with chevrons + ellipsis (no dot row)                    |
+| `components/products/ProductsScreenComponent.tsx` | REWRITE   | Add sort, filter+sort pipeline, result-count row, mount `<CartBar>`   |
+| `components/products/ProductsDisclaimer.tsx`      | DELETE    | Folded into the new header                                            |
+| `app/(tabs)/explore.tsx`                          | UNCHANGED | One-line wrapper stays                                                |
 
 ---
 
@@ -62,6 +62,7 @@ npx prettier --check <files-changed-in-this-task>
 Pure presentational primitive. No consumers yet — verifies that types and styling work in isolation before `ProductCard` depends on it.
 
 **Files:**
+
 - Create: `components/ui/Stepper.tsx`
 
 - [ ] **Step 1: Write `components/ui/Stepper.tsx`**
@@ -204,6 +205,7 @@ git commit -m "feat(ui): add Stepper primitive for products tab redesign"
 Sticky floating cart preview — the spec's signature design moment. No consumer yet; the final wiring task mounts it.
 
 **Files:**
+
 - Create: `components/ui/CartBar.tsx`
 
 - [ ] **Step 1: Write `components/ui/CartBar.tsx`**
@@ -381,6 +383,7 @@ git commit -m "feat(ui): add sticky CartBar primitive"
 Pure type/data change. No UI consumer yet — verifies reducer compiles and existing actions still work.
 
 **Files:**
+
 - Modify: `components/products/ProductsScreenState.ts`
 
 - [ ] **Step 1: Edit `components/products/ProductsScreenState.ts`**
@@ -471,6 +474,7 @@ git commit -m "feat(products): extend reducer with sortBy field and SET_SORT_BY 
 The disclaimer folds into the new header. Delete the standalone file and remove its import + usage from the orchestrator in the same commit so the screen keeps compiling.
 
 **Files:**
+
 - Rewrite: `components/products/ProductsScreenHeader.tsx`
 - Modify: `components/products/ProductsScreenComponent.tsx` (remove the `ProductsDisclaimer` import + JSX node)
 - Delete: `components/products/ProductsDisclaimer.tsx`
@@ -505,9 +509,7 @@ export default function ProductsScreenHeader() {
       accessibilityRole="header"
       accessibilityLabel={`Today's market. ${eyebrow}. Order by 6 PM for next-day delivery.`}
     >
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>
-        {eyebrow}
-      </Text>
+      <Text style={[styles.eyebrow, { color: colors.primary }]}>{eyebrow}</Text>
       <Text style={[styles.title, { color: colors.text }]}>
         Today&apos;s market
       </Text>
@@ -604,6 +606,7 @@ git commit -m "feat(products): rewrite header with date eyebrow + folded-in disc
 `ProductsSearchBar` becomes a 46-tall input with a focus ring; a 46×46 sort button sits to its right and opens `ProductsSortMenu` (a popover). The orchestrator hasn't passed `sortBy` yet — that wiring lives in Task 9, so for now `ProductsSearchBar` accepts the new props and `ProductsScreenComponent` is updated to pass placeholder defaults so it keeps compiling.
 
 **Files:**
+
 - Rewrite: `components/products/ProductsSearchBar.tsx`
 - Create: `components/products/ProductsSortMenu.tsx`
 - Modify: `components/products/ProductsScreenComponent.tsx` (pass new props with reducer-backed values)
@@ -898,8 +901,14 @@ In `components/products/ProductsScreenComponent.tsx`:
 a) Replace the destructure on line 23–24 to pull `sortBy`:
 
 ```ts
-const { searchQuery, sortBy, currentPage, pendingItemId, showToast, stepperItems } =
-  state;
+const {
+  searchQuery,
+  sortBy,
+  currentPage,
+  pendingItemId,
+  showToast,
+  stepperItems,
+} = state;
 ```
 
 b) Replace the `<ProductsSearchBar … />` JSX node (currently lines 218–223) with:
@@ -936,6 +945,7 @@ git commit -m "feat(products): rewrite SearchBar with focus ring and add SortMen
 `ProductCard`'s prop surface stays identical; the parent (`ProductsGrid`) keeps compiling. New: `ProductTile` (image-or-gradient), heart pill on top-right of the tile, ghost "+ Add" button, `Stepper` from Task 1, subtle translateY bump on quantity-increment.
 
 **Files:**
+
 - Create: `components/products/ProductTile.tsx`
 - Rewrite: `components/products/ProductCard.tsx`
 
@@ -1163,10 +1173,7 @@ export function ProductCard({
       </View>
 
       <View style={styles.body}>
-        <Text
-          style={[styles.name, { color: colors.text }]}
-          numberOfLines={2}
-        >
+        <Text style={[styles.name, { color: colors.text }]} numberOfLines={2}>
           {item.name}
         </Text>
 
@@ -1321,6 +1328,7 @@ git commit -m "feat(products): rewrite ProductCard with tile, ghost add button, 
 Switch from `ScrollView` + `.map` to `FlatList` (numColumns=2) for recycling. Keep the same prop surface; add `cartBarVisible` and `paddingBottom` props (parent passes them in Task 9). Improve empty state with a "Clear search" CTA (calls a new optional `onClearSearch` prop).
 
 **Files:**
+
 - Rewrite: `components/products/ProductsGrid.tsx`
 - Modify: `components/products/ProductsScreenComponent.tsx` (pass `cartBarVisible` and `onClearSearch`; placeholders for now — full wiring in Task 9)
 
@@ -1396,11 +1404,7 @@ export default function ProductsGrid({
   if (products.length === 0) {
     return (
       <View style={styles.center}>
-        <Ionicons
-          name="basket-outline"
-          size={36}
-          color={colors.textTertiary}
-        />
+        <Ionicons name="basket-outline" size={36} color={colors.textTertiary} />
         <Text style={[styles.emptyHeadline, { color: colors.text }]}>
           No products found
         </Text>
@@ -1525,9 +1529,7 @@ In `components/products/ProductsScreenComponent.tsx`, replace the existing `<Pro
   error={error}
   cartBarVisible={false}
   searchActive={searchQuery.length > 0}
-  onClearSearch={() =>
-    dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
-  }
+  onClearSearch={() => dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })}
   getCartQuantity={getCartQuantity}
   getStepperQuantity={getStepperQuantity}
   isStepperMode={isStepperMode}
@@ -1559,6 +1561,7 @@ git commit -m "feat(products): convert grid to FlatList with new empty state and
 Always-show first, last, current ±1, ellipses fill the gap. Active page = filled `colors.primary` with white text and primary-tinted shadow.
 
 **Files:**
+
 - Rewrite: `components/products/PaginationControls.tsx`
 
 - [ ] **Step 1: Rewrite `components/products/PaginationControls.tsx`**
@@ -1768,6 +1771,7 @@ git commit -m "feat(products): rewrite PaginationControls with numbered + chevro
 Final integration in `ProductsScreenComponent.tsx`. Computes filtered+sorted products, item count, total cents, mounts `<CartBar>`, and wires `cartBarVisible` into the grid.
 
 **Files:**
+
 - Modify: `components/products/ProductsScreenComponent.tsx`
 
 - [ ] **Step 1: Update imports (top of file)**
@@ -1803,9 +1807,7 @@ Replace the `useMemo` block (currently lines 39–62) with the full filter+sort+
 const { filteredProducts, paginatedProducts, totalPages, safePage } =
   useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    let arr = (items ?? []).filter(
-      i => !q || i.name.toLowerCase().includes(q)
-    );
+    let arr = (items ?? []).filter(i => !q || i.name.toLowerCase().includes(q));
 
     if (sortBy === 'price-asc') {
       arr = [...arr].sort((a, b) => a.price - b.price);
@@ -1897,9 +1899,7 @@ return (
       error={error}
       cartBarVisible={cartBarVisible}
       searchActive={searchQuery.length > 0}
-      onClearSearch={() =>
-        dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
-      }
+      onClearSearch={() => dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })}
       getCartQuantity={getCartQuantity}
       getStepperQuantity={getStepperQuantity}
       isStepperMode={isStepperMode}
@@ -1976,6 +1976,7 @@ git commit -m "feat(products): wire sort pipeline, result-count row, and sticky 
 Optional convenience aligning with the spec's file layout. Low risk: existing imports keep using direct paths.
 
 **Files:**
+
 - Create: `components/products/index.ts`
 
 - [ ] **Step 1: Create `components/products/index.ts`**
@@ -1988,12 +1989,13 @@ export { default as ProductsGrid } from './ProductsGrid';
 export { default as ProductsScreenComponent } from './ProductsScreenComponent';
 export { default as ProductsScreenHeader } from './ProductsScreenHeader';
 export { default as ProductsSearchBar } from './ProductsSearchBar';
-export { default as ProductsSortMenu, SORT_LABELS, SORT_OPTIONS } from './ProductsSortMenu';
-export { default as ProductTile } from './ProductTile';
 export {
-  initialState,
-  productsScreenReducer,
-} from './ProductsScreenState';
+  default as ProductsSortMenu,
+  SORT_LABELS,
+  SORT_OPTIONS,
+} from './ProductsSortMenu';
+export { default as ProductTile } from './ProductTile';
+export { initialState, productsScreenReducer } from './ProductsScreenState';
 export type {
   ProductsScreenAction,
   ProductsScreenState,
@@ -2082,11 +2084,11 @@ git checkout feature/products-tab-redesign
 
 ## Verification Summary
 
-| Gate                                  | When                                           |
-| ------------------------------------- | ---------------------------------------------- |
-| `npm run check-all`                   | End of every task                              |
-| Manual smoke (iOS sim / device)       | Task 9 (initial) and Task 11 (final)           |
-| `git merge` clean (no conflicts)      | Task 11 step 4 — STOP and consult on conflict  |
+| Gate                             | When                                          |
+| -------------------------------- | --------------------------------------------- |
+| `npm run check-all`              | End of every task                             |
+| Manual smoke (iOS sim / device)  | Task 9 (initial) and Task 11 (final)          |
+| `git merge` clean (no conflicts) | Task 11 step 4 — STOP and consult on conflict |
 
 ## Risks (recap from spec)
 

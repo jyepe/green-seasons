@@ -21,18 +21,18 @@ The template's `EDITMODE-BEGIN` defaults represent the user's final landing stat
 
 ## Scope decisions
 
-| Decision                  | Choice                                                                                              | Rationale                                                                                                                                                                                          |
-| ------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Missing backend fields    | **Drop** them                                                                                       | Template depends on `category`, `vendor`, `peak/in_season`, `stock`, `last_ordered` — none exist on `Item`. Faking them produces dishonest UI; extending the schema is its own spec.               |
-| Sticky cart preview bar   | **Include**                                                                                         | Signature design moment. Stepper-on-card pattern feels incomplete without a "go to cart" affordance once items are added. Lifted into `components/ui/` so other tabs can adopt it later.           |
-| Image strategy            | **Real `image_url` with colorful gradient fallback**                                                 | Use real photos when present; when null, render a 155° linear gradient seeded by item name + `nutrition-outline` glyph at 40% opacity. Missing-image cards stay on-brand instead of "broken."      |
-| Sort dropdown             | **Include with 3 real options** — Name A–Z (default), Price low→high, Price high→low                | Genuinely useful for price-conscious chefs. Drops the template's `recommended` and `recently-ordered` sorts because they need data we don't have.                                                  |
-| Header copy               | **Adopt template chrome, keep the price-volatility disclaimer**                                     | Date eyebrow + "Today's market" + cutoff subtitle. The existing price-volatility disclaimer is folded into the header as a slim inline note (info icon + small text) — it's real business context. |
-| Cutoff time               | **Hardcoded "Order by 6 PM for next-day delivery."**                                                | No backend cutoff field exists. Flagged as future-driven copy.                                                                                                                                     |
-| Pagination styling        | **Numbered bar with chevrons + ellipsis only** (no dot row)                                         | Numbered bar is the real upgrade (lets the user jump pages). Dots row is decorative on mobile and would stack awkwardly above the cart bar.                                                        |
-| Refactor approach         | **In-place restyle + extract `Stepper` and `CartBar` to `components/ui/`**                          | Existing `components/products/` is well-factored. Two primitives (`Stepper`, `CartBar`) lift cleanly because the design intends them as global signals; everything else stays local to products.   |
-| Styling                   | **React Native `StyleSheet` only**                                                                  | Matches every other screen and the prior profile redesign. Tailwind/NativeWind would require config changes for one screen.                                                                        |
-| Toast vs cart bar         | **Keep the existing "Item added to cart!" toast**                                                   | Toast = per-action confirmation. Cart bar = persistent state. They don't compete (toast appears at top, bar at bottom).                                                                            |
+| Decision                | Choice                                                                               | Rationale                                                                                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Missing backend fields  | **Drop** them                                                                        | Template depends on `category`, `vendor`, `peak/in_season`, `stock`, `last_ordered` — none exist on `Item`. Faking them produces dishonest UI; extending the schema is its own spec.               |
+| Sticky cart preview bar | **Include**                                                                          | Signature design moment. Stepper-on-card pattern feels incomplete without a "go to cart" affordance once items are added. Lifted into `components/ui/` so other tabs can adopt it later.           |
+| Image strategy          | **Real `image_url` with colorful gradient fallback**                                 | Use real photos when present; when null, render a 155° linear gradient seeded by item name + `nutrition-outline` glyph at 40% opacity. Missing-image cards stay on-brand instead of "broken."      |
+| Sort dropdown           | **Include with 3 real options** — Name A–Z (default), Price low→high, Price high→low | Genuinely useful for price-conscious chefs. Drops the template's `recommended` and `recently-ordered` sorts because they need data we don't have.                                                  |
+| Header copy             | **Adopt template chrome, keep the price-volatility disclaimer**                      | Date eyebrow + "Today's market" + cutoff subtitle. The existing price-volatility disclaimer is folded into the header as a slim inline note (info icon + small text) — it's real business context. |
+| Cutoff time             | **Hardcoded "Order by 6 PM for next-day delivery."**                                 | No backend cutoff field exists. Flagged as future-driven copy.                                                                                                                                     |
+| Pagination styling      | **Numbered bar with chevrons + ellipsis only** (no dot row)                          | Numbered bar is the real upgrade (lets the user jump pages). Dots row is decorative on mobile and would stack awkwardly above the cart bar.                                                        |
+| Refactor approach       | **In-place restyle + extract `Stepper` and `CartBar` to `components/ui/`**           | Existing `components/products/` is well-factored. Two primitives (`Stepper`, `CartBar`) lift cleanly because the design intends them as global signals; everything else stays local to products.   |
+| Styling                 | **React Native `StyleSheet` only**                                                   | Matches every other screen and the prior profile redesign. Tailwind/NativeWind would require config changes for one screen.                                                                        |
+| Toast vs cart bar       | **Keep the existing "Item added to cart!" toast**                                    | Toast = per-action confirmation. Cart bar = persistent state. They don't compete (toast appears at top, bar at bottom).                                                                            |
 
 ## Out of scope
 
@@ -185,9 +185,8 @@ export interface ProductsScreenState {
 
 export type ProductsScreenAction =
   | { type: 'SET_SEARCH_QUERY'; payload: string }
-  | { type: 'SET_SORT_BY'; payload: SortKey } // NEW — also resets page to 1
-  // ...existing actions unchanged
-;
+  | { type: 'SET_SORT_BY'; payload: SortKey }; // NEW — also resets page to 1
+// ...existing actions unchanged
 ```
 
 `SET_SORT_BY` resets `currentPage` to 1, mirroring the existing `SET_SEARCH_QUERY` pattern.
@@ -197,20 +196,28 @@ export type ProductsScreenAction =
 Replaces the existing `useMemo` block in `ProductsScreenComponent`:
 
 ```ts
-const { filteredProducts, paginatedProducts, totalPages, safePage } = useMemo(() => {
-  const q = searchQuery.trim().toLowerCase();
-  let arr = (items ?? []).filter(i => !q || i.name.toLowerCase().includes(q));
+const { filteredProducts, paginatedProducts, totalPages, safePage } =
+  useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    let arr = (items ?? []).filter(i => !q || i.name.toLowerCase().includes(q));
 
-  if (sortBy === 'price-asc')  arr = [...arr].sort((a, b) => a.price - b.price);
-  if (sortBy === 'price-desc') arr = [...arr].sort((a, b) => b.price - a.price);
-  // 'name' is server-default, no client sort needed
+    if (sortBy === 'price-asc')
+      arr = [...arr].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-desc')
+      arr = [...arr].sort((a, b) => b.price - a.price);
+    // 'name' is server-default, no client sort needed
 
-  const total = Math.max(1, Math.ceil(arr.length / ITEMS_PER_PAGE));
-  const safe  = Math.min(Math.max(currentPage, 1), total);
-  const page  = arr.slice((safe - 1) * ITEMS_PER_PAGE, safe * ITEMS_PER_PAGE);
+    const total = Math.max(1, Math.ceil(arr.length / ITEMS_PER_PAGE));
+    const safe = Math.min(Math.max(currentPage, 1), total);
+    const page = arr.slice((safe - 1) * ITEMS_PER_PAGE, safe * ITEMS_PER_PAGE);
 
-  return { filteredProducts: arr, paginatedProducts: page, totalPages: total, safePage: safe };
-}, [items, searchQuery, sortBy, currentPage]);
+    return {
+      filteredProducts: arr,
+      paginatedProducts: page,
+      totalPages: total,
+      safePage: safe,
+    };
+  }, [items, searchQuery, sortBy, currentPage]);
 ```
 
 ## Cart bar wiring

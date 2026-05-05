@@ -23,18 +23,19 @@ git checkout -b feature/client-side-logging
 
 ## File Map
 
-| File | Action |
-|---|---|
-| `supabase/migrations/20260504000000_create_client_errors.sql` | Create — table + RLS |
-| `lib/logger.ts` | Create — `logError` + `ErrorContext` type |
-| `components/AppErrorBoundary.tsx` | Create — React error boundary + fallback UI |
-| `app/_layout.tsx` | Modify — add imports, QueryCache/MutationCache, global handler, wrap with AppErrorBoundary |
+| File                                                          | Action                                                                                     |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `supabase/migrations/20260504000000_create_client_errors.sql` | Create — table + RLS                                                                       |
+| `lib/logger.ts`                                               | Create — `logError` + `ErrorContext` type                                                  |
+| `components/AppErrorBoundary.tsx`                             | Create — React error boundary + fallback UI                                                |
+| `app/_layout.tsx`                                             | Modify — add imports, QueryCache/MutationCache, global handler, wrap with AppErrorBoundary |
 
 ---
 
 ### Task 1: Database Migration
 
 **Files:**
+
 - Create: `supabase/migrations/20260504000000_create_client_errors.sql`
 
 - [ ] **Step 1: Create the migration file**
@@ -98,41 +99,42 @@ git commit -m "feat(db): add client_errors table with RLS"
 ### Task 2: Logger Module
 
 **Files:**
+
 - Create: `lib/logger.ts`
 
 - [ ] **Step 1: Create `lib/logger.ts`**
 
 ```typescript
-import Constants from 'expo-constants'
-import { Platform } from 'react-native'
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase';
 
 export type ErrorContext = {
-  screen?: string
-  action?: string
-  userRole?: string
-  isFatal?: boolean
-  source?: 'global' | 'ErrorBoundary' | 'query' | 'mutation'
-  [key: string]: unknown
-}
+  screen?: string;
+  action?: string;
+  userRole?: string;
+  isFatal?: boolean;
+  source?: 'global' | 'ErrorBoundary' | 'query' | 'mutation';
+  [key: string]: unknown;
+};
 
 export async function logError(
   error: unknown,
   context?: ErrorContext
 ): Promise<void> {
   if (__DEV__) {
-    console.error('[logError]', error, context)
-    return
+    console.error('[logError]', error, context);
+    return;
   }
 
   try {
-    const message = error instanceof Error ? error.message : String(error)
-    const stack = error instanceof Error ? (error.stack ?? null) : null
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? (error.stack ?? null) : null;
 
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
 
     await supabase.from('client_errors').insert({
       user_id: user?.id ?? null,
@@ -142,7 +144,7 @@ export async function logError(
       context: context ?? null,
       platform: Platform.OS,
       app_version: Constants.expoConfig?.version ?? null,
-    })
+    });
   } catch {
     // intentionally silent — logger must never throw
   }
@@ -169,6 +171,7 @@ git commit -m "feat(logger): add logError module writing to client_errors"
 ### Task 3: AppErrorBoundary Component
 
 **Files:**
+
 - Create: `components/AppErrorBoundary.tsx`
 
 React error boundaries must be class components — hooks cannot implement `componentDidCatch`.
@@ -176,28 +179,28 @@ React error boundaries must be class components — hooks cannot implement `comp
 - [ ] **Step 1: Create `components/AppErrorBoundary.tsx`**
 
 ```tsx
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { logError } from '@/lib/logger'
+import { logError } from '@/lib/logger';
 
-type State = { hasError: boolean }
+type State = { hasError: boolean };
 
 export class AppErrorBoundary extends React.Component<
   React.PropsWithChildren,
   State
 > {
-  state: State = { hasError: false }
+  state: State = { hasError: false };
 
   static getDerivedStateFromError(): State {
-    return { hasError: true }
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     logError(error, {
       source: 'ErrorBoundary',
       componentStack: info.componentStack ?? undefined,
-    })
+    });
   }
 
   render() {
@@ -208,9 +211,9 @@ export class AppErrorBoundary extends React.Component<
             Something went wrong. Please restart the app.
           </Text>
         </View>
-      )
+      );
     }
-    return this.props.children
+    return this.props.children;
   }
 }
 
@@ -227,7 +230,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-})
+});
 ```
 
 - [ ] **Step 2: Run check-all**
@@ -250,6 +253,7 @@ git commit -m "feat(logger): add AppErrorBoundary component"
 ### Task 4: Wire Integration Points in `app/_layout.tsx`
 
 **Files:**
+
 - Modify: `app/_layout.tsx`
 
 Three changes: (1) QueryClient gets `QueryCache`/`MutationCache` with `onError` callbacks, (2) a `useEffect` registers the global JS error handler, (3) the root return is wrapped in `AppErrorBoundary`.
@@ -263,31 +267,31 @@ import {
   Inter_400Regular,
   Inter_600SemiBold,
   Inter_700Bold,
-} from '@expo-google-fonts/inter'
+} from '@expo-google-fonts/inter';
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider as NavigationThemeProvider,
   Theme,
-} from '@react-navigation/native'
+} from '@react-navigation/native';
 import {
   MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-} from '@tanstack/react-query'
-import { useFonts } from 'expo-font'
-import { Stack } from 'expo-router'
-import * as SplashScreen from 'expo-splash-screen'
-import { StatusBar } from 'expo-status-bar'
-import 'react-native-reanimated'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
-import * as SystemUI from 'expo-system-ui'
-import { useEffect, useMemo } from 'react'
-import { ThemeProvider, useAppColorScheme } from '@/hooks/useTheme'
-import { Colors } from '@/constants/Colors'
-import { AppErrorBoundary } from '@/components/AppErrorBoundary'
-import { logError } from '@/lib/logger'
+} from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect, useMemo } from 'react';
+import { ThemeProvider, useAppColorScheme } from '@/hooks/useTheme';
+import { Colors } from '@/constants/Colors';
+import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { logError } from '@/lib/logger';
 ```
 
 - [ ] **Step 2: Update QueryClient construction**
@@ -308,7 +312,7 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000,
     },
   },
-})
+});
 ```
 
 - [ ] **Step 3: Add global error handler useEffect and wrap return with AppErrorBoundary**
@@ -322,22 +326,22 @@ export default function RootLayout() {
     Inter_400Regular,
     Inter_600SemiBold,
     Inter_700Bold,
-  })
+  });
 
   useEffect(() => {
     // ErrorUtils is a React Native global — catches unhandled JS errors and
     // fatal exceptions outside the React tree. On Hermes, unhandled promise
     // rejections surface through this same handler.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(global as any).ErrorUtils?.setGlobalHandler(
+    (global as any).ErrorUtils?.setGlobalHandler(
       (error: Error, isFatal: boolean) => {
-        logError(error, { source: 'global', isFatal })
+        logError(error, { source: 'global', isFatal });
       }
-    )
-  }, [])
+    );
+  }, []);
 
   if (!loaded) {
-    return null
+    return null;
   }
 
   return (
@@ -350,7 +354,7 @@ export default function RootLayout() {
         </SafeAreaProvider>
       </QueryClientProvider>
     </AppErrorBoundary>
-  )
+  );
 }
 ```
 
