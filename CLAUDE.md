@@ -92,6 +92,8 @@ Never commit directly to `preview` or `master`. Before starting any fix or featu
 3. Make all changes on that branch
 4. When done, merge or open a PR back into `preview`
 
+**Privacy review:** Whenever a change introduces or alters data collection, transmission, storage, or sharing — new fields/tables, new logging, new third-party integrations, new analytics, anything that touches user data — review `PRIVACY.md` and update it in the same change set so the policy keeps matching the App's actual behavior.
+
 ## Conventions worth knowing
 
 - **Path alias `@/*`** maps to repo root (`tsconfig.json`). Use it (`@/lib/supabase`, `@/hooks/useCart`, `@/constants/Colors`).
