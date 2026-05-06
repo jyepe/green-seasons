@@ -1,0 +1,22 @@
+exclude:
+  - AGENTS.md
+  - CLAUDE.md
+  - DESIGN.md
+  - GEMINI.md
+  - README.md
+  - docs/
+  - supabase/
+  - app/
+  - components/
+  - hooks/
+  - reducers/
+  - lib/
+  - utils/
+  - constants/
+  - config/
+  - assets/
+  - scripts/
+  - .Jules/
+  - .claude/
+  - .github/
+  - node_modules/
