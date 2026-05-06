@@ -1,4 +1,11 @@
 import { Colors } from '@/constants/Colors';
+import { Spacing, Radius, Shadow } from '@/constants/Spacing';
+import {
+  FontFamily,
+  FontSize,
+  LetterSpacing,
+  LineHeight,
+} from '@/constants/Typography';
 import { useAppColorScheme } from '@/hooks/useTheme';
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -9,7 +16,12 @@ import {
 } from '@/hooks/useOrderDetails';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useAdmin } from '@/hooks/useAdmin';
-import { updateOrderStatus, updateOrderDeliveryDate } from '@/lib/supabase';
+import {
+  OrderStatus,
+  updateOrderStatus,
+  updateOrderDeliveryDate,
+} from '@/lib/supabase';
+import { STATUS_CONFIG, getStatusColor } from '@/components/OrderListItem';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toast } from '@/components/ui/Toast';
 import {
@@ -22,7 +34,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useReducer } from 'react';
+import React, { useReducer, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -164,23 +176,6 @@ export default function OrderDetailsScreen() {
   // Get order summary (first item contains all order-level info)
   const orderSummary = orderDetails[0];
 
-  // Helper function to get status color
-  const getStatusColor = useCallback(
-    (status: string) => {
-      switch (status) {
-        case 'pending':
-          return '#F59E0B'; // warning/yellow
-        case 'in_transit':
-          return '#3B82F6'; // info/blue
-        case 'delivered':
-          return '#16A34A'; // success/green
-        default:
-          return colors.success;
-      }
-    },
-    [colors.success]
-  );
-
   // Handle PDF preview
   const handlePreviewInvoice = async () => {
     if (!orderSummary) return;
@@ -289,9 +284,9 @@ export default function OrderDetailsScreen() {
             accessibilityLabel="Go back"
             accessibilityRole="button"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Ionicons name="arrow-back" size={24} color={colors.primaryTint} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
+          <Text style={[styles.headerTitle, { color: colors.primaryTint }]}>
             Order Details
           </Text>
           <View style={{ width: 24 }} />
@@ -314,6 +309,26 @@ export default function OrderDetailsScreen() {
     );
   }
 
+  const status = orderSummary.order_status as OrderStatus;
+  const statusColor = getStatusColor(status, colors);
+  const statusInfo = STATUS_CONFIG[status];
+  const canChangeStatus = isEmployee || isAdmin;
+  const isUnfinalized = orderSummary.final_total <= 0;
+
+  const statusPill = (
+    <View
+      style={[
+        styles.statusPill,
+        { backgroundColor: statusColor + '20' },
+      ]}
+    >
+      <Ionicons name={statusInfo.icon} size={14} color={statusColor} />
+      <Text style={[styles.statusPillText, { color: statusColor }]}>
+        {formatStatus(status).toUpperCase()}
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -327,14 +342,16 @@ export default function OrderDetailsScreen() {
         }
       />
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
         >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={24} color={colors.primaryTint} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
+        <Text style={[styles.headerTitle, { color: colors.primaryTint }]}>
           Order Details
         </Text>
         <View style={{ width: 24 }} />
@@ -344,128 +361,103 @@ export default function OrderDetailsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Order Summary Card */}
-        <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
-          <View style={styles.summaryRow}>
-            <Text
-              style={[styles.summaryLabel, { color: colors.textSecondary }]}
-            >
-              Order ID
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
-              #{orderSummary.order_id.slice(0, 8)}
-            </Text>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <Text
-              style={[styles.summaryLabel, { color: colors.textSecondary }]}
-            >
-              Status
-            </Text>
-            {isEmployee || isAdmin ? (
+        {/* Order Info Card */}
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          {/* Row A: Order ID + Status pill */}
+          <View style={styles.cardRowSplit}>
+            <View style={styles.fieldBlock}>
+              <Text
+                style={[styles.fieldLabel, { color: colors.textSecondary }]}
+              >
+                Order ID
+              </Text>
+              <Text style={[styles.fieldValueLg, { color: colors.text }]}>
+                #{orderSummary.order_id.slice(0, 8)}
+              </Text>
+            </View>
+            {canChangeStatus ? (
               <TouchableOpacity
-                style={[
-                  styles.statusDropdown,
-                  { borderColor: colors.border },
-                  state.status.isUpdating && styles.statusDropdownDisabled,
-                ]}
                 onPress={() =>
                   dispatch({ type: 'SET_STATUS_DROPDOWN_OPEN', payload: true })
                 }
                 disabled={state.status.isUpdating}
+                accessibilityRole="button"
+                accessibilityLabel={`Status: ${formatStatus(status)}`}
+                accessibilityHint="Tap to change status"
+                style={state.status.isUpdating && styles.disabledOpacity}
               >
-                <View
-                  style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: getStatusColor(
-                        orderSummary.order_status
-                      ),
-                    },
-                  ]}
-                >
-                  <Text style={styles.statusText}>
-                    {formatStatus(orderSummary.order_status)}
-                  </Text>
-                </View>
-                <Ionicons
-                  name="chevron-down"
-                  size={20}
-                  color={colors.textSecondary}
-                />
+                {statusPill}
               </TouchableOpacity>
             ) : (
-              <View
-                style={[
-                  styles.statusBadge,
-                  {
-                    backgroundColor: getStatusColor(orderSummary.order_status),
-                  },
-                ]}
-              >
-                <Text style={styles.statusText}>
-                  {formatStatus(orderSummary.order_status)}
-                </Text>
-              </View>
+              statusPill
             )}
           </View>
 
-          <View style={styles.summaryRow}>
-            <Text
-              style={[styles.summaryLabel, { color: colors.textSecondary }]}
-            >
-              Order Date
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
-              {formatDate(orderSummary.placed_at)}
-            </Text>
-          </View>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-          <View style={styles.summaryRow}>
-            <Text
-              style={[styles.summaryLabel, { color: colors.textSecondary }]}
-            >
-              Delivery Date
-            </Text>
-            {isAdmin ? (
-              <TouchableOpacity
-                style={styles.editableDateContainer}
-                onPress={openDatePicker}
-                disabled={state.date.isUpdating}
+          {/* Row B: Dates 2-col */}
+          <View style={styles.cardRowSplit}>
+            <View style={[styles.fieldBlock, styles.flex1]}>
+              <Text
+                style={[styles.fieldLabel, { color: colors.textSecondary }]}
               >
-                <Text style={[styles.summaryValue, { color: colors.primary }]}>
+                Order Date
+              </Text>
+              <Text style={[styles.fieldValue, { color: colors.text }]}>
+                {formatDate(orderSummary.placed_at)}
+              </Text>
+            </View>
+            <View style={[styles.fieldBlock, styles.flex1]}>
+              <Text
+                style={[styles.fieldLabel, { color: colors.textSecondary }]}
+              >
+                Delivery Date
+              </Text>
+              {isAdmin ? (
+                <TouchableOpacity
+                  style={styles.editableDateContainer}
+                  onPress={openDatePicker}
+                  disabled={state.date.isUpdating}
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit delivery date"
+                >
+                  <Text
+                    style={[styles.fieldValue, { color: colors.primary }]}
+                  >
+                    {formatDate(orderSummary.delivery_at)}
+                  </Text>
+                  <Ionicons name="pencil" size={14} color={colors.primary} />
+                </TouchableOpacity>
+              ) : (
+                <Text style={[styles.fieldValue, { color: colors.text }]}>
                   {formatDate(orderSummary.delivery_at)}
                 </Text>
-                <Ionicons name="pencil" size={16} color={colors.primary} />
-              </TouchableOpacity>
-            ) : (
-              <Text style={[styles.summaryValue, { color: colors.text }]}>
-                {formatDate(orderSummary.delivery_at)}
-              </Text>
-            )}
+              )}
+            </View>
           </View>
 
-          <View style={styles.summaryRow}>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+          {/* Row C: Restaurant */}
+          <View style={styles.fieldBlock}>
             <Text
-              style={[styles.summaryLabel, { color: colors.textSecondary }]}
+              style={[styles.fieldLabel, { color: colors.textSecondary }]}
             >
               Restaurant
             </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
+            <Text style={[styles.fieldValue, { color: colors.text }]}>
               {orderSummary.restaurant.name}
             </Text>
           </View>
+        </View>
 
-          <View style={styles.divider} />
-
-          <View style={styles.summaryRow}>
-            <Text
-              style={[styles.summaryLabel, { color: colors.textSecondary }]}
-            >
+        {/* Totals Card */}
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <View style={styles.totalsRow}>
+            <Text style={[styles.totalsLabel, { color: colors.text }]}>
               Subtotal
             </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
+            <Text style={[styles.totalsValue, { color: colors.text }]}>
               {formatCurrency(
                 orderSummary.final_subtotal > 0
                   ? orderSummary.final_subtotal
@@ -474,11 +466,19 @@ export default function OrderDetailsScreen() {
             </Text>
           </View>
 
-          <View style={styles.summaryRow}>
-            <Text style={[styles.totalLabel, { color: colors.text }]}>
+          <View
+            style={[
+              styles.divider,
+              styles.dividerTight,
+              { backgroundColor: colors.border },
+            ]}
+          />
+
+          <View style={styles.totalsRow}>
+            <Text style={[styles.grandTotalLabel, { color: colors.text }]}>
               Total
             </Text>
-            <Text style={[styles.totalValue, { color: colors.text }]}>
+            <Text style={[styles.grandTotalValue, { color: colors.primary }]}>
               {formatCurrency(
                 orderSummary.final_total > 0
                   ? orderSummary.final_total
@@ -487,22 +487,26 @@ export default function OrderDetailsScreen() {
             </Text>
           </View>
 
-          {orderSummary.final_total <= 0 && (
+          {isUnfinalized && (
             <View
               style={[
-                styles.disclaimerContainer,
-                { borderTopColor: colors.border },
+                styles.disclaimerBanner,
+                { backgroundColor: colors.inputBackground },
               ]}
             >
               <Ionicons
-                name="information-circle-outline"
-                size={16}
-                color={colors.textTertiary}
+                name="information-circle"
+                size={18}
+                color={colors.info}
               />
               <Text
-                style={[styles.disclaimerText, { color: colors.textTertiary }]}
+                style={[
+                  styles.disclaimerBannerText,
+                  { color: colors.textSecondary },
+                ]}
               >
-                Price is not finalized
+                Price is not finalized and may be subject to change upon
+                delivery based on exact weights.
               </Text>
             </View>
           )}
@@ -511,24 +515,43 @@ export default function OrderDetailsScreen() {
         {/* Invoice Actions */}
         <View style={styles.invoiceActions}>
           <TouchableOpacity
-            style={[styles.invoiceButton, styles.previewButton]}
+            style={[
+              styles.invoiceButton,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.primary,
+              },
+              styles.previewButton,
+            ]}
             onPress={handlePreviewInvoice}
             disabled={state.pdf.isPreviewing || state.pdf.isDownloading}
             accessibilityLabel="Preview invoice"
             accessibilityRole="button"
           >
             {state.pdf.isPreviewing ? (
-              <ActivityIndicator size="small" color="#16a34a" />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : (
               <>
-                <Ionicons name="eye-outline" size={20} color="#16a34a" />
-                <Text style={styles.previewButtonText}>Preview Invoice</Text>
+                <Ionicons
+                  name="eye-outline"
+                  size={20}
+                  color={colors.primary}
+                />
+                <Text
+                  style={[styles.invoiceButtonText, { color: colors.primary }]}
+                >
+                  Preview Invoice
+                </Text>
               </>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.invoiceButton, styles.downloadButton]}
+            style={[
+              styles.invoiceButton,
+              { backgroundColor: colors.primary },
+              Shadow.button,
+            ]}
             onPress={handleDownloadInvoice}
             disabled={state.pdf.isPreviewing || state.pdf.isDownloading}
             accessibilityLabel="Download invoice as PDF"
@@ -539,7 +562,9 @@ export default function OrderDetailsScreen() {
             ) : (
               <>
                 <Ionicons name="download-outline" size={20} color="#fff" />
-                <Text style={styles.downloadButtonText}>Download PDF</Text>
+                <Text style={[styles.invoiceButtonText, { color: '#fff' }]}>
+                  Download PDF
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -547,90 +572,102 @@ export default function OrderDetailsScreen() {
 
         {/* Order Items Section */}
         <View style={styles.itemsSection}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Order Items ({orderDetails.length})
-          </Text>
-
-          {orderDetails.map((item, index) => (
+          <View style={styles.itemsHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Order Items
+            </Text>
             <View
-              key={`${item.item_id}-${index}`}
-              style={[styles.itemCard, { backgroundColor: colors.surface }]}
+              style={[
+                styles.countChip,
+                { backgroundColor: colors.inputBackground },
+              ]}
             >
-              <View style={styles.itemContent}>
-                {item.item_image_url ? (
-                  <Image
-                    source={{ uri: item.item_image_url }}
-                    style={styles.itemImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.itemImagePlaceholder,
-                      { backgroundColor: colors.border },
-                    ]}
-                  >
-                    <Ionicons
-                      name="image-outline"
-                      size={32}
-                      color={colors.textTertiary}
-                    />
-                  </View>
-                )}
+              <Text
+                style={[styles.countChipText, { color: colors.textSecondary }]}
+              >
+                {orderDetails.length} items
+              </Text>
+            </View>
+          </View>
 
-                <View style={styles.itemInfo}>
-                  <Text style={[styles.itemName, { color: colors.text }]}>
-                    {item.item_name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.itemQuantity,
-                      { color: colors.textSecondary },
-                    ]}
-                  >
-                    Quantity: {item.quantity}
-                  </Text>
-                  <Text
-                    style={[styles.itemPrice, { color: colors.textSecondary }]}
-                  >
-                    {formatCurrency(
-                      item.final_unit_price > 0
-                        ? item.final_unit_price
-                        : item.unit_price
-                    )}{' '}
-                    each
-                  </Text>
-                  {item.final_line_total <= 0 && (
-                    <View style={styles.itemDisclaimerContainer}>
+          {orderDetails.map((item, index) => {
+            const unitPrice =
+              item.final_unit_price > 0
+                ? item.final_unit_price
+                : item.unit_price;
+            const lineTotal =
+              item.final_line_total > 0
+                ? item.final_line_total
+                : item.line_total;
+            const itemUnfinalized = item.final_line_total <= 0;
+
+            return (
+              <View
+                key={`${item.item_id}-${index}`}
+                style={[styles.itemCard, { backgroundColor: colors.surface }]}
+              >
+                <View style={styles.itemContent}>
+                  {item.item_image_url ? (
+                    <Image
+                      source={{ uri: item.item_image_url }}
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.itemImagePlaceholder,
+                        { backgroundColor: colors.border },
+                      ]}
+                    >
                       <Ionicons
-                        name="information-circle-outline"
-                        size={12}
+                        name="image-outline"
+                        size={28}
                         color={colors.textTertiary}
                       />
-                      <Text
-                        style={[
-                          styles.itemDisclaimerText,
-                          { color: colors.textTertiary },
-                        ]}
-                      >
-                        Price not finalized
-                      </Text>
                     </View>
                   )}
-                </View>
 
-                <View style={styles.itemPriceContainer}>
-                  <Text style={[styles.itemTotal, { color: colors.text }]}>
-                    {formatCurrency(
-                      item.final_line_total > 0
-                        ? item.final_line_total
-                        : item.line_total
+                  <View style={styles.itemInfo}>
+                    <Text style={[styles.itemName, { color: colors.text }]}>
+                      {item.item_name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.itemMeta,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Qty: {item.quantity} × {formatCurrency(unitPrice)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.itemPriceContainer}>
+                    <Text style={[styles.itemTotal, { color: colors.text }]}>
+                      {formatCurrency(lineTotal)}
+                    </Text>
+                    {itemUnfinalized && (
+                      <View
+                        style={[
+                          styles.estPriceBadge,
+                          { backgroundColor: colors.accentSoft },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.estPriceBadgeText,
+                            { color: colors.accentWarm },
+                          ]}
+                        >
+                          Est. Price
+                        </Text>
+                      </View>
                     )}
-                  </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -731,43 +768,52 @@ export default function OrderDetailsScreen() {
             <Text style={[styles.dropdownTitle, { color: colors.text }]}>
               Select Status
             </Text>
-            {(['pending', 'in_transit', 'delivered'] as const).map(status => {
-              const isActive = orderSummary.order_status === status;
-              return (
-                <TouchableOpacity
-                  key={status}
-                  style={[
-                    styles.dropdownOption,
-                    isActive && {
-                      backgroundColor: getStatusColor(status) + '20',
-                    },
-                    { borderBottomColor: colors.border },
-                  ]}
-                  onPress={() => handleChangeStatus(status)}
-                  disabled={state.status.isUpdating || isActive}
-                >
-                  <View
+            {(['pending', 'in_transit', 'delivered'] as const).map(
+              optionStatus => {
+                const isActive = orderSummary.order_status === optionStatus;
+                const optionColor = getStatusColor(optionStatus, colors);
+                const optionInfo = STATUS_CONFIG[optionStatus];
+                return (
+                  <TouchableOpacity
+                    key={optionStatus}
                     style={[
-                      styles.statusBadge,
-                      {
-                        backgroundColor: getStatusColor(status),
+                      styles.dropdownOption,
+                      isActive && {
+                        backgroundColor: optionColor + '20',
                       },
+                      { borderBottomColor: colors.border },
                     ]}
+                    onPress={() => handleChangeStatus(optionStatus)}
+                    disabled={state.status.isUpdating || isActive}
                   >
-                    <Text style={styles.statusText}>
-                      {formatStatus(status)}
-                    </Text>
-                  </View>
-                  {isActive && (
-                    <Ionicons
-                      name="checkmark"
-                      size={20}
-                      color={getStatusColor(status)}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+                    <View
+                      style={[
+                        styles.statusPill,
+                        { backgroundColor: optionColor + '20' },
+                      ]}
+                    >
+                      <Ionicons
+                        name={optionInfo.icon}
+                        size={14}
+                        color={optionColor}
+                      />
+                      <Text
+                        style={[styles.statusPillText, { color: optionColor }]}
+                      >
+                        {formatStatus(optionStatus).toUpperCase()}
+                      </Text>
+                    </View>
+                    {isActive && (
+                      <Ionicons
+                        name="checkmark"
+                        size={20}
+                        color={optionColor}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              }
+            )}
           </View>
         </TouchableOpacity>
       </Modal>
@@ -783,297 +829,277 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
+    paddingHorizontal: Spacing.s5,
+    paddingVertical: Spacing.s4,
   },
   backButton: {
-    padding: 4,
+    padding: Spacing.s1,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
+    fontSize: FontSize.h1,
+    fontFamily: FontFamily.sans.bold,
+    letterSpacing: LetterSpacing.h1,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: Spacing.s5,
+    paddingBottom: Spacing.s8 + Spacing.s2,
   },
-  summaryCard: {
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  card: {
+    padding: Spacing.s5,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.s4,
+    ...Shadow.sm,
   },
-  summaryRow: {
+  cardRowSplit: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    alignItems: 'flex-start',
+    gap: Spacing.s4,
   },
-  summaryLabel: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  statusDropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingRight: 4,
-  },
-  statusDropdownDisabled: {
-    opacity: 0.5,
-  },
-  modalOverlay: {
+  flex1: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
-  dropdownModal: {
-    width: '100%',
-    maxWidth: 300,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+  fieldBlock: {
+    gap: Spacing.s1,
   },
-  dropdownTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 16,
+  fieldLabel: {
+    fontSize: FontSize.label,
+    fontFamily: FontFamily.sans.regular,
   },
-  dropdownOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
+  fieldValue: {
+    fontSize: FontSize.body,
+    fontFamily: FontFamily.sans.semibold,
+  },
+  fieldValueLg: {
+    fontSize: FontSize.h2,
+    fontFamily: FontFamily.sans.bold,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
-    marginVertical: 8,
+    marginVertical: Spacing.s4,
   },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    fontFamily: 'Inter_700Bold',
+  dividerTight: {
+    marginVertical: Spacing.s3,
   },
-  totalValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    fontFamily: 'Inter_700Bold',
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.s2,
+    paddingHorizontal: Spacing.s3,
+    paddingVertical: Spacing.s2,
+    borderRadius: Radius.pill,
+    alignSelf: 'flex-start',
   },
-  itemsSection: {
-    marginBottom: 20,
+  statusPillText: {
+    fontSize: FontSize.small,
+    fontFamily: FontFamily.sans.semibold,
+    letterSpacing: 0.5,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 16,
+  disabledOpacity: {
+    opacity: 0.5,
+  },
+  totalsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  totalsLabel: {
+    fontSize: FontSize.body,
+    fontFamily: FontFamily.sans.regular,
+  },
+  totalsValue: {
+    fontSize: FontSize.body,
+    fontFamily: FontFamily.sans.semibold,
+  },
+  grandTotalLabel: {
+    fontSize: FontSize.h3,
+    fontFamily: FontFamily.sans.bold,
+  },
+  grandTotalValue: {
+    fontSize: FontSize.h1,
+    fontFamily: FontFamily.sans.bold,
+  },
+  disclaimerBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.s2,
+    padding: Spacing.s3,
+    borderRadius: Radius.md,
+    marginTop: Spacing.s4,
+  },
+  disclaimerBannerText: {
+    flex: 1,
+    fontSize: FontSize.label,
+    fontFamily: FontFamily.sans.regular,
+    lineHeight: FontSize.label * LineHeight.normal,
   },
   invoiceActions: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: Spacing.s3,
+    marginBottom: Spacing.s6,
   },
   invoiceButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    gap: 8,
+    height: 52,
+    paddingHorizontal: Spacing.s4,
+    borderRadius: Radius.md,
+    gap: Spacing.s2,
   },
   previewButton: {
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#16a34a',
+    borderWidth: 1.5,
   },
-  downloadButton: {
-    backgroundColor: '#16a34a',
+  invoiceButtonText: {
+    fontSize: FontSize.body,
+    fontFamily: FontFamily.sans.semibold,
   },
-  previewButtonText: {
-    color: '#16a34a',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
+  itemsSection: {
+    marginBottom: Spacing.s5,
   },
-  downloadButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
+  itemsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.s4,
+  },
+  sectionTitle: {
+    fontSize: FontSize.h1,
+    fontFamily: FontFamily.sans.bold,
+    letterSpacing: LetterSpacing.h1,
+  },
+  countChip: {
+    paddingHorizontal: Spacing.s3,
+    paddingVertical: Spacing.s1,
+    borderRadius: Radius.pill,
+  },
+  countChipText: {
+    fontSize: FontSize.small,
+    fontFamily: FontFamily.sans.semibold,
   },
   itemCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: Spacing.s3,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.s3,
+    ...Shadow.sm,
   },
   itemContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   itemImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 16,
+    width: 64,
+    height: 64,
+    borderRadius: Radius.sm,
+    marginRight: Spacing.s3,
   },
   itemImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 16,
+    width: 64,
+    height: 64,
+    borderRadius: Radius.sm,
+    marginRight: Spacing.s3,
     justifyContent: 'center',
     alignItems: 'center',
   },
   itemInfo: {
     flex: 1,
     justifyContent: 'center',
+    gap: Spacing.s1,
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 4,
+    fontSize: FontSize.body,
+    fontFamily: FontFamily.sans.bold,
   },
-  itemQuantity: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    marginBottom: 2,
-  },
-  itemPrice: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+  itemMeta: {
+    fontSize: FontSize.label,
+    fontFamily: FontFamily.sans.regular,
   },
   itemPriceContainer: {
     alignItems: 'flex-end',
-    marginLeft: 12,
+    marginLeft: Spacing.s3,
+    gap: Spacing.s1,
   },
   itemTotal: {
-    fontSize: 18,
-    fontWeight: '700',
-    fontFamily: 'Inter_700Bold',
+    fontSize: FontSize.h3,
+    fontFamily: FontFamily.sans.bold,
+  },
+  estPriceBadge: {
+    paddingHorizontal: Spacing.s2,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
+  },
+  estPriceBadgeText: {
+    fontSize: FontSize.small,
+    fontFamily: FontFamily.sans.semibold,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: Spacing.s8 + Spacing.s2,
   },
   emptyTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Inter_600SemiBold',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: FontSize.h2,
+    fontFamily: FontFamily.sans.semibold,
+    marginTop: Spacing.s4,
+    marginBottom: Spacing.s2,
   },
   emptySubtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    fontSize: FontSize.body,
+    fontFamily: FontFamily.sans.regular,
     textAlign: 'center',
-  },
-  disclaimerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  disclaimerText: {
-    fontSize: 13,
-    fontFamily: 'Inter_400Regular',
-    fontStyle: 'italic',
-  },
-  itemDisclaimerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  itemDisclaimerText: {
-    fontSize: 11,
-    fontFamily: 'Inter_400Regular',
-    fontStyle: 'italic',
   },
   editableDateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 4,
+    gap: Spacing.s2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.s5,
+  },
+  dropdownModal: {
+    width: '100%',
+    maxWidth: 300,
+    borderRadius: Radius.lg,
+    padding: Spacing.s4,
+    ...Shadow.md,
+  },
+  dropdownTitle: {
+    fontSize: FontSize.h3,
+    fontFamily: FontFamily.sans.semibold,
+    marginBottom: Spacing.s4,
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.s3,
+    paddingHorizontal: Spacing.s1,
+    borderBottomWidth: 1,
   },
   datePickerModal: {
     width: '100%',
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 20,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    paddingBottom: Spacing.s5,
     position: 'absolute',
     bottom: 0,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    padding: Spacing.s4,
+    ...Shadow.md,
   },
   datePickerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    marginBottom: Spacing.s4,
+    paddingHorizontal: Spacing.s2,
   },
 });
