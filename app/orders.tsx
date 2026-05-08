@@ -120,6 +120,18 @@ export default function OrderHistoryScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { color: colors.text }]}>Order History</Text>
+        <View style={{ width: 32 }} />
+      </View>
       <SectionList<Order, OrderSection>
         sections={sections}
         keyExtractor={item => item.id}
@@ -139,18 +151,6 @@ export default function OrderHistoryScreen() {
         )}
         ListHeaderComponent={
           <View>
-            <View style={[styles.header, { borderBottomColor: colors.border }]}>
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={styles.backButton}
-                accessibilityLabel="Go back"
-                accessibilityRole="button"
-              >
-                <Ionicons name="arrow-back" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <Text style={[styles.title, { color: colors.text }]}>Order History</Text>
-              <View style={{ width: 32 }} />
-            </View>
             <OrderHistoryKPIRow
               thisMonth={kpiCounts.thisMonth}
               pending={kpiCounts.pending}
