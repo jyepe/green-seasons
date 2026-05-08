@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, SectionList, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, SectionList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useOrders } from '@/hooks/useOrders';
 import { useUserInfo } from '@/hooks/useUserInfo';
