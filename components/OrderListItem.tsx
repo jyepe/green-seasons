@@ -120,11 +120,13 @@ export function OrderFilterChip({
 interface OrderFilterTabsProps {
   activeFilter: FilterStatus;
   onFilterChange: (status: FilterStatus) => void;
+  counts?: Record<FilterStatus, number>;
 }
 
 export function OrderFilterTabs({
   activeFilter,
   onFilterChange,
+  counts,
 }: OrderFilterTabsProps) {
   return (
     <View style={styles.filterContainer}>
@@ -136,7 +138,7 @@ export function OrderFilterTabs({
         {(Object.keys(FILTER_LABELS) as FilterStatus[]).map(status => (
           <OrderFilterChip
             key={status}
-            label={FILTER_LABELS[status]}
+            label={counts != null ? `${FILTER_LABELS[status]} ${counts[status]}` : FILTER_LABELS[status]}
             isActive={activeFilter === status}
             onPress={() => onFilterChange(status)}
           />
