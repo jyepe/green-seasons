@@ -311,7 +311,7 @@ export function EditProfileForm() {
             </Text>
             <Pressable
               onPress={handleChangePassword}
-              disabled={resetPending}
+              disabled={resetPending || !userInfo?.email}
               style={({ pressed }) => [
                 styles.passwordRow,
                 {
@@ -421,9 +421,9 @@ const styles = StyleSheet.create({
   passwordRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingTop: 12,
-    marginTop: 12,
+    gap: Spacing.s3,
+    paddingTop: Spacing.s3,
+    marginTop: Spacing.s3,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   iconTile: {
