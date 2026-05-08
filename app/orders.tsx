@@ -150,7 +150,7 @@ export default function OrderHistoryScreen() {
           </View>
         )}
         ListHeaderComponent={
-          <View>
+          <View style={{ paddingTop: Spacing.s4 }}>
             <OrderHistoryKPIRow
               thisMonth={kpiCounts.thisMonth}
               pending={kpiCounts.pending}
