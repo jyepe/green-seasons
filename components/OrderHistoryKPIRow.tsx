@@ -9,21 +9,22 @@ interface KPICardProps {
   value: number;
   label: string;
   accentColor: string;
+  backgroundColor: string;
+  textColor: string;
+  textSecondaryColor: string;
 }
 
-function KPICard({ value, label, accentColor }: KPICardProps) {
-  const colorScheme = useAppColorScheme();
-  const colors = Colors[colorScheme];
+function KPICard({ value, label, accentColor, backgroundColor, textColor, textSecondaryColor }: KPICardProps) {
   return (
     <View
       style={[
         styles.card,
         Shadow.sm,
-        { backgroundColor: colors.surface, borderLeftColor: accentColor },
+        { backgroundColor, borderLeftColor: accentColor },
       ]}
     >
-      <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.value, { color: textColor }]}>{value}</Text>
+      <Text style={[styles.label, { color: textSecondaryColor }]}>{label}</Text>
     </View>
   );
 }
@@ -39,9 +40,30 @@ export function OrderHistoryKPIRow({ thisMonth, pending, inTransit }: OrderHisto
   const colors = Colors[colorScheme];
   return (
     <View style={styles.row}>
-      <KPICard value={thisMonth} label="THIS MONTH" accentColor={colors.primary} />
-      <KPICard value={pending} label="PENDING" accentColor={colors.warning} />
-      <KPICard value={inTransit} label="IN TRANSIT" accentColor={colors.info} />
+      <KPICard
+        value={thisMonth}
+        label="THIS MONTH"
+        accentColor={colors.primary}
+        backgroundColor={colors.surface}
+        textColor={colors.text}
+        textSecondaryColor={colors.textSecondary}
+      />
+      <KPICard
+        value={pending}
+        label="PENDING"
+        accentColor={colors.warning}
+        backgroundColor={colors.surface}
+        textColor={colors.text}
+        textSecondaryColor={colors.textSecondary}
+      />
+      <KPICard
+        value={inTransit}
+        label="IN TRANSIT"
+        accentColor={colors.info}
+        backgroundColor={colors.surface}
+        textColor={colors.text}
+        textSecondaryColor={colors.textSecondary}
+      />
     </View>
   );
 }
