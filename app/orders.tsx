@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, SectionList, StyleSheet } from 'react-native';
+import { View, Text, SectionList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useOrders } from '@/hooks/useOrders';
@@ -138,8 +139,17 @@ export default function OrderHistoryScreen() {
         )}
         ListHeaderComponent={
           <View>
-            <View style={styles.header}>
+            <View style={[styles.header, { borderBottomColor: colors.border }]}>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={styles.backButton}
+                accessibilityLabel="Go back"
+                accessibilityRole="button"
+              >
+                <Ionicons name="arrow-back" size={24} color={colors.text} />
+              </TouchableOpacity>
               <Text style={[styles.title, { color: colors.text }]}>Order History</Text>
+              <View style={{ width: 32 }} />
             </View>
             <OrderHistoryKPIRow
               thisMonth={kpiCounts.thisMonth}
@@ -189,13 +199,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.s5,
-    paddingTop: Spacing.s4,
-    paddingBottom: Spacing.s3,
+    paddingVertical: Spacing.s4,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    padding: 4,
   },
   title: {
-    fontSize: FontSize.h1,
-    fontWeight: FontWeight.bold,
+    fontSize: FontSize.h3,
+    fontWeight: FontWeight.semibold,
+    fontFamily: 'Inter_600SemiBold',
   },
   searchContainer: {
     paddingHorizontal: Spacing.s5,
