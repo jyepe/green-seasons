@@ -10,7 +10,7 @@ Replace the flat list of inputs with a section-card layout matching the provided
 
 ## Design reference
 
-Screenshot: `c:\Users\yepej\Downloads\Light.png`
+Screenshot: design mockup provided by user (Light.png)
 
 ## Scope decisions
 

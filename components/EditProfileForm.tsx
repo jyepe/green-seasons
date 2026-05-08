@@ -317,9 +317,7 @@ export function EditProfileForm() {
                 {
                   borderTopColor: colors.border,
                   backgroundColor: pressed
-                    ? isDark
-                      ? 'rgba(255,255,255,0.04)'
-                      : 'rgba(17,24,39,0.03)'
+                    ? withAlpha(colors.text, isDark ? 0.04 : 0.03)
                     : 'transparent',
                 },
               ]}

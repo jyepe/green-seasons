@@ -293,7 +293,7 @@ Replace everything inside `<ScrollView contentContainerStyle={styles.scrollConte
   </Text>
   <Pressable
     onPress={handleChangePassword}
-    disabled={resetPending}
+    disabled={resetPending || !userInfo?.email}
     style={({ pressed }) => [
       styles.passwordRow,
       {
