@@ -86,7 +86,7 @@ User taps row
 
 Uses existing `Toast` component. No navigation, no modal.
 
-The Supabase client call is `supabase.auth.resetPasswordForEmail(email)` — already available via the existing client in `lib/supabase.ts`. No new lib function needed; call directly in the component since it's one-off UI-only logic.
+Use the existing `resetPassword({ email })` export from `lib/supabase.ts` (line ~170). It already wraps `supabase.auth.resetPasswordForEmail` with the correct `redirectTo: Linking.createURL('auth/callback')` deeplink. Do not call the Supabase auth method directly — all server interactions go through `lib/supabase.ts` per project convention.
 
 ## Files changed
 
