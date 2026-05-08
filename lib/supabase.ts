@@ -191,13 +191,12 @@ export async function updateUserEmail(email: string) {
   if (!user) throw new Error('Not authenticated');
 
   if (email && email !== user.email) {
-    const { error: authError } = await supabase.auth.updateUser({
-      email,
-    });
+    const redirectTo = Linking.createURL('auth/callback');
+    const { error: authError } = await supabase.auth.updateUser(
+      { email },
+      { emailRedirectTo: redirectTo }
+    );
     if (authError) throw authError;
-
-    // Note: If email confirmation is required, Supabase will send a confirmation email
-    // The user's email won't change until they confirm via the link
   }
 }
 
