@@ -39,6 +39,7 @@ function groupOrdersByDate(orders: Order[]): OrderSection[] {
     } else {
       key = d
         .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+        .replace(',', '')
         .toUpperCase();
     }
     if (!groups[key]) {
