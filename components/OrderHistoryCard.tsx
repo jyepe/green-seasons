@@ -87,10 +87,11 @@ export function OrderHistoryCard({ order, onPress, onReorderComplete }: OrderHis
         queryFn: () => getOrderDetails(order.id),
         staleTime: 5 * 60 * 1000,
       });
-      await Promise.allSettled(
+      const results = await Promise.allSettled(
         items.map(item => addToCart({ itemId: item.item_id, quantityDelta: item.quantity }))
       );
-      onReorderComplete(true);
+      const hasFailures = results.some(r => r.status === 'rejected');
+      onReorderComplete(!hasFailures);
     } catch {
       onReorderComplete(false);
     } finally {
