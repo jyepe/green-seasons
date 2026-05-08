@@ -111,7 +111,7 @@ Never commit directly to `preview` or `master`. Before starting any fix or featu
 1. Ensure you are on `preview` and it is up to date with `origin/preview`
 2. Create a new branch: `feature/<short-description>` or `fix/<short-description>`
 3. Make all changes on that branch
-4. When done, merge or open a PR back into `preview`
+4. When done, push the branch to `origin` and open a PR to merge into `preview`
 
 ## Privacy Review
 
